@@ -1,2 +1,2 @@
-# Lending-protocol
-Hashstack's unique lending protocol enables under collateralised loans in a trustless, permission less environment.
+# Open protocol
+> An autonomous lending framework enabling under-collateralized loans for upto 1:3 collateral-to-debt ratio.
