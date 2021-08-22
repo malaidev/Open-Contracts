@@ -1,0 +1,27 @@
+{
+  "name": "open-protocol",
+  "version": "1.0.0",
+  "description": "> An autonomous lending framework enabling under-collateralized loans for upto 1:3 collateral-to-debt ratio.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xHashstack/Open-protocol.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/0xHashstack/Open-protocol/issues"
+  },
+  "homepage": "https://github.com/0xHashstack/Open-protocol#readme",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^1.5.0",
+    "dotenv": "^10.0.0",
+    "solc": "^0.8.7-fixed",
+    "truffle": "^5.4.7",
+    "web3": "^1.5.2"
+  }
+}
