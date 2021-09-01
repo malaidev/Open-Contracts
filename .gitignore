@@ -104,4 +104,4 @@ dist
 .tern-port
 
 *.js
-/checklist.md
+/checklistDoc.md
