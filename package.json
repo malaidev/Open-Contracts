@@ -17,11 +17,13 @@
     "url": "https://github.com/0xHashstack/Open-protocol/issues"
   },
   "homepage": "https://github.com/0xHashstack/Open-protocol#readme",
+  "directories": {
+    "test": "test"
+  },
   "dependencies": {
     "@truffle/hdwallet-provider": "^1.5.0",
-    "dotenv": "^10.0.0",
     "solc": "^0.8.7-fixed",
-    "truffle": "^5.4.7",
+    "truffle": "^5.4.10",
     "web3": "^1.5.2"
   }
 }
