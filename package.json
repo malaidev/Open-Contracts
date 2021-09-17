@@ -25,5 +25,8 @@
     "solc": "^0.8.7-fixed",
     "truffle": "^5.4.10",
     "web3": "^1.5.2"
+  },
+  "devDependencies": {
+    "mocha": "^9.1.1"
   }
 }
