@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.7 <0.9.0;
+<<<<<<< HEAD
 
 contract Comptroller {
 
@@ -32,3 +33,11 @@ bytes32[] validity; // ZERO, TWOWEEKS, ONEMONTH, THREEMONTHS.
   constructor() public {
   }
 }
+=======
+import "./util/Address.sol";
+
+contract Comptroller  {
+  using Address for address;
+
+}
+>>>>>>> staging
