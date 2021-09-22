@@ -1,43 +1,32 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.7 <0.9.0;
-<<<<<<< HEAD
-
-contract Comptroller {
-
-
-struct Passbook {
-  address customerAddress;
-  uint timestamp;
-  mapping(KIND => mapping(CATEGORY => bytes32)) newEntry; // mapping(DEPOSIT => mapping(FLEXILBE => validity[0]));
-}
-
-struct NewEntry {
-  address customerAddress;
-  uint timestamp;
-}
-
-struct Collateral	{	
-  address address_;
-  uint timestamp;
-  // mapping(uint => bool) collateral check; entryRegistry.amount => false/true;
-  mapping(uint => mapping(bool => uint)) collateralUpdated;  //if bool true, add timestamp.
-}
-
-NewEntry[] entries;
-
-enum KIND {DEPOSIT, LOAN}
-enum CATEGORY { FLEXIBLE, FIXED}
-
-bytes32[] validity; // ZERO, TWOWEEKS, ONEMONTH, THREEMONTHS.
-
-  constructor() public {
-  }
-}
-=======
 import "./util/Address.sol";
+import "./Library/OpenLibrary.sol";
 
 contract Comptroller  {
   using Address for address;
+  // struct SupportedAssets  {
+  //   bytes32 symbol;
+  //   uint160 decimals;
+  //   address contractAddress;
+  // }
+
+  // mapping(bytes32 => bool) isTokenSupported;
+
+  function liquidationTrigger() external {}
+
+
+
+  // SETTERS
+  function updateApy() external {}
+  function updateApr() external {}
+  function updateLoanIssuanceFees() external {}
+  function updateLoanClosureFees() external {}
+  function updateLoanpreClosureFees() external {}
+  function updateDepositPreclosureFees() external {}
+  function updateSwitchDepositTypeFee() external {}
+
+  function setReserveFactor() external  {} // sets a factor from 0 ot 1. This factor is the minimum reserves in the system.
+  function setMaxWithdrawal() external  {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
 
 }
->>>>>>> staging

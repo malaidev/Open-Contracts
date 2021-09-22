@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.6 <0.9.0;
+pragma solidity >=0.8.7 <0.9.0;
 
 import "./util/Context.sol";
 import "./util/Address.sol";
@@ -8,7 +8,7 @@ contract AccessRegistry is Context {
     using Address for address;
 
     address public adminAddress;
-    bytes32 private adminAccess;
+    bytes32 internal adminAccess;
 
     struct RoleData {
         mapping(bytes32 => address) _roleRegistry; //mapping of all roles & addresses
@@ -22,8 +22,8 @@ contract AccessRegistry is Context {
         bytes32[] _adminRoleList;
     }
 
-    mapping(address => RoleData) private _roles;
-    mapping(address => AdminRegistry) private _adminRoles;
+    mapping(address => RoleData) internal _roles;
+    mapping(address => AdminRegistry) internal _adminRoles;
 
     event AdminRoleGranted(
         bytes32 indexed role,
@@ -150,7 +150,7 @@ contract AccessRegistry is Context {
     }
 
     function _hasRole(bytes32 role, address account)
-        private
+        internal
         view
         returns (bool)
     {
@@ -160,15 +160,15 @@ contract AccessRegistry is Context {
         return false;
     }
 
-    function _addRole(bytes32 role, address account) private {
+    function _addRole(bytes32 role, address account) internal {
         _roles[account]._roleRegistry[role] = account;
         _roles[account]._roleList.push(role);
         _roles[account]._indexes[role] = _roles[account]._roleList.length;
 
         emit RoleGranted(role, account, _msgSender());
     }
-
-    function _revokeRole(bytes32 role, address account) private {
+    
+    function _revokeRole(bytes32 role, address account) internal {
         delete _roles[account]._roleRegistry[role];
 
         uint256 _value = _roles[account]._indexes[role];
@@ -189,7 +189,7 @@ contract AccessRegistry is Context {
     }
 
     function _hasAdminRole(bytes32 role, address account)
-        private
+        internal
         view
         returns (bool)
     {
@@ -211,7 +211,7 @@ contract AccessRegistry is Context {
         emit AdminRoleGranted(role, account, _msgSender());
     }
 
-    function _revokeAdmin(bytes32 role, address account) private {
+    function _revokeAdmin(bytes32 role, address account) internal {
         delete _adminRoles[account]._adminRegistry[role];
 
         uint256 _value = _adminRoles[account]._adminIndex[role];
