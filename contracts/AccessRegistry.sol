@@ -4,7 +4,7 @@ pragma solidity >=0.8.6 <0.9.0;
 import "./util/Context.sol";
 import "./util/Address.sol";
 
-contract AdminRegistry is Context {
+contract AccessRegistry is Context {
     using Address for address;
 
     address public adminAddress;
