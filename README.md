@@ -16,4 +16,4 @@ Open permits a collateral-to-debt ratio of upto 1:3, i.e. a borrower can seek a 
 - 𝐿 𝑢𝑠𝑑 = 𝐿𝑜𝑎𝑛 𝑣𝑎𝑙𝑢𝑒 𝑖𝑛 𝑈𝑆 𝑑𝑜𝑙𝑙𝑎𝑟𝑠.
 
 ### Supported tokens
-During its early operational period, Open protocol will support BNB, USDC, [STACK](https://bscscan.com/token/0xeac61d9e3224b20104e7f0bad6a6db7caf76659b) as acceptable denominations for deposit, borrow & withdrawal. This means, an account can deposit tokens, or borrow in these denominations only. 
+During its early operational period, Open protocol will support BNB, USDC, [STACK](https://bscscan.com/token/0xeac61d9e3224b20104e7f0bad6a6db7caf76659b) as acceptable denominations for deposit, borrow & withdrawal. This means, an account can deposit tokens, or borrow in these denominations only. ****

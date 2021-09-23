@@ -18,7 +18,6 @@ contract Comptroller  {
 
 
   // SETTERS
-  function updateApy() external {}
   function updateApr() external {}
   function updateLoanIssuanceFees() external {}
   function updateLoanClosureFees() external {}
@@ -30,3 +29,29 @@ contract Comptroller  {
   function setMaxWithdrawal() external  {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
 
 }
+
+
+// calcYield()
+// calcInterest()
+// struct Passbook()
+// struct InterestRates()
+// struct ApyLedger()
+// struct AprLedger()
+// struct SupportedAssets {}
+// updateCdr()
+// updateApy()
+// updateApr()
+// updatePreclosureCharges()
+// updateLoanIssuanceFees()
+// updateLoanClosureFees()
+// priceOracle()
+// balancingAccounts()
+// liquidationTrigger()
+// liquidationCall()
+
+
+
+// fallback() / receive()
+// transferAnyERC20()
+// pause
+// auth(superAdmin || adminComptroller)

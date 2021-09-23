@@ -23,3 +23,24 @@ contract Deposit {
 	function convertDepositToCollateral() external {}
 	function _convertDepositToCollateral() internal {}
 }
+
+
+
+
+/* ASA
+Calculating interest onchain is complex. I can delegate the task to offchain
+node-schedule to record and keep things up-to-date.
+
+So, whenever someone makes a call for accrued interest, or dividend data. The
+response is returned directly via a REST API offchain. This means, the interest
+is calculated offchain and propagated inside the web application.
+
+ASA */
+
+
+
+// Add dividends struct. bool for yes or no. Last dividend received -
+// blockNumber
+
+
+// need to associate amount with validity & blockNumber.
