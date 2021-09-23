@@ -10,6 +10,8 @@ contract AccessRegistry is Context {
     address public adminAddress;
     bytes32 internal adminAccess;
 
+    bytes32 adminHash = keccak256(abi.encode(adminAddress, adminAccess));
+
     struct RoleData {
         mapping(bytes32 => address) _roleRegistry; //mapping of all roles & addresses
         mapping(bytes32 => uint256) _indexes;
