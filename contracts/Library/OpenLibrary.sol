@@ -14,7 +14,9 @@ library OpenLibrary {
 		// address  constant STACK = 0x04DF6e4121c27713ED22341E7c7Df330F56f289B;
 		// address  constant USDC = 0x9780881Bf45B83Ee028c4c1De7e0C168dF8e9eEF;
 		
-		enum DepositType{ FIXED, FLEXIBLE }
+
+		enum STATE { DEPOSIT, LOAN, WITHDRAWAL, COLLATERAL}
+		enum STATETYPE{ FIXED, FLEXIBLE }
 		// enum LoanType{ FIXED, FLEXIBLE }
 
 }

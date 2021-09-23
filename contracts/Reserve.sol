@@ -3,6 +3,20 @@ pragma solidity >=0.4.22 <0.9.0;
 
 contract Reserve {
 
+    struct ApyLedger    {
+        uint[] _apy; // apy rate as a percentage. It means, for 18%, it is recorded as 18.
+        uint[] _blockNumber; // records  the blocknumber when the change was applied
+    }
+    struct AprLedger    {
+        uint[] _apr; // apr rate as a percentage. It means, for 18%, it is recorded as 18.
+        uint[] _blockNumber; // records  the blocknumber when the change was applied
+    }
+
+
+
+    fallback() external payable {}
+    receive() external payable {}
+
 }
 
 

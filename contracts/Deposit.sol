@@ -35,6 +35,8 @@ So, whenever someone makes a call for accrued interest, or dividend data. The
 response is returned directly via a REST API offchain. This means, the interest
 is calculated offchain and propagated inside the web application.
 
+If i can get to see the accrued interest without the worry of 
+
 ASA */
 
 

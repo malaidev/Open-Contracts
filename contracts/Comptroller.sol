@@ -5,17 +5,66 @@ import "./Library/OpenLibrary.sol";
 
 contract Comptroller  {
   using Address for address;
-  // struct SupportedAssets  {
-  //   bytes32 symbol;
-  //   uint160 decimals;
-  //   address contractAddress;
-  // }
 
-  // mapping(bytes32 => bool) isTokenSupported;
+  enum STATE {DEPOSIT, LOAN}
+  enum TYPE {FIXED, FLEXIBLE}
+
+  STATE state;
+  TYPE _type;
+
+  bytes32[] validity; // zeroweeks, twoweeks, onemonth, three months.
+
+  struct Passbook {
+    address account;
+    mapping(STATE => mapping(TYPE => bytes32)) transaction; // DEPOSIT => FIXED => ZERO
+  }
+  struct TxRecord  {
+    bytes32 _token;
+    uint amount;
+    uint interestRate; // applicable interest. Positive for deposits, negative for withdrawals.
+    uint initialTimestamp;// blockNumber
+    bool _dividend; // true of false.
+    bool 
+  }
+
+  event Deposit (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp);
+  event Withdrawl (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp);
+  
+// **Deposit**
+// - symbol
+//   - token address
+//   - decimals
+// - amount
+// - type & validity (fixed/flexible, validity)
+// - blocknumber
+// - currentApy
+// - dividend applicable(?) // if fixed deposit.
+
+
+
+// **Withdrawal()**
+// - symbol
+// - amount
+// - checkFlexibleDeposit()
+// - checkFixedDeposit()
+// - totalAssetValue() // includes the accrued yield and dividend
+// - Restrictions
+//   - deposit locked(?) as collateral
+//   - fixed deposit (withdrawal timelock applicable?)
+
+
+
+
+
+
+  constructor () {
+    validity.push('NO');
+    validity.push('TWOWEEKS');
+    validity.push('ONEMONTH');
+    validity.push('THREEMONTHS');
+  }
 
   function liquidationTrigger() external {}
-
-
 
   // SETTERS
   function updateApr() external {}
@@ -55,3 +104,19 @@ contract Comptroller  {
 // transferAnyERC20()
 // pause
 // auth(superAdmin || adminComptroller)
+
+
+
+
+// create a passbook struct to store everything(deposits, debts, collaterals),
+// along with the blocknumber. create a function that calculates the accrued apy
+// for each individual deposit records since the last yield release. When the
+// yield is released, the remnant depost amount becomes the deposit & the yield
+// begins to be accrued from there.
+
+//  If a deposit is withdrawn, then the sub-struct entry must be removed from
+//  the passbook, and forwarded to the archived struct
+
+
+//  Whatever remains in the passbook struct earns/pays interest.
+

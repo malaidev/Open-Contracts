@@ -13,14 +13,14 @@ contract TokenList {
 	// deterministic
 	
 
-	struct TokenRegistry {
+	struct TokenData {
 		mapping(bytes32 => address) tokenAddress; // maps a symbol to its address
 		mapping(bytes32 => uint256) decimals; // maps a symbol to its decimals
 		mapping(bytes32 => uint256) tokenIndex; // index helps you verify if this token exists or not
-		bytes32[] symbols;
 	}
 	
-	mapping(bytes32 => TokenRegistry) supportedTokens;
+	TokenData[] tokenRegistry;
+	mapping(bytes32 => TokenData) tokenDetails;
 
 	event TokenSupportAdded(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
 	event TokenSupportRemoved(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
@@ -46,17 +46,17 @@ contract TokenList {
 	}
 
 	function _isTokenSupported(bytes32 _symbol) internal view {
-		require(supportedTokens[_symbol].tokenIndex[_symbol] != 0,"This token is already supported");
+		require(tokenDetails[_symbol].tokenIndex[_symbol] != 0,"This token is already supported");
 		this;
 	}
 
 	function _addTokenSupport( bytes32 _symbol,uint256 _decimals,address _tokenAddress) internal {
-		TokenRegistry storage tokenRegistry = supportedTokens[_symbol];
+		// TokenData storage TokenData = tokenDetails[_symbol];
 
-		tokenRegistry.tokenAddress[_symbol] = _tokenAddress;
-		tokenRegistry.decimals[_symbol] = _decimals;
-		tokenRegistry.symbols.push(_symbol); // adds the token symbol to the tokenregistry
-		tokenRegistry.tokenIndex[_symbol] = tokenRegistry.symbols.length; 
+		// TokenData.tokenAddress[_symbol] = _tokenAddress;
+		// TokenData.decimals[_symbol] = _decimals;
+		// TokenData.symbols.push(_symbol); // adds the token symbol to the TokenData
+		// TokenData.tokenIndex[_symbol] = TokenData.symbols.length; 
 	}
 
 	function removeTokenSupport(bytes32 _symbol) external returns(bool success) {}
