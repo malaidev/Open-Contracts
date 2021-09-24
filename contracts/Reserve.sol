@@ -12,8 +12,6 @@ contract Reserve {
         uint[] _blockNumber; // records  the blocknumber when the change was applied
     }
 
-
-
     fallback() external payable {}
     receive() external payable {}
 
