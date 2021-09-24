@@ -2,12 +2,17 @@
 pragma solidity >=0.8.7 <0.9.0;
 
 import "./TokenList.sol";
+import "./Passbook.sol";
 import "./util/Address.sol";
 
 // import "./Library/OpenLibrary.sol";
 
 contract Deposit {
 	using Address for address;
+
+
+	constructor() {
+	}
 	function deposit() external returns (bool) {}
 
 	function _deposit() internal {}

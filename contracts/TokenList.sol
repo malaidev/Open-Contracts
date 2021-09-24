@@ -5,73 +5,30 @@ import "./AccessRegistry.sol";
 import "./util/Address.sol";
 
 contract TokenList {
+
 	bytes32 internal adminTokenList;
-
-	// bytes32 hashData = keccak256(abi.encode());
-	// bytes32 hashData = keccak256(abi.encodePacked()); // encodePacked() works
-	// in smart contracts because non byte & non uint input fields are
-	// deterministic
-	
-
+	bytes32[] allSymbols;
 	struct TokenData {
-		mapping(bytes32 => address) tokenAddress; // maps a symbol to its address
-		mapping(bytes32 => uint256) decimals; // maps a symbol to its decimals
-		mapping(bytes32 => uint256) tokenIndex; // index helps you verify if this token exists or not
+		bytes32 symbol;
+		address tokenAddress;
+		uint decimals;
+		uint chainId;	
+		bool isSupported;
 	}
+
+	TokenData[] allMarkets;
 	
-	TokenData[] tokenRegistry;
-	mapping(bytes32 => TokenData) tokenDetails;
+	mapping(bytes32 => TokenData) tokenPointer; // 
+	// mapping(bytes32 => bool) isTokenSupported; 
 
-	event TokenSupportAdded(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
-	event TokenSupportRemoved(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
-	constructor() {
-		// address  constant BNB = 0x02822e968856186a20fEc2C824D4B174D0b70502;
-		// address  constant STACK = 0x04DF6e4121c27713ED22341E7c7Df330F56f289B;
-		// address  constant USDC = 0x9780881Bf45B83Ee028c4c1De7e0C168dF8e9eEF;
-
-		// implement the default token support to some of the tokens.
+	function isTokenSupported(bytes32  symbol_) external view returns (bool)	{
+		_isTokenSupported(symbol_);
+		return true;
 	}
 
-
-// ADD A NEW TOKEN SUPPORT
-	function addTokenSupport(bytes32 _symbol,uint256 _decimals,address _tokenAddress) external returns (bool success) {
-		
-		_isTokenSupported(_symbol);
-		_addTokenSupport(_symbol, _decimals, _tokenAddress);
-
-		emit TokenSupportAdded(_symbol,_decimals,_tokenAddress,block.timestamp
-		);
-
-		return bool(success);
+	function _isTokenSupported(bytes32  symbol_) internal view {
+		TokenData storage tokenData  = tokenPointer[symbol_];
+		require(tokenData.isSupported == true, "Token is not supported");
 	}
 
-	function _isTokenSupported(bytes32 _symbol) internal view {
-		require(tokenDetails[_symbol].tokenIndex[_symbol] != 0,"This token is already supported");
-		this;
-	}
-
-	function _addTokenSupport( bytes32 _symbol,uint256 _decimals,address _tokenAddress) internal {
-		// TokenData storage TokenData = tokenDetails[_symbol];
-
-		// TokenData.tokenAddress[_symbol] = _tokenAddress;
-		// TokenData.decimals[_symbol] = _decimals;
-		// TokenData.symbols.push(_symbol); // adds the token symbol to the TokenData
-		// TokenData.tokenIndex[_symbol] = TokenData.symbols.length; 
-	}
-
-	function removeTokenSupport(bytes32 _symbol) external returns(bool success) {}
-	function _removeTokenSupport(bytes32 _symbol) internal {}
-
-
-// temporary disabling a token support could come in hand during the events a
-// token is exploited or somethnig like that
-	// function tempDisableTokenSupport(bytes32 _symbol) external returns(bool success)  {}
 }
-
-// Tokenlist contract holds the list of suppported tokens, base and
-// non-base.All the other contracts - deposit, lender, comptroller inherit from
-// the tokenlist contract.
-
-
-// Instead of a single public function, I will create an external and internal
-// function for free flow of interactions

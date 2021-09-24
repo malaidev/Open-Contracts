@@ -7,36 +7,49 @@ contract Passbook  {
   
   using Address for address;
 
-  // enum ENTRY {DEPOSIT, LOAN}
+  enum ENTRY {DEPOSIT, LOAN}
   enum ENTRYTYPE {FIXED, FLEXIBLE}
-
-  // ENTRY entry;
+  
   bytes32[] validity; // zeroweeks, twoweeks, onemonth, three months. Fed during the contract construction.
   
-  // struct AccountPassbook {
-  //   uint initialBlock; // blockNUmber when the passbook was created.
-  //   bytes32[] records; //records of individual deposits & withdrwals. When a deposit is withdrawN, remove it from the AccountPassbook
-  //   mapping(address => uint) checkRecord; //checks if the entry exists. AccountPassbook.checkRecord.msg.sender != 0.
-  //   // mapping(ENTRY => mapping(ENTRYTYPE => bytes32)) entryType;
-  //   mapping(ENTRYTYPE => bytes32) entryType; 
-  //   Entry[] entries;
-  // }
-
-  struct AccountPassbook  {
+  struct Savings  {
     uint initialBlock; // Block number when the account was created.
-    Entry[] _entries; // A struct of all the deposits.
+    uint[] logger;
+    Deposit[] _deposits; // A struct of all the deposits.
+    // Withdrawals[] _withdrawals;
+    // Dividends[] _dividends; // A struct
+  }
+  struct Loans  {
+    uint initialBlock; // Block number when the account was created.
+    uint[] logger;
+    Deposit[] _deposits; // A struct of all the deposits.
+    Withdrawals[] _withdrawals;
     Dividends[] _dividends; // A struct
   }
-  
-  // hasAccount; if (AccountPassbook._entries.length == 0)  { return 'No
-  // account';} 
-  
 
-  mapping(address => AccountPassbook) passbook;
+  mapping(address => Savings) savingsPassbook;
+  mapping(address => Loans) loansPassbook;
 
-  struct Record  {
-    uint id; // id  == AccountPassbook._entries.length;
-    uint entryBlock; // blockNUmber when the this Record was created.
+  struct Deposit  {
+    uint id; // id  == Savings.logger.length;
+    uint blockNumber; // blockNUmber when the this Record was created.
+    bytes32 symbol; // based on the symbol, we can fetch the contractAddress & decimals from the TokenRegistry struct in TokenList contract.
+    uint amount; // based on the symbol, we can fetch the contractAddress & decimals from the TokenRegistry struct in TokenList contract.
+    mapping(ENTRYTYPE => mapping(bytes32 => uint)) depositEntry; // amount deposited against the specific deposit type.
+    bool dividend; // true or false. If true, you look for an entry inside the dividend struct. If false, you move on.
+  }
+  struct Dividends  {
+    uint id; // id  == Savings.logger.length;
+    uint blockNumber; // blockNUmber when the this Record was created.
+    bytes32 symbol; // based on the symbol, we can fetch the contractAddress & decimals from the TokenRegistry struct in TokenList contract.
+    uint amount; // based on the symbol, we can fetch the contractAddress & decimals from the TokenRegistry struct in TokenList contract.
+    mapping(ENTRYTYPE => mapping(bytes32 => uint)) depositEntry; // amount deposited against the specific deposit type.
+    bool dividend; // true or false. If true, you look for an entry inside the dividend struct. If false, you move on.
+  }
+
+  struct Loan {
+    uint id; // id  == Loans.logger.length;
+    uint blockNumber; // blockNUmber when the this Record was created.
     bytes32 symbol; // based on the symbol, we can fetch the contractAddress & decimals from the TokenRegistry struct in TokenList contract.
     uint amount;
     mapping(ENTRYTYPE => bytes32) _depositTypeWValidity;
@@ -44,12 +57,33 @@ contract Passbook  {
     bool withDrawalTimelock; // applicable or not.
   }
 
-  //  Fixed deposits with dividends as true calculate their dividends indiivduall
+  struct Withdrawals  {
+    uint initialBlock; // blockNUmber when the first loan was created
+  }
+
+  // Loan struct integrates with collateral struct in which, the collateral
+  // receives dripped interest deductions per bsc block
+
+
+// Collaterals struct has a correlation with deposits in which, a deposit is
+// converted into a collateral, and a collateral corresponding to fixed loan
+// earns APY as a sub struct of deposit struct. The APY earned frmo the
+// collaterals si added to the yield of the deposits when calculating the final apy
+
+  struct collaterals  {
+    uint id; // LoanAccount.records.length
+
+  }
   struct Dividends  {
-    uint id; // id  == AccountPassbook.entries.length;
-    uint entryBlock; 
-    bytes32 symbol;
-    uint amount;
+    uint text;
+  }
+
+
+  constructor () {
+    validity.push('NONE');
+    validity.push('TWOWEEKS');
+    validity.push('ONEMONTH');
+    validity.push('THREEMONTHS');
   }
 
 
@@ -76,28 +110,8 @@ contract Passbook  {
 //   - fixed deposit (withdrawal timelock applicable?)
 
 
-  mapping(address => AccountPassbook) hasAccountPassbook; // checks if the account has an account with Open protocol.
-  mapping(address => LoanAccount) hasLoanAccount; // checks if there is any outstanding loan against the account
-
 //  Loan account is same as Account passbook, but is a separate account
-  struct LoanAccount {
-    uint initialBlock; // blockNUmber when the first loan was created
-    bytes32[] records; //records of borrow & repayments.
-  }
-
-  // Loan struct integrates with collateral struct in which, the collateral
-  // receives dripped interest deductions per bsc block
-
-
-// Collaterals struct has a correlation with deposits in which, a deposit is
-// converted into a collateral, and a collateral corresponding to fixed loan
-// earns APY as a sub struct of deposit struct. The APY earned frmo the
-// collaterals si added to the yield of the deposits when calculating the final apy
-
-  struct collaterals  {
-    uint id; // LoanAccount.records.length
-
-  }
+  
   
   function hasAccount(address account_) external view returns(bytes32) {
     _hasAccount(account_);
@@ -105,31 +119,9 @@ contract Passbook  {
   }
 
   function _hasAccount(address account_) internal view  {
-    require(passbook[account_]._entries.length!=0, "Account does not exist.");
-    return this;
-  }
-
-
-
-  // struct passbookFilters {
-  //   mapping(address => mapping(ENTRY => ENTRYTYPE)) _ENTRYTYPERecords; // deposit/fixed etc.
-  // }
-
-  mapping(address => AccountPassbook) accountENTRYment; // maps an addres to its struct.
-
-  struct Collateral   {
-    uint initTimestamp; // conversion blocknumber
-    uint amount;
-    uint loanId;
-  }
-
-
-
-  constructor () {
-    validity.push('NO');
-    validity.push('TWOWEEKS');
-    validity.push('ONEMONTH');
-    validity.push('THREEMONTHS');
+    require(savingsPassbook[account_].logger.length!=0 || loansPassbook[account_].logger.length!=0, "Account does not exist.");
+    // Every loan account has a savings account. But, I am thinking of breaking
+    // it into two different parts so that, i have a clear demarcation.
   }
 
 }
