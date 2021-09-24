@@ -1,81 +1,100 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.7 <0.9.0;
 import "./util/Address.sol";
-import "./Library/OpenLibrary.sol";
 
 contract Comptroller  {
   using Address for address;
 
-  enum STATE {DEPOSIT, LOAN}
-  enum TYPE {FIXED, FLEXIBLE}
+  bytes32 adminComptroller;
+  address adminComptrollerAddress;
 
-  STATE state;
-  TYPE _type;
+  uint apr;
+  uint apy;
 
-  bytes32[] validity; // zeroweeks, twoweeks, onemonth, three months.
-
-  struct Passbook {
-    address account;
-    mapping(STATE => mapping(TYPE => bytes32)) transaction; // DEPOSIT => FIXED => ZERO
+  struct APY  {
+    uint timestamp;
+    uint apy;
   }
-  struct TxRecord  {
-    bytes32 _token;
-    uint amount;
-    uint interestRate; // applicable interest. Positive for deposits, negative for withdrawals.
-    uint initialTimestamp;// blockNumber
-    bool _dividend; // true of false.
-    bool 
+
+  struct APR  {
+    uint timestamp;
+    uint apr;
   }
+
+  APY[] apyRegistry; // stores a record of all the apr. the latest one being the last
+  APR[] aprRegistry; // stores a record of all the apr. the latest one being the last
+  
+  // [N2S] 
+  // 1. Whenever someone is taking a loan, record the position of the current
+  //    apr in the apr registry. This will mitigate unnecessary loops inside
+  //    this array
+  //  Implement the same aproach with the deposits.
 
   event Deposit (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp);
   event Withdrawl (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp);
+  event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
+  event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
   
-// **Deposit**
-// - symbol
-//   - token address
-//   - decimals
-// - amount
-// - type & validity (fixed/flexible, validity)
-// - blocknumber
-// - currentApy
-// - dividend applicable(?) // if fixed deposit.
+  constructor(uint apy_, uint apr_) {
+    adminComptrollerAddress = msg.sender;
 
+    _updateAPY(apy_);
+    _updateAPR(apr_);
+  }
 
-
-// **Withdrawal()**
-// - symbol
-// - amount
-// - checkFlexibleDeposit()
-// - checkFixedDeposit()
-// - totalAssetValue() // includes the accrued yield and dividend
-// - Restrictions
-//   - deposit locked(?) as collateral
-//   - fixed deposit (withdrawal timelock applicable?)
-
-
-
-
-
-
-  constructor () {
-    validity.push('NO');
-    validity.push('TWOWEEKS');
-    validity.push('ONEMONTH');
-    validity.push('THREEMONTHS');
+  function getAPR() public view returns (uint) {
+    return apr;
+  }
+  function getAPY() public view returns (uint) {
+    return apy;
   }
 
   function liquidationTrigger() external {}
 
   // SETTERS
-  function updateApr() external {}
-  function updateLoanIssuanceFees() external {}
-  function updateLoanClosureFees() external {}
-  function updateLoanpreClosureFees() external {}
-  function updateDepositPreclosureFees() external {}
-  function updateSwitchDepositTypeFee() external {}
 
-  function setReserveFactor() external  {} // sets a factor from 0 ot 1. This factor is the minimum reserves in the system.
-  function setMaxWithdrawal() external  {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
+
+  function updateAPY(uint apy_) external onlyAdmin() {
+    // pre process checks
+
+    _updateAPY(apy_);
+    uint index = apyRegistry.length-1;
+    uint oldAPY = apyRegistry[index].apy;
+
+    emit APYupdated(msg.sender, apy_, oldAPY, block.number);
+  }
+  function updateAPR(uint apr_) external onlyAdmin() {
+    // pre process checks
+    _updateAPR(apr_);
+    uint index = aprRegistry.length-1;
+    uint oldAPR = aprRegistry[index].apr;
+    emit APRupdated(msg.sender, apr_, oldAPR, block.number);
+  }
+
+  function _updateAPY(uint apy_) internal  {
+    apr = apy_;
+    apyRegistry.push(APY(block.number, apy_));
+  }
+  function _updateAPR(uint apr_) internal {
+    apr = apr_;
+    aprRegistry.push(APR(block.number, apr_));
+  }
+
+
+  function updateLoanIssuanceFees() external onlyAdmin() {}
+  function updateLoanClosureFees() external onlyAdmin() {}
+  function updateLoanpreClosureFees() external onlyAdmin() {}
+  function updateDepositPreclosureFees() external onlyAdmin() {}
+  function updateSwitchDepositTypeFee() external onlyAdmin() {}
+
+  function updateReserveFactor() external  onlyAdmin() {} // sets a factor from 0 ot 1. This factor is the minimum reserves in the system.
+  function updateMaxWithdrawal() external  onlyAdmin() {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
+  
+
+  modifier onlyAdmin() {
+    require(msg.sender == adminComptrollerAddress, "Only the comptroller admin can modify this function" );
+    _;
+  }
 
 }
 
@@ -85,11 +104,11 @@ contract Comptroller  {
 // struct Passbook()
 // struct InterestRates()
 // struct ApyLedger()
-// struct AprLedger()
+// struct APRLedger()
 // struct SupportedAssets {}
 // updateCdr()
 // updateApy()
-// updateApr()
+// updateAPR()
 // updatePreclosureCharges()
 // updateLoanIssuanceFees()
 // updateLoanClosureFees()
@@ -120,3 +139,10 @@ contract Comptroller  {
 
 //  Whatever remains in the passbook struct earns/pays interest.
 
+
+
+// [N2S]  Friday  10pm.
+  // 1. Whenever someone is taking a loan, record the position of the current
+  //    apr in the apr registry. This will mitigate unnecessary loops inside
+  //    this array
+  //  Implement the same aproach with the deposits.
