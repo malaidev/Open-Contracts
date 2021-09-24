@@ -15,7 +15,7 @@ contract TokenList{
 
   byte32[] allSymbols;
 
-  mapping(byte32 >= TokenData) public tokenPointer;
+  mapping(byte32 => TokenData) public tokenPointer;
 
   event TokenSupportAdded(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
   event TokenSupportRemoved(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
