@@ -52,7 +52,7 @@ contract TokenList{
     tokenData.tokenAddress = _tokenAddress;
     tokenData.decimals = _decimals;
     
-    allSymbols.push(symbol);
+    allSymbols.push(_symbol);
     isSymbolExist[_symbol] = true;
     symbolIndex[_symbol] = allSymbols.length-1;
 
