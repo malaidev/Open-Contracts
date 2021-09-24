@@ -10,13 +10,12 @@ contract TokenList{
     address tokenAddress;
     uint decimals;
     uint chainId;
-    
   }
 
   bytes32[] allSymbols;
-  
-  mapping (bytes32=>uint256) symbolIndex;
+
   mapping (bytes32 => bool) public isSymbolExist;
+  mapping (bytes32=>uint256) symbolIndex;
   mapping (bytes32 => TokenData) public tokenPointer;
 
   event TokenSupportAdded(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
@@ -44,7 +43,6 @@ contract TokenList{
     return bool(true);
   }
   function _addTokenSupport( bytes32 _symbol,uint256 _decimals,address _tokenAddress) internal {
-    
     TokenData storage tokenData = tokenPointer[_symbol];
     
     tokenData.symbol = _symbol;
@@ -68,15 +66,18 @@ contract TokenList{
 
     delete tokenData;
     
-    bytes32 lastIndexKey  = allSymbols[allSymbols.length-1];
-    symbolIndex[lastIndexKey] = symbolIndex[_symbol];
+    if (symbolIndex[_symbol] >= allSymbols.length) return;
 
-    allSymbols[symbolIndex[_symbol]] = lastIndexKey;
+    bytes32 lastSymbol  = allSymbols[allSymbols.length-1];
+
+    if(symbolIndex[lastSymbol] != symbolIndex[_symbol]){
+      symbolIndex[lastSymbol] = symbolIndex[_symbol];
+      allSymbols[symbolIndex[_symbol]] = lastSymbol;
+    }
     allSymbols.pop();
     delete symbolIndex[_symbol];
-
   }
-
+  
   function updateTokenSupport(bytes32 _symbol, uint256 _decimals,address _tokenAddress) external returns(bool){
     _updateTokenSupport(_symbol, _decimals, _tokenAddress);
     return bool(true);
