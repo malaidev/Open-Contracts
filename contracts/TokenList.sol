@@ -6,18 +6,18 @@ import "./util/Address.sol";
 
 contract TokenList{
   struct TokenData{
-    byte32 symbol;
+    bytes32 symbol;
     address tokenAddress;
     uint decimals;
     uint chainId;
     
   }
 
-  byte32[] allSymbols;
+  bytes32[] allSymbols;
   
-  mapping (byte32=>uint256) symbolIndex;
-  mapping (byte32 => bool) public isSymbolExist;
-  mapping (byte32 => TokenData) public tokenPointer;
+  mapping (bytes32=>uint256) symbolIndex;
+  mapping (bytes32 => bool) public isSymbolExist;
+  mapping (bytes32 => TokenData) public tokenPointer;
 
   event TokenSupportAdded(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
   event TokenSupportRemoved(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
@@ -75,15 +75,15 @@ contract TokenList{
     allSymbols[symbolIndex[_symbol]] = lastIndexKey;
     allSymbols.pop();
     delete symbolIndex[_symbol];
-    
+
 
   }
 
-  function updateTokenSupport(byte32 _symbol, uint256 _decimals,address _tokenAddress) external returns(bool){
+  function updateTokenSupport(bytes32 _symbol, uint256 _decimals,address _tokenAddress) external returns(bool){
     _updateTokenSupport(_symbol, _decimals, _tokenAddress);
     return bool(true);
   }
-  function _updateTokenSupport(byte32 _symbol, uint256 _decimals,address _tokenAddress) internal{
+  function _updateTokenSupport(bytes32 _symbol, uint256 _decimals,address _tokenAddress) internal{
 
     TokenData storage tokenData = tokenPointer[_symbol];
     
