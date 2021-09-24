@@ -22,15 +22,14 @@ contract TokenList{
   event TokenSupportAdded(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
   event TokenSupportRemoved(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
  
-
   function isTokenSupported(bytes32  _symbol) external view returns (bool)	{
 		_isTokenSupported(_symbol);
 		return true;
 	}
 
 	function _isTokenSupported(bytes32  _symbol) internal view {
-		TokenData storage tokenData  = tokenPointer[_symbol];
-		require(tokenData.isSupported == true, "Token is not supported");
+	
+		require(isSymbolExist[_symbol] == true, "Token is not supported");
 	}
 
 // ADD A NEW TOKEN SUPPORT
@@ -64,18 +63,17 @@ contract TokenList{
   }
   function _removeTokenSupport(bytes32 _symbol) internal {
 
-    TokenData storage tokenData = tokenPointer[_symbol];
+    TokenData memory tokenData = tokenPointer[_symbol];
     isSymbolExist[_symbol] = false;
 
     delete tokenData;
     
-    uint256 lastIndexKey  = allSymbols[allSymbols.length-1];
+    bytes32 lastIndexKey  = allSymbols[allSymbols.length-1];
     symbolIndex[lastIndexKey] = symbolIndex[_symbol];
 
     allSymbols[symbolIndex[_symbol]] = lastIndexKey;
     allSymbols.pop();
     delete symbolIndex[_symbol];
-
 
   }
 
@@ -90,7 +88,7 @@ contract TokenList{
     tokenData.symbol = _symbol;
     tokenData.tokenAddress = _tokenAddress;
     tokenData.decimals = _decimals;
-    tokenData.isSupported = true;
-  }
 
+    isSymbolExist[_symbol] = true;
+  }
 }
