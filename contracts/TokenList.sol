@@ -17,6 +17,8 @@ contract TokenList{
   mapping (bytes32=>uint256) symbolIndex;
   mapping (bytes32 => TokenData) public tokenPointer;
 
+  TokenData internal rmTokenData;
+
   event TokenSupportAdded(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
   event TokenSupportUpdated(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
   event TokenSupportRemoved(bytes32 indexed _symbol, uint256 indexed _timestamp);
@@ -59,10 +61,9 @@ contract TokenList{
   }
   function _removeTokenSupport(bytes32 _symbol) internal {
 
-    TokenData memory tokenData = tokenPointer[_symbol];
     isSymbolExist[_symbol] = false;
 
-    delete tokenData;
+    delete tokenPointer[_symbol];
     
     if (symbolIndex[_symbol] >= allSymbols.length) return;
 

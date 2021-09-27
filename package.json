@@ -21,6 +21,7 @@
     "test": "test"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.3.2",
     "@truffle/hdwallet-provider": "^1.5.0",
     "dotenv": "^10.0.0",
     "solc": "^0.8.7-fixed",
@@ -28,6 +29,7 @@
     "web3": "^1.5.2"
   },
   "devDependencies": {
+    "@openzeppelin/truffle-upgrades": "^1.9.1",
     "mocha": "^9.1.1"
   }
 }

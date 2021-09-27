@@ -15,15 +15,15 @@
     "absolutePath": "project:/contracts/Library/OpenLibrary.sol",
     "exportedSymbols": {
       "OpenLibrary": [
-        792
+        828
       ]
     },
-    "id": 793,
+    "id": 829,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 788,
+        "id": 824,
         "literals": [
           "solidity",
           ">=",
@@ -42,9 +42,9 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 792,
+        "id": 828,
         "linearizedBaseContracts": [
-          792
+          828
         ],
         "name": "OpenLibrary",
         "nameLocation": "78:11:3",
@@ -52,17 +52,17 @@
         "nodes": [
           {
             "canonicalName": "OpenLibrary.DepositType",
-            "id": 791,
+            "id": 827,
             "members": [
               {
-                "id": 789,
+                "id": 825,
                 "name": "FIXED",
                 "nameLocation": "659:5:3",
                 "nodeType": "EnumValue",
                 "src": "659:5:3"
               },
               {
-                "id": 790,
+                "id": 826,
                 "name": "FLEXIBLE",
                 "nameLocation": "666:8:3",
                 "nodeType": "EnumValue",
@@ -75,7 +75,7 @@
             "src": "641:35:3"
           }
         ],
-        "scope": 793,
+        "scope": 829,
         "src": "70:652:3",
         "usedErrors": []
       }
@@ -86,15 +86,15 @@
     "absolutePath": "project:/contracts/Library/OpenLibrary.sol",
     "exportedSymbols": {
       "OpenLibrary": [
-        792
+        828
       ]
     },
-    "id": 793,
+    "id": 829,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 788,
+        "id": 824,
         "literals": [
           "solidity",
           ">=",
@@ -113,9 +113,9 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 792,
+        "id": 828,
         "linearizedBaseContracts": [
-          792
+          828
         ],
         "name": "OpenLibrary",
         "nameLocation": "78:11:3",
@@ -123,17 +123,17 @@
         "nodes": [
           {
             "canonicalName": "OpenLibrary.DepositType",
-            "id": 791,
+            "id": 827,
             "members": [
               {
-                "id": 789,
+                "id": 825,
                 "name": "FIXED",
                 "nameLocation": "659:5:3",
                 "nodeType": "EnumValue",
                 "src": "659:5:3"
               },
               {
-                "id": 790,
+                "id": 826,
                 "name": "FLEXIBLE",
                 "nameLocation": "666:8:3",
                 "nodeType": "EnumValue",
@@ -146,7 +146,7 @@
             "src": "641:35:3"
           }
         ],
-        "scope": 793,
+        "scope": 829,
         "src": "70:652:3",
         "usedErrors": []
       }
@@ -159,7 +159,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-09-24T14:00:34.321Z",
+  "updatedAt": "2021-09-27T06:01:02.805Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
