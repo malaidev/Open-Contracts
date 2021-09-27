@@ -142,7 +142,9 @@ contract AccessRegistry is Pausable {
         bytes32 role,
         address oldAccount,
         address newAccount
-    ) external auth(adminAccess, adminAddress) {
+    ) 
+        external auth(adminAccess, adminAddress) 
+    {
         require(
             _hasAdminRole(role, oldAccount),
             "Role already exists. Please create a different role"
@@ -152,7 +154,10 @@ contract AccessRegistry is Pausable {
         _addAdmin(role, newAccount);
     }
 
-    function adminRoleRenounce(bytes32 role, address account) external auth(adminAccess, adminAddress){
+    function adminRoleRenounce(bytes32 role, address account)
+        external 
+        auth(adminAccess, adminAddress)
+    {
         require(_hasAdminRole(role, account), "Role does not exist.");
         require(_msgSender() == account, "Inadequate permissions");
 
