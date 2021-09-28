@@ -26,17 +26,14 @@ contract Comptroller  {
     uint[] aprChangeRecords; // the apy changes.
   }
 
-  // ledger of APY/APR changes
   
   // Latest Individual apy/apr data
-  mapping(bytes32 => APY) indAPYRecords; // commitment => APY struc
-  mapping(bytes32 => APR) indAPRRecords; // commitment => APR struct.
+  mapping(bytes32 => APY) indAPYRecords;
+  mapping(bytes32 => APR) indAPRRecords;
 
 
-  event Deposit (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp); // block.number;
-  event Withdrawl (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp); // block.number;
-  event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp); // block.number;
-  event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp); // block.number;
+  event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
+  event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
   
   constructor(uint apy_, uint apr_) {
     adminComptrollerAddress = msg.sender;
