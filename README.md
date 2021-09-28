@@ -3,6 +3,12 @@
 > An autonomous lending framework enabling under-collateralized loans for upto 1:3 collateral-to-debt ratio.
 
 
+### About Open
+
+DeFi lending today requires a borrower to provide collateral that exceeds the actual borrow. This diminishes the utility of decentralised lending. Open protocol's proposed solution enables borrowers borrow upto 3 times their collateral. Open is the only product in the market today capable of implementing a defi lending solution that is comparable to traditional finance
+
+1. [Whitepaper](https://hashstack.finance/papers/Open-protocol-v0.2.pdf)
+2. [Whitepaper summary](https://hashstack.medium.com/released-open-protocol-whitepaper-v0-2-44c5b37f5bd)
 
 ---
 ## Concept 
