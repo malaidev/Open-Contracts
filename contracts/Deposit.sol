@@ -14,8 +14,7 @@ contract Deposit {
     bool isReentrant = false;
 
     TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-    Comptroller comptroller =
-        Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+    Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     Reserve reserve = Reserve(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     Passbook passbook = passbook(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     IBEP20 token;
@@ -31,11 +30,11 @@ contract Deposit {
         adminDepositAddress = msg.sender;
     }
 
-    function Deposit(
+    function createDeposit(
         bytes32 market_,
         bytes32 commitment_,
         uint256 amount_
-    ) external nonReentrant() returns (bool) {
+    ) external nonReentrant returns (bool) {
         address marketAddress;
         _preDepositProcess(msg.sender, market_, amount_);
         token.transfer(address(reserve), amount_);
@@ -148,27 +147,22 @@ contract Deposit {
         bytes32 commitment_,
         uint256 amount_
     ) internal {
-        DepositRecords storage deposit = passbook.indDepositRecord[account_][
-            market_
-        ][commitment__];
-        SavingsAccount storage savingsAccount = passbook.savingsPassbook[
-            account_
-        ];
-        Yield storage yield = passbook.indYieldRecord[account_][market_][
-            commitment_
-        ];
+        DepositRecords storage deposit = passbook.indDepositRecord[account_][market_][commitment__];
+        SavingsAccount storage savingsAccount = passbook.savingsPassbook[account_];
+        Yield storage yield = passbook.indYieldRecord[account_][market_][commitment_];
         APY storage apy = comptroller.indAPYRecords[commitment_];
+        uint id;
 
         if (
             deposit.firstDeposit == 0 &&
             commitment_ != comptroller.commitment[0]
         ) {
             if (savingsAccount.deposits.length == 0) {
-                uint256 id = 1;
+                id = 1;
             } else {
-                uint256 id = savingsAccount.deposits.length + 1;
+                id = savingsAccount.deposits.length + 1;
             }
-			
+
             deposit = DepositRecords({
                 id: id,
                 firstDeposit: block.number,
@@ -195,11 +189,11 @@ contract Deposit {
             commitment_ == comptroller.commitment[0]
         ) {
             if (savingsAccount.deposits.length == 0) {
-                uint256 id = 1;
+                id = 1;
             } else {
-                uint256 id = savingsAccount.deposits.length + 1;
+                id = savingsAccount.deposits.length + 1;
             }
-            uint256 id = savingsAccount.deposits.length;
+            id = savingsAccount.deposits.length;
             deposit = DepositRecords({
                 id: id,
                 firstDeposit: block.number,

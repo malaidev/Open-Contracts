@@ -33,13 +33,6 @@ contract Comptroller  {
   mapping(bytes32 => APR) indAPRRecords; // commitment => APR struct.
 
 
-  
-  // [N2S] 
-  // 1. Whenever someone is taking a loan, record the position of the current
-  //    apr in the apr registry. This will mitigate unnecessary loops inside
-  //    this array
-  //  Implement the same aproach with the deposits.
-
   event Deposit (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp); // block.number;
   event Withdrawl (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp); // block.number;
   event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp); // block.number;
@@ -69,7 +62,6 @@ contract Comptroller  {
   // SETTERS
   function _updateAPY(bytes32 commitment_, uint apy_) internal returns (bool) {
 
-  }
   }
 
 
@@ -115,26 +107,3 @@ contract Comptroller  {
 // transferAnyERC20()
 // pause
 // auth(superAdmin || adminComptroller)
-
-
-
-
-// create a passbook struct to store everything(deposits, debts, collaterals),
-// along with the blocknumber. create a function that calculates the accrued apy
-// for each individual deposit records since the last yield release. When the
-// yield is released, the remnant depost amount becomes the deposit & the yield
-// begins to be accrued from there.
-
-//  If a deposit is withdrawn, then the sub-struct entry must be removed from
-//  the passbook, and forwarded to the archived struct
-
-
-//  Whatever remains in the passbook struct earns/pays interest.
-
-
-
-// [N2S]  Friday  10pm.
-  // 1. Whenever someone is taking a loan, record the position of the current
-  //    apr in the apr registry. This will mitigate unnecessary loops inside
-  //    this array
-  //  Implement the same aproach with the deposits.

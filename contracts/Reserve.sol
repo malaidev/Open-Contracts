@@ -27,9 +27,6 @@ contract Reserve {
         return true;
     }
 
-    // function transfer(address _to, uint256 _value) external returns (bool);
-
-
     modifier nonReentrant() {
         require(isReentrant == false, "Re-entrant alert!");
         isReentrant = true;
