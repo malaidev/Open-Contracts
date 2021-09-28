@@ -1,19 +1,34 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.7 <0.9.0;
 
-contract Reserve {
+import "./util/IBEP20.sol";
 
-    struct ApyLedger    {
-        uint[] _apy; // apy rate as a percentage. It means, for 18%, it is recorded as 18.
-        uint[] _blockNumber; // records  the blocknumber when the change was applied
-    }
-    struct AprLedger    {
-        uint[] _apr; // apr rate as a percentage. It means, for 18%, it is recorded as 18.
-        uint[] _blockNumber; // records  the blocknumber when the change was applied
+contract Reserve {
+    
+    IBEP20 token;
+
+    bytes32 adminReserve;
+    address adminReserveAddress;
+
+
+    constructor()   {
+        adminReserveAddress = msg.sender;
     }
 
     fallback() external payable {}
     receive() external payable {}
+
+    function transferAnyIBEP20(address tokenContract_, address recipient_, uint amount_) public authReserve() returns (bool success) {
+        token = IBEP20(tokenContract_);
+        token.transfer(recipient_, amount_);
+        
+        return bool(success);
+    }
+
+    modifier authReserve()  {
+        require(msg.sender == adminReserveAddress, "Only an admin can call this function");
+        _;
+    }
 
 }
 
