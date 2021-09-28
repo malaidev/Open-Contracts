@@ -34,7 +34,7 @@ contract Deposit {
         bytes32 market_,
         bytes32 commitment_,
         uint256 amount_
-    ) external nonReentrant returns (bool) {
+    ) external nonReentrant() returns (bool) {
         address marketAddress;
         _preDepositProcess(msg.sender, market_, amount_);
         token.transfer(address(reserve), amount_);
@@ -49,11 +49,11 @@ contract Deposit {
 
     function savingsBalance() external {}
 
-    function withdrawFunds() external {}
+    function withdrawFunds() nonReentrant() external {}
 
-    function convertDeposit() external {}
+    function convertDeposit()  nonReentrant() external {}
 
-    function convertYield() external {}
+    function convertYield()  nonReentrant() external {}
 
     function _preDepositProcess(
         address account_,
