@@ -10,6 +10,8 @@ contract Reserve {
     bytes32 adminReserve;
     address adminReserveAddress;
 
+    bool isReentrant = false;
+
 
     constructor()   {
         adminReserveAddress = msg.sender;
@@ -18,11 +20,21 @@ contract Reserve {
     fallback() external payable {}
     receive() external payable {}
 
-    function transferAnyIBEP20(address tokenContract_, address recipient_, uint amount_) public authReserve() returns (bool success) {
-        token = IBEP20(tokenContract_);
-        token.transfer(recipient_, amount_);
-        
-        return bool(success);
+
+    function transferAnyBEP20(address token_,address recipient_,uint256 value_) external nonReentrant()  authReserve()  returns(bool)   {
+        token = IBEP20(token_);
+        token.transfer(recipient_, value_);
+        return true;
+    }
+
+    // function transfer(address _to, uint256 _value) external returns (bool);
+
+
+    modifier nonReentrant() {
+        require(isReentrant == false, "Re-entrant alert!");
+        isReentrant = true;
+        _;
+        isReentrant = false;
     }
 
     modifier authReserve()  {

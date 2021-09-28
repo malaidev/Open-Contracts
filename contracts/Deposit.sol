@@ -12,6 +12,8 @@ contract Deposit	{
 	bytes32 adminDeposit;
     address adminDepositAddress;
 
+	bool isReentrant = false;
+
     TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     Reserve reserve = Reserve(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
@@ -24,16 +26,15 @@ contract Deposit	{
 		adminDepositAddress = msg.sender;
 	}
 
-	function Deposit(bytes32 market_, bytes32 commitment_, uint amount_) external returns (bool success)	{
+
+	function Deposit(bytes32 market_, bytes32 commitment_, uint amount_) external nonReentrant()	returns (bool)	{
 		address marketAddress;
 		_preDepositProcess(msg.sender, market_, amount_);
-		token.transfer(msg.sender, payable(address(reserve)), amount_);		
+		token.transfer(address(reserve), amount_);		
 		_updateYield(msg.sender, market_, commitment_);
 		_processDeposit(msg.sender,market_,commitment_,amount_);
 		emit NewDeposit(msg.sender, market_,commitment_,amount_);
-		return bool(success);
-	}
-	
+		return true;
 	}
 	function savingsBalance() external{}
 	function withdrawFunds() external{}
@@ -156,8 +157,15 @@ contract Deposit	{
         }
     }
 
-	modifier  auth() {
-		require(msg.sender == adminDepositAddress, "Only Admin can access this function");
-		_;
-	}
+    modifier nonReentrant() {
+        require(isReentrant == false, "Re-entrant alert!");
+        isReentrant = true;
+        _;
+        isReentrant = false;
+    }
+
+	modifier authDeposit()  {
+        require(msg.sender == adminDepositAddress, "Only an admin can call this function");
+        _;
+    }
 }
