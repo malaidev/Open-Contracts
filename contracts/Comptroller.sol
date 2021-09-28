@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.7 <0.9.0;
 import "./util/Address.sol";
+import "./Passbook.sol";
 
 contract Comptroller  {
   using Address for address;
+
+  Passbook passbook = Passbook(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
 
   bytes32 adminComptroller;
   address adminComptrollerAddress;
@@ -12,17 +15,24 @@ contract Comptroller  {
   uint apy;
 
   struct APY  {
-    uint timestamp;
-    uint apy;
+    bytes32 commitment; // validity
+    uint[] blockNumbers; // when the apy changes were made
+    uint[] apyChangeRecords; // the apy changes.
   }
 
   struct APR  {
-    uint timestamp;
-    uint apr;
+    bytes32 commitment; // validity
+    uint[] blockNumbers; // when the apy changes were made
+    uint[] aprChangeRecords; // the apy changes.
   }
 
-  APY[] apyRegistry; // stores a record of all the apr. the latest one being the last
-  APR[] aprRegistry; // stores a record of all the apr. the latest one being the last
+  // ledger of APY/APR changes
+  
+  // Latest Individual apy/apr data
+  mapping(bytes32 => APY) indAPYRecords; // commitment => APY struc
+  mapping(bytes32 => APR) indAPRRecords; // commitment => APR struct.
+
+
   
   // [N2S] 
   // 1. Whenever someone is taking a loan, record the position of the current
@@ -30,10 +40,10 @@ contract Comptroller  {
   //    this array
   //  Implement the same aproach with the deposits.
 
-  event Deposit (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp);
-  event Withdrawl (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp);
-  event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
-  event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
+  event Deposit (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp); // block.number;
+  event Withdrawl (address indexed account, uint indexed amount, bytes32 indexed symbol, uint timestamp); // block.number;
+  event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp); // block.number;
+  event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp); // block.number;
   
   constructor(uint apy_, uint apr_) {
     adminComptrollerAddress = msg.sender;
@@ -45,39 +55,21 @@ contract Comptroller  {
   function getAPR() public view returns (uint) {
     return apr;
   }
-  function getAPY() public view returns (uint) {
-    return apy;
+  function getAPY(bytes32 commitment_) public view returns (uint) {
+    _getAPY(commitment_);
+  }
+
+
+  function _getAPY(bytes32 commitment_) internal  {
+    return indAPYRecords.commitment_.apy;
   }
 
   function liquidationTrigger() external {}
 
   // SETTERS
+  function _updateAPY(bytes32 commitment_, uint apy_) internal returns (bool) {
 
-
-  function updateAPY(uint apy_) external onlyAdmin() {
-    // pre process checks
-
-    _updateAPY(apy_);
-    uint index = apyRegistry.length-1;
-    uint oldAPY = apyRegistry[index].apy;
-
-    emit APYupdated(msg.sender, apy_, oldAPY, block.number);
   }
-  function updateAPR(uint apr_) external onlyAdmin() {
-    // pre process checks
-    _updateAPR(apr_);
-    uint index = aprRegistry.length-1;
-    uint oldAPR = aprRegistry[index].apr;
-    emit APRupdated(msg.sender, apr_, oldAPR, block.number);
-  }
-
-  function _updateAPY(uint apy_) internal  {
-    apr = apy_;
-    apyRegistry.push(APY(block.number, apy_));
-  }
-  function _updateAPR(uint apr_) internal {
-    apr = apr_;
-    aprRegistry.push(APR(block.number, apr_));
   }
 
 

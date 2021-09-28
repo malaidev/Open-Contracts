@@ -8,114 +8,114 @@ contract TokenList {
 
   bytes32 adminTokenList;
   
-  bytes32[] supportedTokens; // collection of token symbols. Provides a list of easy to retrieve token list.
+  bytes32[] markets; // collection of token markets. Provides a list of easy to retrieve token list.
   
-  struct TokenData {
-    bytes32 symbol;
+  struct MarketData {
+    bytes32 market;
     address tokenAddress;
     uint256 decimals;
     uint256 chainId;
   }
 
   mapping(bytes32 => bool) public tokenSupportCheck;
-  mapping(bytes32 => uint256) symbolIndex;
-  mapping(bytes32 => TokenData) public tokenPointer;
+  mapping(bytes32 => uint256) marketIndex;
+  mapping(bytes32 => MarketData) public indTokenDetails;
 
   event TokenSupportAdded(
-    bytes32 indexed _symbol,
+    bytes32 indexed _market,
     uint256 _decimals,
     address indexed _tokenAddress,
     uint256 indexed _timestamp
   );
   event MarketRemoved(
-    bytes32 indexed _symbol,
+    bytes32 indexed _market,
     uint256 _decimals,
     address indexed _tokenAddress,
     uint256 indexed _timestamp
   );
 
-  function isTokenSupported(bytes32 _symbol) external view returns (bool) {
-    _isTokenSupported(_symbol);
+  function isTokenSupported(bytes32 _market) external view returns (bool) {
+    _isTokenSupported(_market);
     return true;
   }
 
-  function _isTokenSupported(bytes32 _symbol) internal view {
-    require(tokenSupportCheck[_symbol] == true, "Token is not supported");
+  function _isTokenSupported(bytes32 _market) internal view {
+    require(tokenSupportCheck[_market] == true, "Token is not supported");
   }
 
   // ADD A NEW TOKEN SUPPORT
   function addTokenSupport(
-    bytes32 _symbol,
+    bytes32 _market,
     uint256 _decimals,
     address _tokenAddress
   ) external returns (bool) {
-    _isTokenSupported(_symbol);
-    _addTokenSupport(_symbol, _decimals, _tokenAddress);
+    _isTokenSupported(_market);
+    _addTokenSupport(_market, _decimals, _tokenAddress);
 
-    emit TokenSupportAdded(_symbol, _decimals, _tokenAddress, block.timestamp);
+    emit TokenSupportAdded(_market, _decimals, _tokenAddress, block.timestamp);
 
     return bool(true);
   }
 
   function _addTokenSupport(
-    bytes32 _symbol,
+    bytes32 _market,
     uint256 _decimals,
     address _tokenAddress
   ) internal {
-    TokenData storage tokenData = tokenPointer[_symbol];
+    TokenDetails memory TokenDetails = indTokenDetails[_market];
 
-    tokenData.symbol = _symbol;
-    tokenData.tokenAddress = _tokenAddress;
-    tokenData.decimals = _decimals;
+    TokenDetails.market = _market;
+    TokenDetails.tokenAddress = _tokenAddress;
+    TokenDetails.decimals = _decimals;
 
-    supportedTokens.push(_symbol);
-    tokenSupportCheck[_symbol] = true;
-    symbolIndex[_symbol] = supportedTokens.length - 1;
+    markets.push(_market);
+    tokenSupportCheck[_market] = true;
+    marketIndex[_market] = markets.length - 1;
   }
 
-  function removeTokenSupport(bytes32 symbol_) external returns (bool) {
-    _removeTokenSupport(symbol_);
+  function removeTokenSupport(bytes32 market_) external returns (bool) {
+    _removeTokenSupport(market_);
     return bool(true);
   }
 
-  function _removeTokenSupport(bytes32 _symbol) internal {
-    TokenData memory tokenData = tokenPointer[_symbol];
-    tokenSupportCheck[_symbol] = false;
+  function _removeTokenSupport(bytes32 _market) internal {
+    TokenDetails memory TokenDetails = indTokenDetails[_market];
+    tokenSupportCheck[_market] = false;
 
-    delete tokenData;
+    delete TokenDetails;
 
-    if (symbolIndex[_symbol] >= supportedTokens.length) return;
+    if (marketIndex[_market] >= markets.length) return;
 
-    bytes32 lastSymbol = supportedTokens[supportedTokens.length - 1];
+    bytes32 lastmarket = markets[markets.length - 1];
 
-    if (symbolIndex[lastSymbol] != symbolIndex[_symbol]) {
-      symbolIndex[lastSymbol] = symbolIndex[_symbol];
-      supportedTokens[symbolIndex[_symbol]] = lastSymbol;
+    if (marketIndex[lastmarket] != marketIndex[_market]) {
+      marketIndex[lastmarket] = marketIndex[_market];
+      markets[marketIndex[_market]] = lastmarket;
     }
-    supportedTokens.pop();
-    delete symbolIndex[_symbol];
+    markets.pop();
+    delete marketIndex[_market];
   }
 
   function updateTokenSupport(
-    bytes32 _symbol,
+    bytes32 _market,
     uint256 _decimals,
     address _tokenAddress
   ) external returns (bool) {
-    _updateTokenSupport(_symbol, _decimals, _tokenAddress);
+    _updateTokenSupport(_market, _decimals, _tokenAddress);
     return bool(true);
   }
 
   function _updateTokenSupport(
-    bytes32 _symbol,
+    bytes32 _market,
     uint256 _decimals,
     address _tokenAddress
   ) internal {
-    TokenData storage tokenData = tokenPointer[_symbol];
+    TokenDetails storage TokenDetails = indTokenDetails[_market];
 
-    tokenData.symbol = _symbol;
-    tokenData.tokenAddress = _tokenAddress;
-    tokenData.decimals = _decimals;
+    TokenDetails.market = _market;
+    TokenDetails.tokenAddress = _tokenAddress;
+    TokenDetails.decimals = _decimals;
 
-    tokenSupportCheck[_symbol] = true;
+    tokenSupportCheck[_market] = true;
   }
 }
