@@ -8,7 +8,7 @@ contract TokenList {
 
   bytes32 adminTokenList;
   
-  bytes32[] markets; // collection of token markets. Provides a list of easy to retrieve token list.
+  bytes32[] markets; 
   
   struct MarketData {
     bytes32 market;
@@ -19,7 +19,7 @@ contract TokenList {
 
   mapping(bytes32 => bool) public tokenSupportCheck;
   mapping(bytes32 => uint256) marketIndex;
-  mapping(bytes32 => MarketData) public indTokenDetails;
+  mapping(bytes32 => MarketData) public indMarketData;
 
   event TokenSupportAdded(
     bytes32 indexed _market,
@@ -62,11 +62,11 @@ contract TokenList {
     uint256 _decimals,
     address _tokenAddress
   ) internal {
-    TokenDetails memory TokenDetails = indTokenDetails[_market];
+    MarketData memory marketData = indMarketData[_market];
 
-    TokenDetails.market = _market;
-    TokenDetails.tokenAddress = _tokenAddress;
-    TokenDetails.decimals = _decimals;
+    marketData.market = _market;
+    marketData.tokenAddress = _tokenAddress;
+    marketData.decimals = _decimals;
 
     markets.push(_market);
     tokenSupportCheck[_market] = true;
@@ -79,10 +79,10 @@ contract TokenList {
   }
 
   function _removeTokenSupport(bytes32 _market) internal {
-    TokenDetails memory TokenDetails = indTokenDetails[_market];
+    MarketData memory marketData = indMarketData[_market];
     tokenSupportCheck[_market] = false;
 
-    delete TokenDetails;
+    delete marketData;
 
     if (marketIndex[_market] >= markets.length) return;
 
@@ -110,11 +110,11 @@ contract TokenList {
     uint256 _decimals,
     address _tokenAddress
   ) internal {
-    TokenDetails storage TokenDetails = indTokenDetails[_market];
+    MarketData storage marketData = indMarketData[_market];
 
-    TokenDetails.market = _market;
-    TokenDetails.tokenAddress = _tokenAddress;
-    TokenDetails.decimals = _decimals;
+    marketData.market = _market;
+    marketData.tokenAddress = _tokenAddress;
+    marketData.decimals = _decimals;
 
     tokenSupportCheck[_market] = true;
   }

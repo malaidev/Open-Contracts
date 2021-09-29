@@ -14,8 +14,7 @@ contract Deposit {
 	bool isReentrant = false;
 
 	TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-	Comptroller comptroller =
-		Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+	Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
 	Reserve reserve = Reserve(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
 	Passbook passbook = passbook(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
 	IBEP20 token;
@@ -62,15 +61,15 @@ contract Deposit {
 		uint256 amount_
 	) internal {
 		_isMarketSupported(market_);
-		_hasAccount(account_);
+		_createSavingsAccount(account_);
 		_connectMarket(market_, amount_);
 		return this;
 	}
 
-	function _hasAccount(address account_) internal {
+	function _createSavingsAccount(address account_) internal {
 		SavingsAcccount storage savingsAccount = passbook.savingsPassbook[account_];
 
-		if (savingsAccount.accOpenTime = 0) {
+		if (savingsAccount.accOpenTime == 0) {
 			savingsAccount.accOpenTime = block.timestamp;
 			savingsAccount.account = account_;
 		}
@@ -81,7 +80,7 @@ contract Deposit {
 	}
 
 	function _connectMarket(bytes32 market_, uint256 amount_) internal {
-		MarketData marketData = markets.indTokenDetails[market_];
+		MarketData marketData = markets.indMarketData[market_];
 		marketAddress = marketData.tokenAddress;
 		token = IBEP20(marketAddress);
 		amount_ *= marketData.decimals;

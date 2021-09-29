@@ -45,13 +45,6 @@ contract Passbook   {
         bool timelockActivated; // blocknumber when yield withdrawal request was placed.
         bool activationBlockNum; // blocknumber when yield withdrawal request was placed.
     }
-        
-    mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
-    mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address => market_ => commitment_ => depositRecord
-    mapping(address => mapping(bytes32 => mapping(bytes32 => Yield))) indYieldRecord; // address => market_ => commitment_ => depositRecord
-
-    event NewDeposit(address indexed account, bytes32 indexed market_, uint indexed amount_, bytes32 commitment_);
-    
 
     struct LoanAccount  {
         uint accOpenTime;
@@ -59,7 +52,6 @@ contract Passbook   {
         CollateralRecords[] collaterals;
         PayableInterest[] interestRecords;
     }
-
     struct LoanRecords  {
         uint time; // block.timestamp
         uint id; // since there can be multiple loans of one single asset type, it is necessary to implement  loanid;a
@@ -69,6 +61,8 @@ contract Passbook   {
     }
 
     struct CollateralisedDeposits   {
+        uint time;
+        uint id; // since there can be multiple loans of one single asset type, it is necessary to implement  loanid;a
     }
 
     struct CollateralRecords    {
@@ -93,4 +87,11 @@ contract Passbook   {
         uint timelockActivationBlock; // blocknumber when yield withdrawal request was placed.
     }
 
+        
+    mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
+    mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address => market_ => commitment_ => depositRecord
+    mapping(address => mapping(bytes32 => mapping(bytes32 => Yield))) indYieldRecord; // address => market_ => commitment_ => depositRecord
+
+    event NewDeposit(address indexed account, bytes32 indexed market_, uint indexed amount_, bytes32 commitment_);
+    
 }
