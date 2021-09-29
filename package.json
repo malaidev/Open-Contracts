@@ -2,7 +2,7 @@
   "name": "open-protocol",
   "version": "1.0.0",
   "description": "> An autonomous lending framework enabling under-collateralized loans for upto 1:3 collateral-to-debt ratio.",
-  "main": "index.js",
+  "main": "truffle-config.js",
   
   "scripts": {
     "test": "mocha",
