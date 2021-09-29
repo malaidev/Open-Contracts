@@ -1,93 +1,102 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >= 0.8.7 < 0.9.0;
+pragma solidity >=0.8.7 <0.9.0;
 
 import "./AccessRegistry.sol";
 import "./util/Address.sol";
 
-contract TokenList{
-  struct TokenData{
-    bytes32 symbol;
+contract TokenList {
+
+  bytes32 adminTokenList;
+  
+  struct MarketData {
+    bytes32 market;
     address tokenAddress;
-    uint decimals;
-    uint chainId;
+    uint256 decimals;
+    uint256 chainId;
   }
 
-  bytes32[] allSymbols;
-  mapping (bytes32 => bool) public isSymbolExist;
-  mapping (bytes32=>uint256) symbolIndex;
-  mapping (bytes32 => TokenData) public tokenPointer;
+  bytes32[] markets;
+  mapping (bytes32 => bool) public tokenSupportCheck;
+  mapping (bytes32=>uint256) marketIndex;
+  mapping (bytes32 => MarketData) public indMarketData;
 
-  TokenData internal rmTokenData;
+//   MarketData internal rmMarketData;
 
-  event TokenSupportAdded(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
-  event TokenSupportUpdated(bytes32 indexed _symbol,uint256 _decimals,address indexed _tokenAddress,uint256 indexed _timestamp);
-  event TokenSupportRemoved(bytes32 indexed _symbol, uint256 indexed _timestamp);
+  event TokenSupportAdded(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
+  event TokenSupportUpdated(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
+  event TokenSupportRemoved(bytes32 indexed market_, uint256 indexed _timestamp);
 
  
-  function isTokenSupported(bytes32  _symbol) external view returns (bool)	{
-		_isTokenSupported(_symbol);
+  function isTokenSupported(bytes32  market_) external view returns (bool)	{
+		_isTokenSupported(market_);
 		return true;
 	}
 
-	function _isTokenSupported(bytes32  _symbol) internal view {
-		require(isSymbolExist[_symbol] == true, "Hey, Token is not supported");
+	function _isTokenSupported(bytes32  market_) internal view {
+		require(tokenSupportCheck[market_] == true, "Hey, Token is not supported");
 	}
   
   // ADD A NEW TOKEN SUPPORT
-  function addTokenSupport(bytes32 _symbol,uint256 _decimals,address _tokenAddress) external returns (bool) {
-    _addTokenSupport(_symbol, _decimals, _tokenAddress);
+  function addTokenSupport(bytes32 market_,uint256 decimals_,address tokenAddress_) external returns (bool) {
+    _addTokenSupport(market_, decimals_, tokenAddress_);
 
-    emit TokenSupportAdded(_symbol,_decimals,_tokenAddress,block.timestamp);
+    emit TokenSupportAdded(market_,decimals_,tokenAddress_,block.timestamp);
     return bool(true);
   }
-  function _addTokenSupport( bytes32 _symbol,uint256 _decimals,address _tokenAddress) internal {
-    TokenData storage tokenData = tokenPointer[_symbol];
+  function _addTokenSupport( bytes32 market_,uint256 decimals_,address tokenAddress_) internal {
+    MarketData storage marketData = indMarketData[market_];
     
-    tokenData.symbol = _symbol;
-    tokenData.tokenAddress = _tokenAddress;
-    tokenData.decimals = _decimals;
+    marketData.market = market_;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = decimals_;
     
-    allSymbols.push(_symbol);
-    isSymbolExist[_symbol] = true;
-    symbolIndex[_symbol] = allSymbols.length-1;
+    markets.push(market_);
+    tokenSupportCheck[market_] = true;
+    marketIndex[market_] = markets.length-1;
   }
 
-  function removeTokenSupport(bytes32 _symbol) external returns(bool) {
-    _removeTokenSupport(_symbol);
-    emit TokenSupportRemoved(_symbol, block.timestamp);
+  function removeTokenSupport(bytes32 market_) external returns(bool) {
+    _removeTokenSupport(market_);
+    emit TokenSupportRemoved(market_, block.timestamp);
     return bool(true);
   }
-  function _removeTokenSupport(bytes32 _symbol) internal {
 
-    isSymbolExist[_symbol] = false;
+  function _removeTokenSupport(bytes32 market_) internal {
 
-    delete tokenPointer[_symbol];
+
+    tokenSupportCheck[market_] = false;
+
+    delete indMarketData[market_];
     
-    if (symbolIndex[_symbol] >= allSymbols.length) return;
+    if (marketIndex[market_] >= markets.length) return;
 
-    bytes32 lastSymbol  = allSymbols[allSymbols.length-1];
+    bytes32 lastmarket = markets[markets.length - 1];
 
-    if(symbolIndex[lastSymbol] != symbolIndex[_symbol]){
-      symbolIndex[lastSymbol] = symbolIndex[_symbol];
-      allSymbols[symbolIndex[_symbol]] = lastSymbol;
+    if (marketIndex[lastmarket] != marketIndex[market_]) {
+      marketIndex[lastmarket] = marketIndex[market_];
+      markets[marketIndex[market_]] = lastmarket;
     }
-    allSymbols.pop();
-    delete symbolIndex[_symbol];
+    markets.pop();
+    delete marketIndex[market_];
   }
   
-  function updateTokenSupport(bytes32 _symbol, uint256 _decimals,address _tokenAddress) external returns(bool){
-    _updateTokenSupport(_symbol, _decimals, _tokenAddress);
-    emit TokenSupportUpdated(_symbol,_decimals,_tokenAddress,block.timestamp);
+  function updateTokenSupport(bytes32 market_, uint256 decimals_,address tokenAddress_) external returns(bool){
+    _updateTokenSupport(market_, decimals_, tokenAddress_);
+    emit TokenSupportUpdated(market_,decimals_,tokenAddress_,block.timestamp);
     return bool(true);
   }
-  function _updateTokenSupport(bytes32 _symbol, uint256 _decimals,address _tokenAddress) internal{
 
-    TokenData storage tokenData = tokenPointer[_symbol];
-    
-    tokenData.symbol = _symbol;
-    tokenData.tokenAddress = _tokenAddress;
-    tokenData.decimals = _decimals;
+  function _updateTokenSupport(
+    bytes32 market_,
+    uint256 decimals_,
+    address tokenAddress_
+  ) internal {
+    MarketData storage marketData = indMarketData[market_];
 
-    isSymbolExist[_symbol] = true;
+    marketData.market = market_;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = decimals_;
+
+    tokenSupportCheck[market_] = true;
   }
 }
