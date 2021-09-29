@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.7 <0.9.0;
+
 contract ProxyAccessRegistry {
     
     // Storage position of the address of the current implementation

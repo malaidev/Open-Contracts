@@ -30,13 +30,11 @@ contract TokenList{
 	}
 
 	function _isTokenSupported(bytes32  _symbol) internal view {
-		require(isSymbolExist[_symbol] == true, "Token is not supported");
+		require(isSymbolExist[_symbol] == true, "Hey, Token is not supported");
 	}
-
-// ADD A NEW TOKEN SUPPORT
+  
+  // ADD A NEW TOKEN SUPPORT
   function addTokenSupport(bytes32 _symbol,uint256 _decimals,address _tokenAddress) external returns (bool) {
-    
-    _isTokenSupported(_symbol);
     _addTokenSupport(_symbol, _decimals, _tokenAddress);
 
     emit TokenSupportAdded(_symbol,_decimals,_tokenAddress,block.timestamp);
