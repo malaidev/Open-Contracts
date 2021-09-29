@@ -107,4 +107,5 @@ dist
 *.md
 /contracts/ScribblePad.sol
 node_modules/
-/contracts/Practice.sol
+
+package-lock.json

@@ -8,8 +8,6 @@ contract TokenList {
 
   bytes32 adminTokenList;
   
-  bytes32[] markets; 
-  
   struct MarketData {
     bytes32 market;
     address tokenAddress;
@@ -17,105 +15,88 @@ contract TokenList {
     uint256 chainId;
   }
 
-  mapping(bytes32 => bool) public tokenSupportCheck;
-  mapping(bytes32 => uint256) marketIndex;
-  mapping(bytes32 => MarketData) public indMarketData;
+  bytes32[] markets;
+  mapping (bytes32 => bool) public tokenSupportCheck;
+  mapping (bytes32=>uint256) marketIndex;
+  mapping (bytes32 => MarketData) public indMarketData;
 
-  event TokenSupportAdded(
-    bytes32 indexed _market,
-    uint256 _decimals,
-    address indexed _tokenAddress,
-    uint256 indexed _timestamp
-  );
-  event MarketRemoved(
-    bytes32 indexed _market,
-    uint256 _decimals,
-    address indexed _tokenAddress,
-    uint256 indexed _timestamp
-  );
+//   MarketData internal rmMarketData;
 
-  function isTokenSupported(bytes32 _market) external view returns (bool) {
-    _isTokenSupported(_market);
-    return true;
-  }
+  event TokenSupportAdded(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
+  event TokenSupportUpdated(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
+  event TokenSupportRemoved(bytes32 indexed market_, uint256 indexed _timestamp);
 
-  function _isTokenSupported(bytes32 _market) internal view {
-    require(tokenSupportCheck[_market] == true, "Token is not supported");
-  }
+ 
+  function isTokenSupported(bytes32  market_) external view returns (bool)	{
+		_isTokenSupported(market_);
+		return true;
+	}
 
+	function _isTokenSupported(bytes32  market_) internal view {
+		require(tokenSupportCheck[market_] == true, "Hey, Token is not supported");
+	}
+  
   // ADD A NEW TOKEN SUPPORT
-  function addTokenSupport(
-    bytes32 _market,
-    uint256 _decimals,
-    address _tokenAddress
-  ) external returns (bool) {
-    _isTokenSupported(_market);
-    _addTokenSupport(_market, _decimals, _tokenAddress);
+  function addTokenSupport(bytes32 market_,uint256 decimals_,address tokenAddress_) external returns (bool) {
+    _addTokenSupport(market_, decimals_, tokenAddress_);
 
-    emit TokenSupportAdded(_market, _decimals, _tokenAddress, block.timestamp);
-
+    emit TokenSupportAdded(market_,decimals_,tokenAddress_,block.timestamp);
     return bool(true);
   }
-
-  function _addTokenSupport(
-    bytes32 _market,
-    uint256 _decimals,
-    address _tokenAddress
-  ) internal {
-    MarketData memory marketData = indMarketData[_market];
-
-    marketData.market = _market;
-    marketData.tokenAddress = _tokenAddress;
-    marketData.decimals = _decimals;
-
-    markets.push(_market);
-    tokenSupportCheck[_market] = true;
-    marketIndex[_market] = markets.length - 1;
+  function _addTokenSupport( bytes32 market_,uint256 decimals_,address tokenAddress_) internal {
+    MarketData storage marketData = indMarketData[market_];
+    
+    marketData.market = market_;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = decimals_;
+    
+    markets.push(market_);
+    tokenSupportCheck[market_] = true;
+    marketIndex[market_] = markets.length-1;
   }
 
-  function removeTokenSupport(bytes32 market_) external returns (bool) {
+  function removeTokenSupport(bytes32 market_) external returns(bool) {
     _removeTokenSupport(market_);
+    emit TokenSupportRemoved(market_, block.timestamp);
     return bool(true);
   }
 
-  function _removeTokenSupport(bytes32 _market) internal {
-    MarketData memory marketData = indMarketData[_market];
-    tokenSupportCheck[_market] = false;
+  function _removeTokenSupport(bytes32 market_) internal {
 
-    delete marketData;
 
-    if (marketIndex[_market] >= markets.length) return;
+    tokenSupportCheck[market_] = false;
+
+    delete indMarketData[market_];
+    
+    if (marketIndex[market_] >= markets.length) return;
 
     bytes32 lastmarket = markets[markets.length - 1];
 
-    if (marketIndex[lastmarket] != marketIndex[_market]) {
-      marketIndex[lastmarket] = marketIndex[_market];
-      markets[marketIndex[_market]] = lastmarket;
+    if (marketIndex[lastmarket] != marketIndex[market_]) {
+      marketIndex[lastmarket] = marketIndex[market_];
+      markets[marketIndex[market_]] = lastmarket;
     }
     markets.pop();
-    delete marketIndex[_market];
+    delete marketIndex[market_];
   }
-
-  function updateTokenSupport(
-    bytes32 _market,
-    uint256 _decimals,
-    address _tokenAddress
-  ) external returns (bool) {
-    _updateTokenSupport(_market, _decimals, _tokenAddress);
+  
+  function updateTokenSupport(bytes32 market_, uint256 decimals_,address tokenAddress_) external returns(bool){
+    _updateTokenSupport(market_, decimals_, tokenAddress_);
+    emit TokenSupportUpdated(market_,decimals_,tokenAddress_,block.timestamp);
     return bool(true);
   }
 
   function _updateTokenSupport(
-    bytes32 _market,
-    uint256 _decimals,
-    address _tokenAddress
+    bytes32 market_,
+    uint256 decimals_,
+    address tokenAddress_
   ) internal {
-    MarketData storage marketData = indMarketData[_market];
+    MarketData storage marketData = indMarketData[market_];
 
-    marketData.market = _market;
-    marketData.tokenAddress = _tokenAddress;
-    marketData.decimals = _decimals;
+    marketData.market = market_;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = decimals_;
 
-    tokenSupportCheck[_market] = true;
+    tokenSupportCheck[market_] = true;
   }
 }

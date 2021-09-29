@@ -1,0 +1,173 @@
+{
+  "contractName": "OpenLibrary",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.8+commit.dddeac2f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Library/OpenLibrary.sol\":\"OpenLibrary\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Library/OpenLibrary.sol\":{\"keccak256\":\"0x6045d69f88e31bae47ec8c927260133ff0115b3b377da223d052a6484df8952c\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://dc56bcd2b2787108c80d086364dd1de79903433d580e1fe0696d53396491b361\",\"dweb:/ipfs/QmQXwYnTZYu6rbSx3RHN8GKKGkNiup4ySYCmx4ojbhUKEk\"]}},\"version\":1}",
+  "bytecode": "0x60566050600b82828239805160001a6073146043577f4e487b7100000000000000000000000000000000000000000000000000000000600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212201e90fa6da51ce0b537a0e85a2819acdea0172ede52b70beda905e847cae8291464736f6c63430008080033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212201e90fa6da51ce0b537a0e85a2819acdea0172ede52b70beda905e847cae8291464736f6c63430008080033",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "70:652:3:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "70:652:3:-:0;;;;;;;;",
+  "source": "// SPDX-License-Identifier: MIT\r\n\r\npragma solidity >=0.8.7 <0.9.0;\r\n\r\nlibrary OpenLibrary {\r\n      // For MainNet\r\n    // address internagitl constant BNB = 0xB8c77482e45F1F44dE1745F52C74426C631bDD52;\r\n    // address internal constant STACK = 0x6B175474E89094C44Da98b954EedeAC495271d0F;\r\n   \r\n    // address internal constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;\r\n\r\n    // For Testnet\r\n    // address  constant BNB = 0x02822e968856186a20fEc2C824D4B174D0b70502;\r\n    // address  constant STACK = 0x04DF6e4121c27713ED22341E7c7Df330F56f289B;\r\n    // address  constant USDC = 0x9780881Bf45B83Ee028c4c1De7e0C168dF8e9eEF;\r\n    \r\n    enum DepositType{ FIXED, FLEXIBLE }\r\n    // enum LoanType{ FIXED, FLEXIBLE }\r\n\r\n}",
+  "sourcePath": "F:\\workspace\\Open-protocol\\contracts\\Library\\OpenLibrary.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/Library/OpenLibrary.sol",
+    "exportedSymbols": {
+      "OpenLibrary": [
+        615
+      ]
+    },
+    "id": 616,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 611,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".7",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "35:31:3"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "library",
+        "fullyImplemented": true,
+        "id": 615,
+        "linearizedBaseContracts": [
+          615
+        ],
+        "name": "OpenLibrary",
+        "nameLocation": "78:11:3",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "OpenLibrary.DepositType",
+            "id": 614,
+            "members": [
+              {
+                "id": 612,
+                "name": "FIXED",
+                "nameLocation": "659:5:3",
+                "nodeType": "EnumValue",
+                "src": "659:5:3"
+              },
+              {
+                "id": 613,
+                "name": "FLEXIBLE",
+                "nameLocation": "666:8:3",
+                "nodeType": "EnumValue",
+                "src": "666:8:3"
+              }
+            ],
+            "name": "DepositType",
+            "nameLocation": "646:11:3",
+            "nodeType": "EnumDefinition",
+            "src": "641:35:3"
+          }
+        ],
+        "scope": 616,
+        "src": "70:652:3",
+        "usedErrors": []
+      }
+    ],
+    "src": "35:687:3"
+  },
+  "legacyAST": {
+    "absolutePath": "project:/contracts/Library/OpenLibrary.sol",
+    "exportedSymbols": {
+      "OpenLibrary": [
+        615
+      ]
+    },
+    "id": 616,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 611,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".7",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "35:31:3"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "library",
+        "fullyImplemented": true,
+        "id": 615,
+        "linearizedBaseContracts": [
+          615
+        ],
+        "name": "OpenLibrary",
+        "nameLocation": "78:11:3",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "canonicalName": "OpenLibrary.DepositType",
+            "id": 614,
+            "members": [
+              {
+                "id": 612,
+                "name": "FIXED",
+                "nameLocation": "659:5:3",
+                "nodeType": "EnumValue",
+                "src": "659:5:3"
+              },
+              {
+                "id": 613,
+                "name": "FLEXIBLE",
+                "nameLocation": "666:8:3",
+                "nodeType": "EnumValue",
+                "src": "666:8:3"
+              }
+            ],
+            "name": "DepositType",
+            "nameLocation": "646:11:3",
+            "nodeType": "EnumDefinition",
+            "src": "641:35:3"
+          }
+        ],
+        "scope": 616,
+        "src": "70:652:3",
+        "usedErrors": []
+      }
+    ],
+    "src": "35:687:3"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.8+commit.dddeac2f.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.3",
+  "updatedAt": "2021-09-29T05:13:34.622Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
