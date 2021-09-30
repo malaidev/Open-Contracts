@@ -35,11 +35,8 @@ contract Comptroller  {
   event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
   event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
   
-  constructor(uint apy_, uint apr_) {
+  constructor() {
     adminComptrollerAddress = msg.sender;
-
-    _updateAPY(apy_);
-    _updateAPR(apr_);
   }
 
   function getAPR() public view returns (uint) {
@@ -51,13 +48,16 @@ contract Comptroller  {
 
 
   function _getAPY(bytes32 commitment_) internal  {
-    return indAPYRecords.commitment_.apy;
+    // return indAPYRecords.commitment_.apy;
   }
 
   function liquidationTrigger() external {}
 
   // SETTERS
   function _updateAPY(bytes32 commitment_, uint apy_) internal returns (bool) {
+
+  }
+  function _updateAPR(bytes32 commitment_, uint apy_) internal returns (bool) {
 
   }
 

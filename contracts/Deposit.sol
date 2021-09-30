@@ -29,6 +29,17 @@ contract Deposit {
 		adminDepositAddress = msg.sender;
 	}
 
+	function hasAccount(address account_) public view returns (bool)	{
+		_hasAccount(account_);
+		return true;
+	}
+
+	function hasYield(address account_, bytes32 market_, bytes32 commitment_) public view returns (bool)	{
+		_hasYield(account_, market_, commitment_);
+		return true;
+	}
+
+
 	function createDeposit(
 		bytes32 market_,
 		bytes32 commitment_,
