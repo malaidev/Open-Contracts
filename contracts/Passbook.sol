@@ -74,7 +74,7 @@ contract Passbook   {
 
     }
 
-// Interest{} stores the amount_ of interest deducted.
+// PayableInterest{} stores the amount_ of interest deducted.
     struct PayableInterest    {
         uint id; // Id of the loan the interest is being deducted for.
         uint oldLengthAccruedYield; // length of the APY blockNumbers array.
