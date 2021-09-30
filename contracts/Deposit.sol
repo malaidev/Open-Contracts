@@ -19,7 +19,7 @@ contract Deposit {
 	Passbook passbook = passbook(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
 	IBEP20 token;
 
-	enum SOMETHING{DEPOSIT, YIELD, BOTH}
+	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
 
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
 	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
@@ -41,7 +41,7 @@ contract Deposit {
 		return true;
 	}
 
-	function savingsBalance(bytes32 market_, bytes32 commitment_, SOMETHING request_) external returns (uint) {
+	function savingsBalance(bytes32 market_, bytes32 commitment_, BALANCETYPE request_) external returns (uint) {
 		uint savingsBalance_;
 
 		_savingsBalance(msg.sender, market_, commitment_, request_);
@@ -49,7 +49,7 @@ contract Deposit {
 	}
 
 
-	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, SOMETHING request_) external nonReentrant() returns (bool){
+	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external nonReentrant() returns (bool){
 		require(_isMarketSupported(market_) && _hasAccount(msg.sender), "Account does not exist, or Unsupportd market");
 		
 		uint savingsBalance_;
@@ -248,34 +248,34 @@ contract Deposit {
 	}
 
 
-		function _savingsBalance(address account_, bytes32 market_, bytes32 commitment_, SOMETHING request_) internal	{
+		function _savingsBalance(address account_, bytes32 market_, bytes32 commitment_, BALANCETYPE request_) internal	{
 		
 		DepositRecords storage deposit = passbook.indDepositRecord[account_][market_][commitment_];
 		Yield storage yield = passbook.indYieldRecords[account_][market_][commitment_];
 
-		if (request_ == SOMETHING.DEPOSIT)	{
+		if (request_ == BALANCETYPE.DEPOSIT)	{
 			savingsBalance_ = deposit.amount;
 
-		}	else if (request_ == SOMETHING.YIELD)	{
+		}	else if (request_ == BALANCETYPE.YIELD)	{
 			_updateYield(msg.sender,market_,commitment_);
 			savingsBalance_ =  yield.accruedYield;
 
-		}	else if (request_ == SOMETHING.BOTH)	{
+		}	else if (request_ == BALANCETYPE.BOTH)	{
 			_updateYield(msg.sender,market_,commitment_);
 			savingsBalance_ = deposit.amount + yield.accruedYield;
 		}
 	}
 
-	function _updateSavingsBalance(address account_, bytes32 commitment_, uint amount_, SOMETHING request_) internal {
+	function _updateSavingsBalance(address account_, bytes32 commitment_, uint amount_, BALANCETYPE request_) internal {
 
 		DepositRecords storage deposit = passbook.indDepositRecord[account_][market_][commitment_];
 		Yield storage yield = passbook.indYieldRecords[account_][market_][commitment_];
 
-		if (request_ == SOMETHING.DEPOSIT)	{
+		if (request_ == BALANCETYPE.DEPOSIT)	{
 			deposit.amount -= amount_;
 			deposit.lastUpdate =  block.number;
 
-		}	else if (request_ == SOMETHING.YIELD)	{
+		}	else if (request_ == BALANCETYPE.YIELD)	{
 
 			if (yield.timelockApplicable == false || block.number >= yield.activationBlock+yield.timelockValidity)	{
 				_updateYield(msg.sender,market_,commitment_);
@@ -285,7 +285,7 @@ contract Deposit {
 				revert ('Withdrawal can not be processed');
 			}
 
-		}	else if (request_ == SOMETHING.BOTH)	{
+		}	else if (request_ == BALANCETYPE.BOTH)	{
 
 			require (deposit.id == yield.id, "mapping error");
 
