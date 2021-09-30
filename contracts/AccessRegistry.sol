@@ -11,22 +11,10 @@ contract AccessRegistry is Pausable {
     address public adminAddress;
     bytes32 internal adminAccess;
 
-    // D bytes32 adminHash = keccak256(abi.encode(adminAddress, adminAccess)); // keccak256(abi.encodePacked(1,2,3,));
-
     struct RoleData {
         mapping(address => bool) _members;
         bytes32 _role;
     }
-    // struct RoleData {
-    //     mapping(bytes32 => bool) checkRole; // hasRole
-    //     bytes32 role;
-    // }
-
-    // RoleRegistry[] allRoleRecords;
-    // struct RoleRegistry {
-    //     address account;
-    //     bytes32 role;
-    // }
 
     struct AdminRoleData {
         mapping(address => bool) _adminMembers;
