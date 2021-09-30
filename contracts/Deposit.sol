@@ -19,12 +19,11 @@ contract Deposit {
 	Passbook passbook = passbook(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
 	IBEP20 token;
 
-	event NewDeposit(
-		address indexed account,
-		bytes32 indexed market,
-		bytes32 commmitment,
-		uint256 indexed amount
-	);
+	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
+
+	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
+	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
+	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
 
 	constructor() {
 		adminDepositAddress = msg.sender;
@@ -34,26 +33,46 @@ contract Deposit {
 		bytes32 market_,
 		bytes32 commitment_,
 		uint256 amount_
-	) external nonReentrant returns (bool) {
-		address marketAddress;
-		_preDepositProcess(msg.sender, market_, amount_);
-		token.transfer(address(reserve), amount_);
-
-		_updateYield(msg.sender, market_, commitment_);
-		_processDeposit(msg.sender, market_, commitment_, amount_);
+	) external nonReentrant() returns (bool) {
+		
+		_createDeposit(market_,commitment_, amount_);
 
 		emit NewDeposit(msg.sender, market_, commitment_, amount_);
-
 		return true;
 	}
 
-	function savingsBalance() external {}
+	function savingsBalance(bytes32 market_, bytes32 commitment_, BALANCETYPE request_) external returns (uint) {
+		uint savingsBalance_;
 
-	function withdrawFunds() external nonReentrant {}
+		_savingsBalance(msg.sender, market_, commitment_, request_);
+		return savingsBalance_;
+	}
 
-	function convertDeposit() external nonReentrant {}
 
-	function convertYield() external nonReentrant {}
+	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external nonReentrant() returns (bool){
+		require(_isMarketSupported(market_) && _hasAccount(msg.sender), "Account does not exist, or Unsupportd market");
+		
+		uint savingsBalance_;
+		_savingsBalance(msg.sender, market_, commitment_, request_);
+
+		require(amount_ >= savingsBalance_, "Insufficient balance");
+		_updateSavings(msg.sender, commitment_, amount_, request_);
+		_connectMarket(market_, amount_);
+		token.transfer(msg.sender, amount_);
+
+		emit Withdrawal(msg.sender,market_, amount_, commitment_, block.timestamp);
+		return true;
+		
+	}
+
+	// function convertDeposit() external nonReentrant() {}
+
+	function convertYield(bytes32 market_, bytes32 oldCommitment_, bytes32 newCommitment_) external nonReentrant() returns (bool){
+		_convertYield(market_,oldCommitment_, newCommitment_) ;
+
+		emit YieldDeposited(msg.sender, market_, newCommitment_, amount_);
+		return true;
+	}
 
 	function _preDepositProcess(
 		address account_,
@@ -76,11 +95,11 @@ contract Deposit {
 	}
 
 	function _isMarketSupported(bytes32 market_) internal {
-		require(!markets.tokenSupportCheck[market_] = false, "Unsupported market");
+		require(markets.tokenSupportCheck[market_] != false, "Unsupported market");
 	}
 
 	function _connectMarket(bytes32 market_, uint256 amount_) internal {
-		MarketData marketData = markets.indMarketData[market_];
+		MarketData memory marketData = markets.indMarketData[market_];
 		marketAddress = marketData.tokenAddress;
 		token = IBEP20(marketAddress);
 		amount_ *= marketData.decimals;
@@ -91,12 +110,8 @@ contract Deposit {
 		bytes32 market_,
 		bytes32 commitment_
 	) internal {
-		Yield storage yield = passbook.indYieldRecords[account_][market_][
-			commitment_
-		];
-		DepositRecords storage deposit = passbook.indDepositRecord[account_][
-			market_
-		][commitment_];
+		Yield storage yield = passbook.indYieldRecords[account_][market_][commitment_];
+		DepositRecords storage deposit = passbook.indDepositRecord[account_][market_][commitment_];
 		APY storage apy = comptroller.indAPYRecords[commitment_];
 
 		uint256 index = yield.oldLengthAccruedYield - 1;
@@ -112,20 +127,16 @@ contract Deposit {
 
 			for (uint256 i = newIndex; i < apy.apyChangeRecords.length; i++) {
 				uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
-				aggregateYield += blockDiff**apy.apyChangeRecords[newIndex] / 100;
+				aggregateYield += blockDiff*apy.apyChangeRecords[newIndex] / 100;
 			}
 		} else if (apy.blockNumbers[index] == blockNum) {
 			for (uint256 i = index; i < apy.apyChangeRecords.length; i++) {
 				uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
-				aggregateYield += blockDiff**apy.apyChangeRecords[index] / 100;
+				aggregateYield += blockDiff*apy.apyChangeRecords[index] / 100;
 			}
 		}
 		if (block.number > apy.blockNumbers[apy.blockNumbers.length - 1]) {
-			aggregateYield +=
-				((block.Number - apy.blockNumbers[apy.blockNumbers.length - 1]) *
-					apy.apyChangeRecords[apy.blockNumbers.length - 1]) /
-				100;
-		}
+			aggregateYield += ((block.Number - apy.blockNumbers[apy.blockNumbers.length - 1]) *apy.apyChangeRecords[apy.blockNumbers.length - 1]) /100;}
 		yield.accruedYield += deposit.amount * aggregatedYield;
 		yield.oldLengthAccruedYield = apy.blockNumbers.length;
 		yield.oldBlockNum = block.number;
@@ -137,13 +148,9 @@ contract Deposit {
 		bytes32 commitment_,
 		uint256 amount_
 	) internal {
-		DepositRecords storage deposit = passbook.indDepositRecord[account_][
-			market_
-		][commitment__];
+		DepositRecords storage deposit = passbook.indDepositRecord[account_][market_][commitment_];
 		SavingsAccount storage savingsAccount = passbook.savingsPassbook[account_];
-		Yield storage yield = passbook.indYieldRecord[account_][market_][
-			commitment_
-		];
+		Yield storage yield = passbook.indYieldRecord[account_][market_][commitment_];
 		APY storage apy = comptroller.indAPYRecords[commitment_];
 		uint256 id;
 
@@ -160,7 +167,7 @@ contract Deposit {
 				market_: market_,
 				commitment_: commitment_,
 				amount_: amount_,
-				lastDeposit: block.number
+				lastUpdate: block.number
 			});
 
 			savingsAccount.deposits.push(deposit);
@@ -170,10 +177,9 @@ contract Deposit {
 				oldBlockNum: block.number,
 				market: market_,
 				accruedYield: 0,
-				timelock: true,
+				timelockApplicable: true,
 				timelockValidity: 86400,
-				timelockActivated: false,
-				activatedBlockNum: 0
+				activationBlock: 0
 			});
 		} else if (
 			deposit.firstDeposit == 0 && commitment_ == comptroller.commitment[0]
@@ -190,7 +196,7 @@ contract Deposit {
 				market_: market_,
 				commitment_: commitment_,
 				amount_: amount_,
-				lastDeposit: block.number
+				lastUpdate: block.number
 			});
 			savingsAccount.deposits.push(deposit);
 			yield = Yield({
@@ -199,16 +205,101 @@ contract Deposit {
 				oldBlockNum: block.number,
 				market: market_,
 				accruedYield: 0,
-				timelock: false,
+				timelockApplicable: false,
 				timelockValidity: 0,
-				timelockActivated: true,
-				activatedBlockNum: 0
+				activationBlock: 0
 			});
 		} else if (!deposit.firstDeposit = 0) {
 			deposit.amount_ += amount_;
-			deposit.lastDeposit = block.number;
+			deposit.lastUpdate = block.number;
 			savingsAccount.deposits[deposit.id].amount += amount_;
-			savingsAccount.deposits[deposit.id].lastDeposit += block.number;
+			savingsAccount.deposits[deposit.id].lastUpdate += block.number;
+		}
+	}
+
+	function _hasAccount(address account_) internal 	{
+		require(savings.savingsPassbook[account_].accOpenTime!=0, "Savings account does not exist");
+	}
+
+	function _hasYield(address account_, bytes32 market_, bytes32 commitment_) internal 	{
+		Yield storage yield = passbook.indYieldRecords[account_][market_][commitment_];
+		require(yield.id !=0, "Yield does not exist");
+		return this;
+	}
+
+	function _createDeposit(bytes32 market_,bytes32 commitment_,uint256 amount_) private	{
+		address marketAddress;
+		_preDepositProcess(msg.sender, market_, amount_);
+		token.transfer(address(reserve), amount_);
+
+		_updateYield(msg.sender, market_, commitment_);
+		_processDeposit(msg.sender, market_, commitment_, amount_);
+	}
+
+	function _convertYield(bytes32 market_, bytes32 oldCommitment_, bytes32 newCommitment_) private {
+		_hasAccount(msg.sender);
+		_hasYield(msg.sender, market_, oldCommitment_);
+		_isMarketSupported(market_);
+		_updateYield(msg.sender, market_, oldCommitment_);
+
+		uint256 amount_ = yield.accruedYield(1-(5/10000)); // 0.05% conversion fees applied.
+		// // transfer 0.05% fees deducted from the accrued yield to the reserveAccount.
+		_createDeposit(market_, newCommitment_, amount_);
+	}
+
+
+		function _savingsBalance(address account_, bytes32 market_, bytes32 commitment_, BALANCETYPE request_) internal	{
+		
+		DepositRecords storage deposit = passbook.indDepositRecord[account_][market_][commitment_];
+		Yield storage yield = passbook.indYieldRecords[account_][market_][commitment_];
+
+		if (request_ == BALANCETYPE.DEPOSIT)	{
+			savingsBalance_ = deposit.amount;
+
+		}	else if (request_ == BALANCETYPE.YIELD)	{
+			_updateYield(msg.sender,market_,commitment_);
+			savingsBalance_ =  yield.accruedYield;
+
+		}	else if (request_ == BALANCETYPE.BOTH)	{
+			_updateYield(msg.sender,market_,commitment_);
+			savingsBalance_ = deposit.amount + yield.accruedYield;
+		}
+	}
+
+	function _updateSavingsBalance(address account_, bytes32 commitment_, uint amount_, BALANCETYPE request_) internal {
+
+		DepositRecords storage deposit = passbook.indDepositRecord[account_][market_][commitment_];
+		Yield storage yield = passbook.indYieldRecords[account_][market_][commitment_];
+
+		if (request_ == BALANCETYPE.DEPOSIT)	{
+			deposit.amount -= amount_;
+			deposit.lastUpdate =  block.number;
+
+		}	else if (request_ == BALANCETYPE.YIELD)	{
+
+			if (yield.timelockApplicable == false || block.number >= yield.activationBlock+yield.timelockValidity)	{
+				_updateYield(msg.sender,market_,commitment_);
+				yield.accruedYield -= amount_;
+				yield.oldBlockNum = block.number;
+			}	else if (yield.timelockApplicable != false || block.number < yield.activationBlock+yield.timelockValidity)	{
+				revert ('Withdrawal can not be processed');
+			}
+
+		}	else if (request_ == BALANCETYPE.BOTH)	{
+
+			require (deposit.id == yield.id, "mapping error");
+
+			if (yield.timelockApplicable == false || block.number >= yield.activationBlock+yield.timelockValidity)	{
+				_updateYield(msg.sender,market_,commitment_);
+				yield.accruedYield -= amount_;
+				yield.oldBlockNum = block.number;
+
+			}	else if (yield.timelockApplicable != false || block.number < yield.activationBlock+yield.timelockValidity)	{
+				revert ('Withdrawal can not be processed');
+			}
+			
+			deposit.amount -= amount_;
+			deposit.lastUpdate =  block.number;
 		}
 	}
 
