@@ -16,7 +16,7 @@ contract Passbook   {
 
     TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-    Reserve reserve = Reserve(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+    Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));
 
     struct SavingsAccount {
         uint accOpenTime;
