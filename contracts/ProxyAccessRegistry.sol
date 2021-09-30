@@ -11,24 +11,19 @@ contract ProxyAccessRegistry {
     bytes32 private constant proxyOwnerPosition = 
         keccak256("AccessRegistry.proxy.owner");
     
-    modifier onlyProxyOwner() {
-        require (msg.sender == proxyOwner());
-        _;
-    }
-    
-    constructor() public {
+    constructor()  {
         _setUpgradeabilityOwner(msg.sender);
     }
     
     function transferProxyOwnership(address _newOwner) 
-        public onlyProxyOwner 
+        public onlyProxyOwner() 
     {
         require(_newOwner != address(0));
         _setUpgradeabilityOwner(_newOwner);
     }
     
     function upgradeTo(address _implementation) 
-        public onlyProxyOwner
+        public onlyProxyOwner()
     {
         _upgradeTo(_implementation);
     }
@@ -70,4 +65,10 @@ contract ProxyAccessRegistry {
             sstore(position, _newProxyOwner)
         }
     }
+
+    modifier onlyProxyOwner()   {
+        require (msg.sender == proxyOwner());
+        _;
+    }
+    
 }

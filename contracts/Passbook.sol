@@ -14,10 +14,10 @@ contract Passbook   {
     bytes32 adminPassbook;
     address adminPassbookAddress;
 
-    market markets = market(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+    TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     Reserve reserve = Reserve(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-    InterestRateModel interestRateModel = InterestRateModel(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+
 
     struct SavingsAccount {
         uint accOpenTime;
