@@ -99,7 +99,7 @@ contract Deposit {
 	}
 
 	function _createSavingsAccount(address account_) internal {
-		SavingsAcccount storage savingsAccount = passbook.savingsPassbook[account_];
+		SavingsAccount storage savingsAccount = passbook.savingsPassbook[account_];
 
 		if (savingsAccount.accOpenTime == 0) {
 			savingsAccount.accOpenTime = block.timestamp;
