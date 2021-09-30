@@ -1,0 +1,125 @@
+{
+  "contractName": "ITokenList",
+  "abi": [],
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Interfaces/ITokenList.sol\":\"ITokenList\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Interfaces/ITokenList.sol\":{\"keccak256\":\"0x6379a64d564aff19eb088b02fca2b0c658191c0cc51143dd14b5056b785fcbee\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://76553ae47f1b4a7efecc37bbdb4a7d9e0e7bde64a9b86a0ab8882c1d98c79905\",\"dweb:/ipfs/Qmcvz38Ve3osLbC3edthkRKMnqwFbcTQVd3cbK2dE7Haer\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "immutableReferences": {},
+  "generatedSources": [],
+  "deployedGeneratedSources": [],
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity >=0.8.7 <0.9.0;\r\ninterface ITokenList {\r\n    \r\n}",
+  "sourcePath": "F:\\workspace\\Open-protocol\\contracts\\Interfaces\\ITokenList.sol",
+  "ast": {
+    "absolutePath": "project:/contracts/Interfaces/ITokenList.sol",
+    "exportedSymbols": {
+      "ITokenList": [
+        950
+      ]
+    },
+    "id": 951,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 949,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".7",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:31:7"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "ITokenList",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": true,
+        "id": 950,
+        "linearizedBaseContracts": [
+          950
+        ],
+        "name": "ITokenList",
+        "nameLocation": "76:10:7",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 951,
+        "src": "66:31:7",
+        "usedErrors": []
+      }
+    ],
+    "src": "33:64:7"
+  },
+  "legacyAST": {
+    "absolutePath": "project:/contracts/Interfaces/ITokenList.sol",
+    "exportedSymbols": {
+      "ITokenList": [
+        950
+      ]
+    },
+    "id": 951,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 949,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.8",
+          ".7",
+          "<",
+          "0.9",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:31:7"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "ITokenList",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": true,
+        "id": 950,
+        "linearizedBaseContracts": [
+          950
+        ],
+        "name": "ITokenList",
+        "nameLocation": "76:10:7",
+        "nodeType": "ContractDefinition",
+        "nodes": [],
+        "scope": 951,
+        "src": "66:31:7",
+        "usedErrors": []
+      }
+    ],
+    "src": "33:64:7"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.8.9+commit.e5eed63a.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.4.3",
+  "updatedAt": "2021-09-30T01:03:14.738Z",
+  "devdoc": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  }
+}
