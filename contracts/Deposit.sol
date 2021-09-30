@@ -67,7 +67,7 @@ contract Deposit {
 		_savingsBalance(msg.sender, market_, commitment_, request_);
 
 		require(amount_ >= savingsBalance_, "Insufficient balance");
-		_updateSavings(msg.sender, commitment_, amount_, request_);
+		_updateSavingsBalance(msg.sender, commitment_, amount_, request_);
 		_connectMarket(market_, amount_);
 		token.transfer(msg.sender, amount_);
 
@@ -80,6 +80,8 @@ contract Deposit {
 
 	function convertYield(bytes32 market_, bytes32 oldCommitment_, bytes32 newCommitment_) external nonReentrant() returns (bool){
 		_convertYield(market_,oldCommitment_, newCommitment_) ;
+
+		uint amount_;
 
 		emit YieldDeposited(msg.sender, market_, newCommitment_, amount_);
 		return true;
@@ -253,7 +255,7 @@ contract Deposit {
 		_isMarketSupported(market_);
 		_updateYield(msg.sender, market_, oldCommitment_);
 
-		uint256 amount_ = yield.accruedYield(1-(5/10000)); // 0.05% conversion fees applied.
+		amount_ = yield.accruedYield(1-(5/10000)); // 0.05% conversion fees applied.
 		// // transfer 0.05% fees deducted from the accrued yield to the reserveAccount.
 		_createDeposit(market_, newCommitment_, amount_);
 	}
