@@ -31,7 +31,7 @@ contract Passbook   {
         bytes32 market;
         bytes32 commitment;
         uint amount; // Non fractional amount
-        uint lastDeposit;
+        uint lastUpdate;
     }
 
     struct Yield    {
@@ -40,10 +40,9 @@ contract Passbook   {
         uint oldBlockNum; // last recorded block num
         bytes32 market; // market_ this yield is calculated for
         uint accruedYield; // accruedYield in 
-        bool timelock; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
         uint timelockValidity; // timelock duration
-        bool timelockActivated; // blocknumber when yield withdrawal request was placed.
-        bool activationBlockNum; // blocknumber when yield withdrawal request was placed.
+        uint activationBlock; // blocknumber when yield withdrawal request was placed.
     }
 
     struct LoanAccount  {
