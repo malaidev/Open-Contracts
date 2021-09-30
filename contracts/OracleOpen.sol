@@ -91,7 +91,7 @@ contract OracleOpen {
         address account, 
         bytes32 market,
         bytes32 commitment,
-        uint loadId
+        uint loanId
     ) public
     {
         //Call liquidate() in Loan contract.
