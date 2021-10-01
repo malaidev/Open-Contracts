@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.7 <0.9.0;
-
-contract OracleOpen {
+import "./util/Pausable.sol";
+import "./util/IBEP20.sol";
+import "./interfaces/IAccessRegistry.sol";
+import "./interfaces/ITokenList.sol";
+contract OracleOpen is Pausable {
 
     bytes32 adminOpenOracle;
     address adminOpenOracleAddress;
+    address superAdminAddress;
+    IAccessRegistry accessRegistry;
+    ITokenList tokenList;
 
     uint minConsensus = 2;
 
@@ -30,9 +36,30 @@ contract OracleOpen {
 
     mapping(bytes32 => PriceData) latestPrice;
 
-    constructor() {
+    constructor(
+        address superAdminAddr_, 
+        address accessRegistryAddr_, 
+        address tokenListAddr_
+    )
+    {
+        superAdminAddress = superAdminAddr_;
+        accessRegistry = IAccessRegistry(accessRegistryAddr_);
+        tokenList = ITokenList(tokenListAddr_);
         adminOpenOracleAddress = msg.sender;
-        //AccessRegistry.addAdmin()
+        accessRegistry.addAdminRole(adminOpenOracle, adminOpenOracleAddress);
+    }
+
+    receive() external payable {
+        payable(adminOpenOracleAddress).transfer(_msgValue());
+    }
+    
+    fallback() external payable {
+        payable(adminOpenOracleAddress).transfer(_msgValue());
+    }
+    
+    function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
+        IBEP20(token_).transfer(recipient_, value_);
+        return true;
     }
 
     function newPriceRequest (
@@ -59,6 +86,7 @@ contract OracleOpen {
         PriceData storage trackRequest = latestPrice[_market];
 
         //Check if the token is supported. In TokenList Contract.
+        require(tokenList.isTokenSupported(trackRequest.market), "Token is not supported.");
 
         if(trackRequest.nest[msg.sender] == 1){
             trackRequest.nest[msg.sender] = 2;
@@ -79,6 +107,7 @@ contract OracleOpen {
                         trackRequest.price = _price;
                         
                         //Add token to TokenList Contract.
+                        tokenList.addTokenSupport(trackRequest.market, decimals_, tokenAddress_);
 
                         emit UpdatedRequest (_market, _price);
                     }
@@ -97,8 +126,21 @@ contract OracleOpen {
         //Call liquidate() in Loan contract.
     }
 
-    modifier onlyAdmin(bytes32 role, address account) {
-        require(role == adminOpenOracle && account == adminOpenOracleAddress, "Not permitted account");
+    function pause() external onlyAdmin() nonReentrant() {
+       _pause();
+	}
+	
+	function unpause() external onlyAdmin() nonReentrant() {
+       _unpause();   
+	}
+
+    modifier onlyAdmin() {
+        require(msg.sender == adminOpenOracleAddress || 
+            msg.sender == superAdminAddress,
+            "Only Oracle admin can call this function"
+        );
         _;
     }
+
+
 }

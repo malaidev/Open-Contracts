@@ -19,4 +19,6 @@ library OpenLibrary {
 		enum STATETYPE{ FIXED, FLEXIBLE }
 		// enum LoanType{ FIXED, FLEXIBLE }
 
+		
+
 }

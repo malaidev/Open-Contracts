@@ -15,15 +15,15 @@
     "absolutePath": "project:/contracts/Interfaces/ILoan.sol",
     "exportedSymbols": {
       "ILoan": [
-        944
+        2402
       ]
     },
-    "id": 945,
+    "id": 2403,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 943,
+        "id": 2401,
         "literals": [
           "solidity",
           ">=",
@@ -34,7 +34,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:31:5"
+        "src": "33:31:6"
       },
       {
         "abstract": false,
@@ -43,34 +43,34 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": true,
-        "id": 944,
+        "id": 2402,
         "linearizedBaseContracts": [
-          944
+          2402
         ],
         "name": "ILoan",
-        "nameLocation": "76:5:5",
+        "nameLocation": "76:5:6",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 945,
-        "src": "66:26:5",
+        "scope": 2403,
+        "src": "66:26:6",
         "usedErrors": []
       }
     ],
-    "src": "33:59:5"
+    "src": "33:59:6"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/Interfaces/ILoan.sol",
     "exportedSymbols": {
       "ILoan": [
-        944
+        2402
       ]
     },
-    "id": 945,
+    "id": 2403,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 943,
+        "id": 2401,
         "literals": [
           "solidity",
           ">=",
@@ -81,7 +81,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:31:5"
+        "src": "33:31:6"
       },
       {
         "abstract": false,
@@ -90,20 +90,20 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": true,
-        "id": 944,
+        "id": 2402,
         "linearizedBaseContracts": [
-          944
+          2402
         ],
         "name": "ILoan",
-        "nameLocation": "76:5:5",
+        "nameLocation": "76:5:6",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 945,
-        "src": "66:26:5",
+        "scope": 2403,
+        "src": "66:26:6",
         "usedErrors": []
       }
     ],
-    "src": "33:59:5"
+    "src": "33:59:6"
   },
   "compiler": {
     "name": "solc",
@@ -111,7 +111,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-09-30T01:03:14.735Z",
+  "updatedAt": "2021-09-30T23:52:23.919Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},
