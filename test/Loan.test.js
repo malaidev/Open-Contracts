@@ -5,4 +5,5 @@ const {deployContract, MockProvider, solidity} = require ('ethereum-waffle');
 use(solidity);
 
 describe("Loan Contract", () => {
+
 });
