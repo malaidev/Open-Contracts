@@ -103,9 +103,7 @@ dist
 # TernJS port file
 .tern-port
 
-*.js
 *.md
-/contracts/ScribblePad.sol
 node_modules/
 
 package-lock.json
