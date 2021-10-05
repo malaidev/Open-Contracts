@@ -194,6 +194,7 @@ contract Comptroller is Pausable {
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // calcYield()
 // calcInterest()
 // struct InterestRates()
@@ -207,6 +208,11 @@ contract Comptroller is Pausable {
 
 // struct ApyLedger()
 // struct APRLedger()
+=======
+
+// struct ApyLedger()
+// struct APRLedger()
+>>>>>>> staging
 // permissibleCDR()
 // reserveFactor() - ReserveFactor is an integer from 1 to 100. Here 1 means 1%.
 // 100 means 100%. Reserve factor determines the minimum reserves that need

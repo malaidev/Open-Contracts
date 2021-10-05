@@ -49,6 +49,10 @@ contract TokenList is Pausable{
     return true;
   }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> staging
   function isTokenSupported(bytes32  market_) external view returns (bool)	{
 		_isTokenSupported(market_);
 		return true;
