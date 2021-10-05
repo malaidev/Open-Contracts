@@ -6,13 +6,11 @@ import "./Passbook.sol";
 contract Comptroller  {
   using Address for address;
 
-  Passbook passbook = Passbook(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-
   bytes32 adminComptroller;
   address adminComptrollerAddress;
 
-  uint apr;
-  uint apy;
+  uint public apr;
+  uint public apy;
 
   struct APY  {
     bytes32 commitment; // validity
@@ -26,6 +24,7 @@ contract Comptroller  {
     uint[] aprChangeRecords; // the apy changes.
   }
 
+  
   
   // Latest Individual apy/apr data
   mapping(bytes32 => APY) indAPYRecords;
@@ -80,23 +79,26 @@ contract Comptroller  {
 }
 
 
-// calcYield()
-// calcInterest()
-// struct Passbook()
-// struct InterestRates()
+
 // struct ApyLedger()
 // struct APRLedger()
-// struct SupportedAssets {}
-// updateCdr()
+// permissibleCDR()
+// reserveFactor() - ReserveFactor is an integer from 1 to 100. Here 1 means 1%.
+// 100 means 100%. Reserve factor determines the minimum reserves that need
+// maintaining. Minimum reserves against the total deposits.
+
+// permissionlessWithdrawal(uint factor, uint blockLimit) - This function like reserve factor takes an input
+// from 1 to 100. If 1, it means, upto 1% of total available reserves can be
+// released within a defined block limit. Eg: factor = 10, blockLimit = 4800.
+// This means, 10% of reserves can be withdrawn during a 4800 bsc block window.
+// This check is implemented to mitigate excess loss of funds during exploits.
+
 // updateApy()
 // updateAPR()
 // updatePreclosureCharges()
 // updateLoanIssuanceFees()
 // updateLoanClosureFees()
-// priceOracle()
-// balancingAccounts()
-// liquidationTrigger()
-// liquidationCall()
+// updateConvertYieldFees()
 
 
 
