@@ -15,15 +15,15 @@
     "absolutePath": "project:/contracts/Interfaces/IPassbook.sol",
     "exportedSymbols": {
       "IPassbook": [
-        947
+        2405
       ]
     },
-    "id": 948,
+    "id": 2406,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 946,
+        "id": 2404,
         "literals": [
           "solidity",
           ">=",
@@ -34,7 +34,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:31:6"
+        "src": "33:31:7"
       },
       {
         "abstract": false,
@@ -43,34 +43,34 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": true,
-        "id": 947,
+        "id": 2405,
         "linearizedBaseContracts": [
-          947
+          2405
         ],
         "name": "IPassbook",
-        "nameLocation": "76:9:6",
+        "nameLocation": "76:9:7",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 948,
-        "src": "66:30:6",
+        "scope": 2406,
+        "src": "66:30:7",
         "usedErrors": []
       }
     ],
-    "src": "33:63:6"
+    "src": "33:63:7"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/Interfaces/IPassbook.sol",
     "exportedSymbols": {
       "IPassbook": [
-        947
+        2405
       ]
     },
-    "id": 948,
+    "id": 2406,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 946,
+        "id": 2404,
         "literals": [
           "solidity",
           ">=",
@@ -81,7 +81,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:31:6"
+        "src": "33:31:7"
       },
       {
         "abstract": false,
@@ -90,20 +90,20 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": true,
-        "id": 947,
+        "id": 2405,
         "linearizedBaseContracts": [
-          947
+          2405
         ],
         "name": "IPassbook",
-        "nameLocation": "76:9:6",
+        "nameLocation": "76:9:7",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 948,
-        "src": "66:30:6",
+        "scope": 2406,
+        "src": "66:30:7",
         "usedErrors": []
       }
     ],
-    "src": "33:63:6"
+    "src": "33:63:7"
   },
   "compiler": {
     "name": "solc",
@@ -111,7 +111,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-09-30T01:03:14.737Z",
+  "updatedAt": "2021-09-30T23:52:23.921Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

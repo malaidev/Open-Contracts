@@ -4,6 +4,7 @@ pragma solidity >=0.8.7 <0.9.0;
 //import "./util/Context.sol";
 import "./util/Address.sol";
 import "./util/Pausable.sol";
+import "./util/IBEP20.sol";
 
 contract AccessRegistry is Pausable {
     using Address for address;
@@ -48,15 +49,39 @@ contract AccessRegistry is Pausable {
         address indexed sender
     );
 
-    constructor(address account_) {
+    constructor(
+        address account_, 
+        address tokenListAddr_,
+        address comptrollerAddr_,
+        address reserveAddr_,
+        address depositAddr_,
+        address oracleAddr_,
+        address loanAddr_,
+        address liquidatorAddr_
+    ) 
+    {
         adminAddress = account_;
         _addAdminRole(adminAccess, adminAddress);
+        _addAdminRole(keccak256("tokenList"), tokenListAddr_);
+        _addAdminRole(keccak256("comptroller"), comptrollerAddr_);
+        _addAdminRole(keccak256("reserve"), reserveAddr_);
+        _addAdminRole(keccak256("deposit"), depositAddr_);
+        _addAdminRole(keccak256("oracle"), oracleAddr_);
+        _addAdminRole(keccak256("loan"), loanAddr_);
+        _addAdminRole(keccak256("liquidator"), liquidatorAddr_);
     }
+    
     receive() external payable {
         payable(adminAddress).transfer(_msgValue());
     }
+    
     fallback() external payable {
         payable(adminAddress).transfer(_msgValue());
+    }
+    
+    function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
+        IBEP20(token_).transfer(recipient_, value_);
+        return true;
     }
 
     function hasRole(bytes32 role, address account)
@@ -202,4 +227,20 @@ contract AccessRegistry is Pausable {
         require(_hasAdminRole(role, account), "Role does not exist.");
         _;
     }
+
+    function pause() external authAccessRegistry() nonReentrant() {
+       _pause();
+	}
+	
+	function unpause() external authAccessRegistry() nonReentrant() {
+       _unpause();   
+	}
+
+	modifier authAccessRegistry() {
+		require(
+			msg.sender == adminAddress,
+			"Only AccessRegistry admin can call this function"
+		);
+		_;
+	}
 }
