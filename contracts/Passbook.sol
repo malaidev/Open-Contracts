@@ -14,10 +14,9 @@ contract Passbook   {
     bytes32 adminPassbook;
     address adminPassbookAddress;
 
-    market markets = market(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+    TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
     Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-    Reserve reserve = Reserve(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-    InterestRateModel interestRateModel = InterestRateModel(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+    Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));
 
     struct SavingsAccount {
         uint accOpenTime;
@@ -31,7 +30,7 @@ contract Passbook   {
         bytes32 market;
         bytes32 commitment;
         uint amount; // Non fractional amount
-        uint lastDeposit;
+        uint lastUpdate;
     }
 
     struct Yield    {
@@ -40,10 +39,9 @@ contract Passbook   {
         uint oldBlockNum; // last recorded block num
         bytes32 market; // market_ this yield is calculated for
         uint accruedYield; // accruedYield in 
-        bool timelock; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
         uint timelockValidity; // timelock duration
-        bool timelockActivated; // blocknumber when yield withdrawal request was placed.
-        bool activationBlockNum; // blocknumber when yield withdrawal request was placed.
+        uint activationBlock; // blocknumber when yield withdrawal request was placed.
     }
 
     struct LoanAccount  {
@@ -75,7 +73,7 @@ contract Passbook   {
 
     }
 
-// Interest{} stores the amount_ of interest deducted.
+// PayableInterest{} stores the amount_ of interest deducted.
     struct PayableInterest    {
         uint id; // Id of the loan the interest is being deducted for.
         uint oldLengthAccruedYield; // length of the APY blockNumbers array.

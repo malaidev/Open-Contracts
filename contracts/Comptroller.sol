@@ -35,6 +35,10 @@ contract Comptroller is Pausable {
   event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
   event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
   
+<<<<<<< HEAD
+  constructor() {
+    adminComptrollerAddress = msg.sender;
+=======
   constructor(address superAdminAddr_) {
     superAdminAddress = superAdminAddr_;
     adminComptrollerAddress = msg.sender;
@@ -51,6 +55,7 @@ contract Comptroller is Pausable {
   function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
     IBEP20(token_).transfer(recipient_, value_);
     return true;
+>>>>>>> origin/main
   }
 
   function getAPR() external view returns (uint) {
@@ -69,6 +74,10 @@ contract Comptroller is Pausable {
     return apy;
   }
 
+<<<<<<< HEAD
+  function _getAPY(bytes32 commitment_) internal  {
+    // return indAPYRecords.commitment_.apy;
+=======
   function getAPY(bytes32 commitment_) external view returns (uint) {
     return _getAPY(commitment_);
   }
@@ -115,6 +124,7 @@ contract Comptroller is Pausable {
 
   function _getAprBlockNumber(bytes32 commitment_, uint index_) internal view returns (uint) {
     return indAPRRecords[commitment_].blockNumbers[index_];
+>>>>>>> origin/main
   }
 
   function liquidationTrigger() external {}
@@ -148,6 +158,9 @@ contract Comptroller is Pausable {
     aprUpdate.blockNumbers.push(block.number);
     aprUpdate.aprChangeRecords.push(apr_);
     return true;
+  }
+  function _updateAPR(bytes32 commitment_, uint apy_) internal returns (bool) {
+
   }
 
 

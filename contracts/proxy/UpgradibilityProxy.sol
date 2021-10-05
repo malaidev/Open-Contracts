@@ -16,6 +16,9 @@ contract UpgradibilityProxy is Proxy, Pausable {
     bytes32 private constant proxyOwnerPosition = 
         keccak256("UpgradibilityProxy.proxy.owner");
     
+<<<<<<< HEAD:contracts/ProxyAccessRegistry.sol
+    constructor()  {
+=======
     modifier onlyProxyOwner() {
         require (msg.sender == proxyOwner());
         _;
@@ -24,18 +27,19 @@ contract UpgradibilityProxy is Proxy, Pausable {
     constructor(address superAdminAddr_) {
         superAdminAddress = superAdminAddr_;
         adminProxyAddress = msg.sender;
+>>>>>>> origin/main:contracts/proxy/UpgradibilityProxy.sol
         _setUpgradeabilityOwner(msg.sender);
     }
 
     function transferProxyOwnership(address _newOwner) 
-        public onlyProxyOwner 
+        public onlyProxyOwner() 
     {
         require(_newOwner != address(0));
         _setUpgradeabilityOwner(_newOwner);
     }
     
     function upgradeTo(address _implementation) 
-        public onlyProxyOwner
+        public onlyProxyOwner()
     {
         _upgradeTo(_implementation);
     }
@@ -79,6 +83,13 @@ contract UpgradibilityProxy is Proxy, Pausable {
         }
     }
 
+<<<<<<< HEAD:contracts/ProxyAccessRegistry.sol
+    modifier onlyProxyOwner()   {
+        require (msg.sender == proxyOwner());
+        _;
+    }
+    
+=======
     // receive() external payable {
     //     payable(adminProxyAddress).transfer(_msgValue());
     // }
@@ -108,4 +119,5 @@ contract UpgradibilityProxy is Proxy, Pausable {
 		);
 		_;
 	}
+>>>>>>> origin/main:contracts/proxy/UpgradibilityProxy.sol
 }
