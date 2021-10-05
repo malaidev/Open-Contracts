@@ -12,6 +12,8 @@ contract Deposit is Pausable {
 	address adminDepositAddress;
 	address superAdminAddress;
 
+	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
+
 	struct SavingsAccount {
 		uint accOpenTime;
         address account; 
@@ -47,19 +49,9 @@ contract Deposit is Pausable {
 	IReserve reserve;
 	IBEP20 token;
 
-<<<<<<< HEAD
-	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
-
-	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
-	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
-	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
-=======
     mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
     mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address => market_ => commitment_ => depositRecord
     mapping(address => mapping(bytes32 => mapping(bytes32 => Yield))) indYieldRecord; // address => market_ => commitment_ => depositRecord
-
-	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
->>>>>>> origin/main
 
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
 	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
@@ -79,9 +71,6 @@ contract Deposit is Pausable {
 		adminDepositAddress = msg.sender;
 	}
 
-<<<<<<< HEAD
-	function hasAccount(address account_) public view returns (bool)	{
-=======
 	receive() external payable {
         payable(adminDepositAddress).transfer(_msgValue());
     }
@@ -96,24 +85,15 @@ contract Deposit is Pausable {
     }
 
 	function hasAccount(address account_) public returns (bool) {
->>>>>>> origin/main
 		_hasAccount(account_);
 		return true;
 	}
 
-<<<<<<< HEAD
 	function hasYield(address account_, bytes32 market_, bytes32 commitment_) public view returns (bool)	{
-=======
-	function hasYield(address account_, bytes32 market_, bytes32 commitment_) public returns (bool)	{
->>>>>>> origin/main
 		_hasYield(account_, market_, commitment_);
 		return true;
 	}
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/main
 	function createDeposit(
 		bytes32 market_,
 		bytes32 commitment_,
@@ -137,19 +117,7 @@ contract Deposit is Pausable {
 
 	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external nonReentrant() returns (bool){
 		require(_isMarketSupported(market_) && _hasAccount(msg.sender), "Account does not exist, or Unsupportd market");
-		
-=======
 
-		_savingsBalance(msg.sender, market_, commitment_, request_);
-		return savingsBalance_;
-	}
-
-
-	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external nonReentrant() returns (bool){
-		_isMarketSupported(market_);
-		_hasAccount(msg.sender);
-
->>>>>>> origin/main
 		uint savingsBalance_;
 		_savingsBalance(msg.sender, market_, commitment_, request_);
 
