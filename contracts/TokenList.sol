@@ -2,6 +2,7 @@
 pragma solidity >=0.8.7 <0.9.0;
 
 import "./AccessRegistry.sol";
+import "./util/IBEP20.sol";
 import "./util/Address.sol";
 import "./util/IBEP20.sol";
 import "./util/Pausable.sol";
@@ -10,7 +11,8 @@ contract TokenList is Pausable{
 
   bytes32 adminTokenList;
   address adminTokenListAddress;
-  address superAdminAddress;
+
+  bool isReentrant = false;
   
   struct MarketData {
     bytes32 market;
@@ -65,7 +67,7 @@ contract TokenList is Pausable{
   }
   
   // ADD A NEW TOKEN SUPPORT
-  function addTokenSupport(bytes32 market_,uint256 decimals_,address tokenAddress_) external onlyAdmin returns (bool) {
+  function addTokenSupport(bytes32 market_,uint256 decimals_,address tokenAddress_) external authTokenList() returns (bool) {
     _addTokenSupport(market_, decimals_, tokenAddress_);
 
     emit TokenSupportAdded(market_,decimals_,tokenAddress_,block.timestamp);
@@ -83,7 +85,7 @@ contract TokenList is Pausable{
     marketIndex[market_] = markets.length-1;
   }
 
-  function removeTokenSupport(bytes32 market_) external onlyAdmin returns(bool) {
+  function removeTokenSupport(bytes32 market_) external authTokenList() returns(bool) {
     _removeTokenSupport(market_);
     emit TokenSupportRemoved(market_, block.timestamp);
     return bool(true);
@@ -108,11 +110,18 @@ contract TokenList is Pausable{
     delete marketIndex[market_];
   }
   
-  function updateTokenSupport(bytes32 market_, uint256 decimals_,address tokenAddress_) external onlyAdmin returns(bool){
+  function updateTokenSupport(bytes32 market_, uint256 decimals_,address tokenAddress_) external authTokenList()  returns(bool){
     _updateTokenSupport(market_, decimals_, tokenAddress_);
     emit TokenSupportUpdated(market_,decimals_,tokenAddress_,block.timestamp);
     return bool(true);
   }
+
+  function _connectMarket(bytes32 market_, uint256 amount_, IBEP20 token) internal {
+		MarketData storage marketData = indMarketData[market_];
+		address marketAddress = marketData.tokenAddress;
+		token = IBEP20(marketAddress);
+		amount_ *= marketData.decimals;
+	}
 
   function _updateTokenSupport(
     bytes32 market_,
@@ -129,19 +138,16 @@ contract TokenList is Pausable{
     tokenSupportCheck[market_] = true;
   }
 
-  modifier onlyAdmin() {
-    require(msg.sender == adminTokenListAddress ||
-      msg.sender == superAdminAddress,
-      "Only the TokenList admin can modify this function"
-    );
-    _;
-  }
 
-  function pause() external onlyAdmin() nonReentrant() {
-       _pause();
+	modifier nonReentrant() {
+		require(isReentrant == false, "Re-entrant alert!");
+		isReentrant = true;
+		_;
+		isReentrant = false;
 	}
-	
-	function unpause() external onlyAdmin() nonReentrant() {
-       _unpause();   
+
+	modifier authTokenList() {
+		require(msg.sender == adminTokenListAddress,"Only an admin can call this function");
+		_;
 	}
 }

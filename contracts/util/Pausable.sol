@@ -7,10 +7,9 @@ import "./Context.sol";
 abstract contract Pausable is Context {
 
 	bool isReentrant = false;
-
+    bool private isPaused;
     event PauseState(address indexed _pauser, bool isPaused);
 
-    bool private isPaused;
 
     constructor() {
         isPaused = false;

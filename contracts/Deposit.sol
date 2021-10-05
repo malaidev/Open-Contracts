@@ -1,25 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.7 <0.9.0;
 
-import "./interfaces/ITokenList.sol";
+import "./TokenList.sol";
 import "./util/IBEP20.sol";
-import "./interfaces/IComptroller.sol";
-import "./interfaces/IReserve.sol";
-import "./util/Pausable.sol";
-contract Deposit is Pausable {
+import "./Comptroller.sol";
+import "./Reserve.sol";
 
+contract Deposit {
 	bytes32 adminDeposit;
 	address adminDepositAddress;
-	address superAdminAddress;
+
+	bool isReentrant = false;
+
+	TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+	Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+	Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));
+	IBEP20 token;
 
 	struct SavingsAccount {
-		uint accOpenTime;
+        uint accOpenTime;
         address account; 
         DepositRecords[] deposits;
         Yield[] accruedYieldLedger;
     }
-
-	struct DepositRecords   {
+    struct DepositRecords   {
         uint id;
         uint firstDeposit;
         bytes32 market;
@@ -28,10 +32,10 @@ contract Deposit is Pausable {
         uint lastUpdate;
     }
 
-	struct Yield    {
+    struct Yield    {
         uint id;
         uint oldLengthAccruedYield; // length of the APY blockNumbers array.
-        uint oldBlockNum; // last recorded block num
+        uint oldBlockNum; // last recorded block num. This is when this struct is lastly updated.
         bytes32 market; // market_ this yield is calculated for
         uint accruedYield; // accruedYield in 
         bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
@@ -39,60 +43,31 @@ contract Deposit is Pausable {
         uint activationBlock; // blocknumber when yield withdrawal request was placed.
     }
 
-
-	uint aggregatedYield;
-
-	ITokenList markets;
-	IComptroller comptroller;
-	IReserve reserve;
-	IBEP20 token;
-
-    mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
+	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
+	
+	mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
     mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address => market_ => commitment_ => depositRecord
     mapping(address => mapping(bytes32 => mapping(bytes32 => Yield))) indYieldRecord; // address => market_ => commitment_ => depositRecord
-
-	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
 
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
 	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
 	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
 
-	constructor(
-		address superAdminAddr_,
-		address tokenListAddr_,
-		address comptrollerAddr_,
-		address reserveAddr_
-	)
-	{
-		superAdminAddress = superAdminAddr_;
-		comptroller = IComptroller(comptrollerAddr_);
-		markets = ITokenList(tokenListAddr_);
-		reserve = IReserve(reserveAddr_);
+
+	constructor() {
 		adminDepositAddress = msg.sender;
 	}
 
-	receive() external payable {
-        payable(adminDepositAddress).transfer(_msgValue());
-    }
-    
-    fallback() external payable {
-        payable(adminDepositAddress).transfer(_msgValue());
-    }
-    
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
-        IBEP20(token_).transfer(recipient_, value_);
-        return true;
-    }
-
-	function hasAccount(address account_) public returns (bool) {
+	function hasAccount(address account_) public view returns (bool)	{
 		_hasAccount(account_);
 		return true;
 	}
 
-	function hasYield(address account_, bytes32 market_, bytes32 commitment_) public returns (bool)	{
+	function hasYield(address account_, bytes32 market_, bytes32 commitment_) public view returns (bool)	{
 		_hasYield(account_, market_, commitment_);
 		return true;
 	}
+
 
 	function createDeposit(
 		bytes32 market_,
@@ -115,16 +90,16 @@ contract Deposit is Pausable {
 
 
 	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external nonReentrant() returns (bool){
-		_isMarketSupported(market_);
-		_hasAccount(msg.sender);
-
+		require(_isMarketSupported(market_) && _hasAccount(msg.sender), "Account does not exist, or Unsupportd market");
+		
 		uint savingsBalance_;
 		_savingsBalance(msg.sender, market_, commitment_, request_);
 
 		require(amount_ >= savingsBalance_, "Insufficient balance");
 		_updateSavingsBalance(msg.sender, commitment_, amount_, request_);
 		_connectMarket(market_, amount_);
-		token.transfer(msg.sender, amount_);
+		token.transfer(reserve.address, amount_);
+		// token.transfer(address(reserve), amount_);
 
 		emit Withdrawal(msg.sender,market_, amount_, commitment_, block.timestamp);
 		return true;
@@ -149,8 +124,10 @@ contract Deposit is Pausable {
 	) internal {
 		_isMarketSupported(market_);
 		_createSavingsAccount(account_);
-		_connectMarket(market_, amount_);
-		// return this;
+		IBEP20 token;
+		
+		markets._connectMarket(market_, amount_, token);
+		return this;
 	}
 
 	function _createSavingsAccount(address account_) internal {
@@ -163,51 +140,45 @@ contract Deposit is Pausable {
 	}
 
 	function _isMarketSupported(bytes32 market_) internal {
-		require(markets.isTokenSupported(market_) != false, "Unsupported market");
+		require(markets.tokenSupportCheck[market_] != false, "Unsupported market");
 	}
 
-	function _connectMarket(bytes32 market_, uint256 amount_) internal {
-		address marketAddress = markets.getMarketTokenAddress(market_);
-		token = IBEP20(marketAddress);
-		amount_ *= markets.getMarketDecimal(market_);
-	}
-
-	function _updateYield(
-		address account_,
-		bytes32 market_,
-		bytes32 commitment_
-	) internal {
-		Yield storage yield = indYieldRecord[account_][market_][commitment_];
+	function _updateYield(address account_,bytes32 market_,bytes32 commitment_) internal {
+		
+		Yield storage yield = indYieldRecords[account_][market_][commitment_];
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
+		APY storage apy = comptroller.indAPYRecords[commitment_];
 
 		uint256 index = yield.oldLengthAccruedYield - 1;
 		uint256 blockNum = yield.oldBlockNum;
 		uint256 aggregateYield = yield.accruedYield;
 
-		if (comptroller.getApyBlockNumber(commitment_, index) < blockNum) {
-			uint256 newIndex = index + 1;
-			aggregateYield +=
-				((comptroller.getApyBlockNumber(commitment_, newIndex) - blockNum) *
-					comptroller.getAPY(commitment_, index)) /
-				100;
+    if (apy.apyChangeRecords.length > yield.oldLengthAccruedYield)  {
+      if (apy.blockNumbers[index] < blockNum) {
+        uint256 newIndex = index + 1;
+        aggregateYield +=
+          ((apy.blockNumbers[newIndex] - blockNum) *apy.apyChangeRecords[index])/100;
 
-			for (uint256 i = newIndex; i < comptroller.getApyRecordCount(commitment_); i++) {
-				uint256 blockDiff = comptroller.getApyBlockNumber(commitment_, i + 1) - comptroller.getApyBlockNumber(commitment_, i);
-				aggregateYield += blockDiff*comptroller.getAPY(commitment_, newIndex) / 100;
-			}
-		} else if (comptroller.getApyBlockNumber(commitment_, index) == blockNum) {
-			for (uint256 i = index; i < comptroller.getApyRecordCount(commitment_); i++) {
-				uint256 blockDiff = comptroller.getApyBlockNumber(commitment_, i + 1) - comptroller.getApyBlockNumber(commitment_, i);
-				aggregateYield += blockDiff*comptroller.getAPY(commitment_, index) / 100;
-			}
-		}
-		if (block.number > comptroller.getApyBlockNumber(commitment_, comptroller.getApyRecordCount(commitment_) - 1)) {
-			aggregateYield += ((block.number - comptroller.getApyBlockNumber(commitment_, comptroller.getApyRecordCount(commitment_) - 1))
-				 *comptroller.getAPY(commitment_, comptroller.getApyRecordCount(commitment_) - 1)) /100;
+        for (uint256 i = newIndex; i < apy.apyChangeRecords.length; i++) {
+          uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
+          aggregateYield += blockDiff*apy.apyChangeRecords[newIndex] / 100;
+        }
+      } else if (apy.blockNumbers[index] == blockNum) {
+        for (uint256 i = index; i < apy.apyChangeRecords.length; i++) {
+          uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
+          aggregateYield += blockDiff*apy.apyChangeRecords[index] / 100;
+        }
+      }
+      
+      if (block.number >= apy.blockNumbers[apy.blockNumbers.length - 1]) {
+        	aggregateYield += ((block.Number - apy.blockNumbers[apy.blockNumbers.length - 1]) *apy.apyChangeRecords[apy.blockNumbers.length - 1]) /100;
 		}
 
+    }  else if (apy.apyChangeRecords.length == yield.oldLengthAccruedYield)  {
+          aggregateYield += (block.number - blockNum)*apy.apyChangeRecords[index]/100;
+    }
 		yield.accruedYield += deposit.amount * aggregatedYield;
-		yield.oldLengthAccruedYield = comptroller.getApyRecordCount(commitment_);
+		yield.oldLengthAccruedYield = apy.blockNumbers.length;
 		yield.oldBlockNum = block.number;
 	}
 
@@ -220,6 +191,7 @@ contract Deposit is Pausable {
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
 		SavingsAccount storage savingsAccount = savingsPassbook[account_];
 		Yield storage yield = indYieldRecord[account_][market_][commitment_];
+		APY storage apy = comptroller.indAPYRecords[commitment_];
 		uint256 id;
 
 		if (deposit.firstDeposit == 0 && commitment_ != comptroller.commitment[0]) {
@@ -241,7 +213,7 @@ contract Deposit is Pausable {
 			savingsAccount.deposits.push(deposit);
 			yield = Yield({
 				id: id,
-				oldLengthAccruedYield: comptroller.getApyRecordCount(commitment_),
+				oldLengthAccruedYield: apy.blockNumbers.length,
 				oldBlockNum: block.number,
 				market: market_,
 				accruedYield: 0,
@@ -257,7 +229,7 @@ contract Deposit is Pausable {
 			} else {
 				id = savingsAccount.deposits.length + 1;
 			}
-			id = savingsAccount.deposits.length;
+			// id = savingsAccount.deposits.length;
 			deposit = DepositRecords({
 				id: id,
 				firstDeposit: block.number,
@@ -269,7 +241,7 @@ contract Deposit is Pausable {
 			savingsAccount.deposits.push(deposit);
 			yield = Yield({
 				id: id,
-				oldLengthAccruedYield: comptroller.getApyRecordCount(commitment_),
+				oldLengthAccruedYield: apy.blockNumbers.length,
 				oldBlockNum: block.number,
 				market: market_,
 				accruedYield: 0,
@@ -277,29 +249,28 @@ contract Deposit is Pausable {
 				timelockValidity: 0,
 				activationBlock: 0
 			});
-		} else if (!deposit.firstDeposit = 0) {
-			deposit.amount_ += amount_;
-			deposit.lastUpdate = block.number;
-			savingsAccount.deposits[deposit.id].amount += amount_;
-			savingsAccount.deposits[deposit.id].lastUpdate += block.number;
-		}
+			} else if (deposit.firstDeposit != 0) {
+				deposit.amount_ += amount_;
+				deposit.lastUpdate = block.number;
+				savingsAccount.deposits[deposit.id].amount += amount_;
+				savingsAccount.deposits[deposit.id].lastUpdate += block.number;
+			}
 	}
 
-	function _hasAccount(address account_) internal 	{
-		require(savingsPassbook[account_].accOpenTime!=0, "Savings account does not exist");
+	function _hasAccount(address account_) internal {
+		require(savings.savingsPassbook[account_].accOpenTime!=0, "Savings account does not exist");
 	}
 
-	function _hasYield(address account_, bytes32 market_, bytes32 commitment_) internal {
-		Yield storage yield = indYieldRecord[account_][market_][commitment_];
+	function _hasYield(address account_, bytes32 market_, bytes32 commitment_) internal 	{
+		Yield storage yield = indYieldRecords[account_][market_][commitment_];
 		require(yield.id !=0, "Yield does not exist");
-		// return this;
+		return this;
 	}
 
 	function _createDeposit(bytes32 market_,bytes32 commitment_,uint256 amount_) private	{
 		address marketAddress;
 		_preDepositProcess(msg.sender, market_, amount_);
 		token.transfer(address(reserve), amount_);
-
 		_updateYield(msg.sender, market_, commitment_);
 		_processDeposit(msg.sender, market_, commitment_, amount_);
 	}
@@ -310,17 +281,18 @@ contract Deposit is Pausable {
 		_isMarketSupported(market_);
 		_updateYield(msg.sender, market_, oldCommitment_);
 
-		amount_ = accruedYield(1-(5/10000)); // 0.05% conversion fees applied.
+		amount_ = yield.accruedYield(1-(5/10000)); // 0.05% conversion fees applied.
 		// // transfer 0.05% fees deducted from the accrued yield to the reserveAccount.
 		_createDeposit(market_, newCommitment_, amount_);
 	}
-	
-	function _savingsBalance(address account_, bytes32 market_, bytes32 commitment_, BALANCETYPE request_) internal	{
+
+
+		function _savingsBalance(address account_, bytes32 market_, bytes32 commitment_, BALANCETYPE request_) internal	{
 		
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
-		Yield storage yield = indYieldRecord[account_][market_][commitment_];
+		Yield storage yield = indYieldRecords[account_][market_][commitment_];
 
-		if (request_ == BALANCETYPE.DEPOSIT) {
+		if (request_ == BALANCETYPE.DEPOSIT)	{
 			savingsBalance_ = deposit.amount;
 
 		}	else if (request_ == BALANCETYPE.YIELD)	{
@@ -336,7 +308,7 @@ contract Deposit is Pausable {
 	function _updateSavingsBalance(address account_, bytes32 commitment_, uint amount_, BALANCETYPE request_) internal {
 
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
-		Yield storage yield = indYieldRecord[account_][market_][commitment_];
+		Yield storage yield = indYieldRecords[account_][market_][commitment_];
 
 		if (request_ == BALANCETYPE.DEPOSIT)	{
 			deposit.amount -= amount_;
@@ -369,20 +341,18 @@ contract Deposit is Pausable {
 			deposit.lastUpdate =  block.number;
 		}
 	}
-	
-	function pause() external authDeposit() nonReentrant() {
-       _pause();
-	}
-	
-	function unpause() external authDeposit() nonReentrant() {
-       _unpause();   
+
+	modifier nonReentrant() {
+		require(isReentrant == false, "Re-entrant alert!");
+		isReentrant = true;
+		_;
+		isReentrant = false;
 	}
 
 	modifier authDeposit() {
 		require(
-			msg.sender == adminDepositAddress || 
-			msg.sender == superAdminAddress,
-			"Only Deposit admin can call this function"
+			msg.sender == adminDepositAddress,
+			"Only an admin can call this function"
 		);
 		_;
 	}

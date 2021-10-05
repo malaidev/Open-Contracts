@@ -11,8 +11,8 @@ contract Comptroller is Pausable {
   address adminComptrollerAddress;
   address superAdminAddress;
 
-  uint apr;
-  uint apy;
+  uint public apr;
+  uint public apy;
 
   struct APY  {
     bytes32 commitment; // validity
@@ -26,6 +26,7 @@ contract Comptroller is Pausable {
     uint[] aprChangeRecords; // the apy changes.
   }
 
+  
   
   // Latest Individual apy/apr data
   mapping(bytes32 => APY) indAPYRecords;
@@ -192,6 +193,7 @@ contract Comptroller is Pausable {
 }
 
 
+<<<<<<< HEAD
 // calcYield()
 // calcInterest()
 // struct InterestRates()
@@ -201,13 +203,28 @@ contract Comptroller is Pausable {
 // updateCdr()
 // updateApy() DONE
 // updateAPR() DONE
+=======
+
+// struct ApyLedger()
+// struct APRLedger()
+// permissibleCDR()
+// reserveFactor() - ReserveFactor is an integer from 1 to 100. Here 1 means 1%.
+// 100 means 100%. Reserve factor determines the minimum reserves that need
+// maintaining. Minimum reserves against the total deposits.
+
+// permissionlessWithdrawal(uint factor, uint blockLimit) - This function like reserve factor takes an input
+// from 1 to 100. If 1, it means, upto 1% of total available reserves can be
+// released within a defined block limit. Eg: factor = 10, blockLimit = 4800.
+// This means, 10% of reserves can be withdrawn during a 4800 bsc block window.
+// This check is implemented to mitigate excess loss of funds during exploits.
+
+// updateApy()
+// updateAPR()
+>>>>>>> staging
 // updatePreclosureCharges()
 // updateLoanIssuanceFees()
 // updateLoanClosureFees()
-// priceOracle()
-// balancingAccounts()
-// liquidationTrigger()
-// liquidationCall()
+// updateConvertYieldFees()
 
 
 
