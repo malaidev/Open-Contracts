@@ -35,7 +35,7 @@ contract Deposit {
     struct Yield    {
         uint id;
         uint oldLengthAccruedYield; // length of the APY blockNumbers array.
-        uint oldBlockNum; // last recorded block num
+        uint oldBlockNum; // last recorded block num. This is when this struct is lastly updated.
         bytes32 market; // market_ this yield is calculated for
         uint accruedYield; // accruedYield in 
         bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
@@ -124,7 +124,9 @@ contract Deposit {
 	) internal {
 		_isMarketSupported(market_);
 		_createSavingsAccount(account_);
-		_connectMarket(market_, amount_);
+		IBEP20 token;
+		
+		markets._connectMarket(market_, amount_, token);
 		return this;
 	}
 
@@ -141,13 +143,6 @@ contract Deposit {
 		require(markets.tokenSupportCheck[market_] != false, "Unsupported market");
 	}
 
-	function _connectMarket(bytes32 market_, uint256 amount_) internal {
-		MarketData storage marketData = markets.indMarketData[market_];
-		marketAddress = marketData.tokenAddress;
-		token = IBEP20(marketAddress);
-		amount_ *= marketData.decimals;
-	}
-
 	function _updateYield(address account_,bytes32 market_,bytes32 commitment_) internal {
 		
 		Yield storage yield = indYieldRecords[account_][market_][commitment_];
@@ -158,26 +153,33 @@ contract Deposit {
 		uint256 blockNum = yield.oldBlockNum;
 		uint256 aggregateYield = yield.accruedYield;
 
-		if (apy.blockNumbers[index] < blockNum) {
-			uint256 newIndex = index + 1;
-			aggregateYield +=
-				((apy.blockNumbers[newIndex] - blockNum) *apy.apyChangeRecords[index])/100;
+    if (apy.apyChangeRecords.length > yield.oldLengthAccruedYield)  {
+      if (apy.blockNumbers[index] < blockNum) {
+        uint256 newIndex = index + 1;
+        aggregateYield +=
+          ((apy.blockNumbers[newIndex] - blockNum) *apy.apyChangeRecords[index])/100;
 
-			for (uint256 i = newIndex; i < apy.apyChangeRecords.length; i++) {
-				uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
-				aggregateYield += blockDiff*apy.apyChangeRecords[newIndex] / 100;
-			}
-		} else if (apy.blockNumbers[index] == blockNum) {
-			for (uint256 i = index; i < apy.apyChangeRecords.length; i++) {
-				uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
-				aggregateYield += blockDiff*apy.apyChangeRecords[index] / 100;
-			}
+        for (uint256 i = newIndex; i < apy.apyChangeRecords.length; i++) {
+          uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
+          aggregateYield += blockDiff*apy.apyChangeRecords[newIndex] / 100;
+        }
+      } else if (apy.blockNumbers[index] == blockNum) {
+        for (uint256 i = index; i < apy.apyChangeRecords.length; i++) {
+          uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
+          aggregateYield += blockDiff*apy.apyChangeRecords[index] / 100;
+        }
+      }
+      
+      if (block.number >= apy.blockNumbers[apy.blockNumbers.length - 1]) {
+        	aggregateYield += ((block.Number - apy.blockNumbers[apy.blockNumbers.length - 1]) *apy.apyChangeRecords[apy.blockNumbers.length - 1]) /100;
 		}
-		if (block.number > apy.blockNumbers[apy.blockNumbers.length - 1]) {
-			aggregateYield += ((block.Number - apy.blockNumbers[apy.blockNumbers.length - 1]) *apy.apyChangeRecords[apy.blockNumbers.length - 1]) /100;}
-			yield.accruedYield += deposit.amount * aggregatedYield;
-			yield.oldLengthAccruedYield = apy.blockNumbers.length;
-			yield.oldBlockNum = block.number;
+
+    }  else if (apy.apyChangeRecords.length == yield.oldLengthAccruedYield)  {
+          aggregateYield += (block.number - blockNum)*apy.apyChangeRecords[index]/100;
+    }
+		yield.accruedYield += deposit.amount * aggregatedYield;
+		yield.oldLengthAccruedYield = apy.blockNumbers.length;
+		yield.oldBlockNum = block.number;
 	}
 
 	function _processDeposit(
@@ -227,7 +229,7 @@ contract Deposit {
 			} else {
 				id = savingsAccount.deposits.length + 1;
 			}
-			id = savingsAccount.deposits.length;
+			// id = savingsAccount.deposits.length;
 			deposit = DepositRecords({
 				id: id,
 				firstDeposit: block.number,
@@ -247,15 +249,15 @@ contract Deposit {
 				timelockValidity: 0,
 				activationBlock: 0
 			});
-		} else if (!deposit.firstDeposit = 0) {
-			deposit.amount_ += amount_;
-			deposit.lastUpdate = block.number;
-			savingsAccount.deposits[deposit.id].amount += amount_;
-			savingsAccount.deposits[deposit.id].lastUpdate += block.number;
-		}
+			} else if (deposit.firstDeposit != 0) {
+				deposit.amount_ += amount_;
+				deposit.lastUpdate = block.number;
+				savingsAccount.deposits[deposit.id].amount += amount_;
+				savingsAccount.deposits[deposit.id].lastUpdate += block.number;
+			}
 	}
 
-	function _hasAccount(address account_) internal 	{
+	function _hasAccount(address account_) internal {
 		require(savings.savingsPassbook[account_].accOpenTime!=0, "Savings account does not exist");
 	}
 
@@ -269,7 +271,6 @@ contract Deposit {
 		address marketAddress;
 		_preDepositProcess(msg.sender, market_, amount_);
 		token.transfer(address(reserve), amount_);
-
 		_updateYield(msg.sender, market_, commitment_);
 		_processDeposit(msg.sender, market_, commitment_, amount_);
 	}

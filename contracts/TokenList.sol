@@ -7,8 +7,6 @@ import "./util/Address.sol";
 
 contract TokenList {
 
-  IBEP20 token;
-
   bytes32 adminTokenList;
   address adminTokenListAddress;
 
@@ -92,13 +90,11 @@ contract TokenList {
     return bool(true);
   }
 
-  function _connectMarket(bytes32 market_, uint256 amount_) internal returns(uint, IBEP20) {
+  function _connectMarket(bytes32 market_, uint256 amount_, IBEP20 token) internal {
 		MarketData storage marketData = indMarketData[market_];
 		address marketAddress = marketData.tokenAddress;
 		token = IBEP20(marketAddress);
 		amount_ *= marketData.decimals;
-
-    return (amount_, token); 
 	}
 
   function _updateTokenSupport(

@@ -25,7 +25,7 @@ contract Loan {
     LoanRecords[] outstandingLoans;
     CollateralRecords[] collaterals;
     CollateralisedDeposits[] collateralDeposits;
-    PayableInterest[] interestRecords;
+    DeductibleInterest[] interestRecords;
   }
   struct LoanRecords {
     uint256 id;
@@ -48,11 +48,19 @@ contract Loan {
   }
   struct CollateralisedDeposits {
     uint256 id;
-    uint256 intii;
+    uint256 market;
+    uint256 amount;
+    uint oldLengthAccruedYield; // length of the APY blockNumbers array.
+    uint oldBlockNum; // last recorded block num
+    uint accruedYield; // accruedYield in 
+    bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+    uint timelockValidity; // timelock duration
+    uint activationBlock; // blocknumber when yield withdrawal request was placed.
+
   }
 
-  // PayableInterest{} stores the amount_ of interest deducted.
-  struct PayableInterest {
+  // DeductibleInterest{} stores the amount_ of interest deducted.
+  struct DeductibleInterest {
     uint256 id; // Id of the loan the interest is being deducted for.
     uint256 oldLengthAccruedYield; // length of the APY blockNumbers array.
     uint256 oldBlockNum; // length of the APY blockNumbers array.
@@ -70,15 +78,17 @@ contract Loan {
   mapping(address => mapping(bytes32 => mapping(bytes32 => LoanRecords))) indLoanRecords;
   mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralRecords))) indCollateralRecords;
   mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralisedDeposits))) indCollateralisedDepositRecords;
-  mapping(address => mapping(bytes32 => mapping(bytes32 => PayableInterest))) indInterestRecords;
+  mapping(address => mapping(bytes32 => mapping(bytes32 => DeductibleInterest))) indInterestRecords;
 
   event loanProcessed(
     address indexed account,
-    bytes32 indexed market_,
-    uint256 indexed amount_,
-    bytes32 loanCommitment_,
+    bytes32 indexed market,
+    uint256 indexed amount,
+    bytes32 loanCommitment,
     uint256 timestamp
   );
+
+  event LoanRepayment(address indexed account, uint256 indexed id,  bytes32 market, uint256 indexed amount, uint256 timestamp);
 
   constructor() {
     adminLoanAddress = msg.sender;
@@ -86,22 +96,38 @@ contract Loan {
 
   function loanRequest(
     bytes32 market_,
-    bytes32 loanCommitment_,
+    bytes32 commitment_,
     uint256 loanAmount,
     bytes32 collateralMarket_,
-    bytes32 collateralCommitment_,
     uint256 collateralAmount_
-  ) external {
-      _isMarketSupported(market_, collateralMarket_);
-      _cdrCheck(loanAmount_, collateralAmount_);
-
-      (loanAmount, loanToken) = markets._connectMarket(market_, loanAmount);
-      (collateralAmount_, collateralToken) = markets._connectMarket(collateralMarket_, collateralMarket_);
+  ) external nonReentrant() returns(bool success) {
+      _preLoanRequestProcess(market_, commitment_, loanAmount, collateralMarket_, collateralAmount_);
       
-      _createLoanAccount(msg.sender);   
       collateralToken.transfer(address(reserve), collateralAmount_);
-
+      _ensureLoanAccount(msg.sender);   
+      
+      _processLoanRequest(msg.sender,market_,commitment_, loanAmount_, collateralMarket_, collateralAmount_);
+      
+      emit loanProcessed(msg.sender, market_,loanAmount_, commitment_, block.timetstamp);
+      
+      return bool(sucess);
+      // Process the loan & update the records.
   }
+
+  function _preLoanRequestProcess(bytes32 market_,
+    bytes32 commitment_,
+    uint256 loanAmount,
+    bytes32 collateralMarket_,
+    uint256 collateralAmount_) internal {
+      _isMarketSupported(market_, collateralMarket_);
+
+      IBEP20 loanToken;
+      IBEP20 collateralToken;
+
+      markets._connectMarket(market_, loanAmount, loanToken);
+      markets._connectMarket(collateralMarket_, collateralMarket_, collateralToken);
+      _cdrCheck(loanAmount_, collateralAmount_);
+    }
 
   function _isMarketSupported(bytes32 market_, bytes32 collateralMarket_) internal {
     require(markets.tokenSupportCheck[market_] != false && markets.tokenSupportCheck[collateralMarket_] != false, "Unsupported market");
@@ -123,30 +149,29 @@ contract Loan {
 
 
     function _processLoanRequest(address account_, bytes32 market_,
-    bytes32 loanCommitment_,
-    uint256 loanAmount,
-    bytes32 collateralMarket_,
-    bytes32 collateralCommitment_,
-    uint256 collateralAmount_) internal {
+      bytes32 commitment_,
+      uint256 loanAmount,
+      bytes32 collateralMarket_,
+      uint256 collateralAmount_) internal {
 
-        LoanAccount storage loanAccount = loanPassbook[account_];
-        LoanRecords storage loanRecords = indLoanRecords[account_][market_][loanCommitment_];
-        CollateralRecords storage collateralRecords = indCollateralRecords[account_][market_][loanCommitment_];
-        CollateralisedDeposits storage collateralisedDeposits = indCollateralisedDepositRecords[account_][market_][loanCommitment_];
-        PayableInterest storage payableInterest = indInterestRecords[account_][market_][loanCommitment_];
-        // calculateAPR on comptrollerContract itself. It is safest that way.  
-        // _checkActiveLoan(bytes) - checks if there is any outstandng loan for
-        // the market with the same commmitment type. If yes, no need to add id.
-        // If no, then the below id mechanism will come handy.
+      LoanAccount storage loanAccount = loanPassbook[account_];
+      LoanRecords storage loanRecords = indLoanRecords[account_][market_][commitment_];
+      CollateralRecords storage collateralRecords = indCollateralRecords[account_][market_][commitment_];
+      CollateralisedDeposits storage collateralisedDeposits = indCollateralisedDepositRecords[account_][market_][commitment_];
+      DeductibleInterest storage deductibleInterest = indInterestRecords[account_][market_][commitment_];
+      // calculateAPR on comptrollerContract itself. It is safest that way.  
+      // _checkActiveLoan(bytes) - checks if there is any outstandng loan for
+      // the market with the same commmitment type. If yes, no need to add id.
+      // If no, then the below id mechanism will come handy.
 
-        // creating a commonID;
-        uint id;
+      // creating a commonID;
+      uint id;
 
-        if (LoanAccount.outstandingLoans.length == 0)   {
-            id = 1;
-        } else if (LoanAccount.outstandingLoans.length != 0)    {
-            id = LoanAccount.outstandingLoans.length + 1;
-        }
+      if (LoanAccount.outstandingLoans.length == 0)   {
+          id = 1;
+      } else if (LoanAccount.outstandingLoans.length != 0)    {
+          id = LoanAccount.outstandingLoans.length + 1;
+      }
 
     }
 
@@ -154,7 +179,7 @@ contract Loan {
         require(loanPassbook[account_].accOpenTime!=0, "Loan account does not exist");
     }
 
-    function _createLoanAccount(address account_) internal {
+    function _ensureLoanAccount(address account_) internal {
 		LoanAccount storage loanAccount = loanPassbook[account_];
 
 		if (loanAccount.accOpenTime == 0) {
@@ -177,19 +202,19 @@ contract Loan {
 
   function repayLoan(
     bytes32 market_,
-    bytes32 loanCommitment_,
+    bytes32 commitment_,
     bytes32 amount_
   ) external nonReentrant returns (bool) {}
 
   function _repayLoan(
     bytes32 market_,
-    bytes32 loanCommitment_,
+    bytes32 commitment_,
     bytes32 amount_
   ) internal {}
 
   function liquidation(
     bytes32 market_,
-    bytes32 loanCommitment_,
+    bytes32 commitment_,
     bytes32 amount_
   ) external nonReentrant returns (bool) {
     //   calls the liqudiate function in the liquidator contract.
