@@ -5,19 +5,27 @@ pragma solidity >=0.8.6 <0.9.0;
 import "./Context.sol";
 
 abstract contract Pausable is Context {
-    event Paused(address account);
 
-    event Unpaused(address account);
+	bool isReentrant = false;
 
-    bool private _paused;
+    event PauseState(address indexed _pauser, bool isPaused);
+
+    bool private isPaused;
 
     constructor() {
-        _paused = false;
+        isPaused = false;
     }
 
     function paused() public view virtual returns (bool) {
-        return _paused;
+        return isPaused;
     }
+    
+    function pauseState() public view returns (string memory) {
+       if (isPaused == true) {
+           return "Contract is paused. Token transfers are temporarily disabled.";
+       }
+       return "Contract is not paused";
+   }
 
     modifier whenNotPaused() {
         require(!paused(), "Paused status");
@@ -30,12 +38,23 @@ abstract contract Pausable is Context {
     }
 
     function _pause() internal virtual whenNotPaused {
-        _paused = true;
-        emit Paused(_msgSender());
+        isPaused = true;
+        emit PauseState(_msgSender(), true);
     }
 
     function _unpause() internal virtual whenPaused {
-        _paused = false;
-        emit Unpaused(_msgSender());
+        isPaused = false;
+        emit PauseState(_msgSender(), false);
     }
+
+    function _checkPauseState() internal view {
+        require(isPaused == false,"The contract is paused. Transfer functions are temporarily disabled");
+    }
+
+    modifier nonReentrant() {
+		require(isReentrant == false, "Re-entrant alert!");
+		isReentrant = true;
+		_;
+		isReentrant = false;
+	}
 }

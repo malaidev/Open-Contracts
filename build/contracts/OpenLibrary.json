@@ -1,29 +1,29 @@
 {
   "contractName": "OpenLibrary",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Library/OpenLibrary.sol\":\"OpenLibrary\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Library/OpenLibrary.sol\":{\"keccak256\":\"0x6d4846280cfee305a3030b43bff243e2e464a03e6ce7d753c1b7c83fab875370\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://9615624b218303bb7bf5c3122bf5f2e2a591cbedf70ee675582369f533cff2bb\",\"dweb:/ipfs/QmafxZpS2ih6cC6nH1TPKEnqJ3JEhZXSPCWru7Fnx8oqRi\"]}},\"version\":1}",
-  "bytecode": "0x60566050600b82828239805160001a6073146043577f4e487b7100000000000000000000000000000000000000000000000000000000600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212203ba78f4c4352ff7baa799641250ff2094930287f87a405e9ab5a03c3e1ed0bb764736f6c63430008090033",
-  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212203ba78f4c4352ff7baa799641250ff2094930287f87a405e9ab5a03c3e1ed0bb764736f6c63430008090033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Library/OpenLibrary.sol\":\"OpenLibrary\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Library/OpenLibrary.sol\":{\"keccak256\":\"0x5d1b450c7cf5ea690083820186fa6b4a68b963f3b5406bcc3fdda08e15cfe407\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://0d7f4f27b4d9f05d3ca7e78ee10a6338a06018b28285e3bfffcf6bc4323bfee1\",\"dweb:/ipfs/QmYE2Ddc3yq6d9dPPoGpq2gYhFE62Wp3U1AU7SGY6qp8MV\"]}},\"version\":1}",
+  "bytecode": "0x60566050600b82828239805160001a6073146043577f4e487b7100000000000000000000000000000000000000000000000000000000600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ea0158e02ae87802d203148b7c9fbd57c2a3488603e0d74071995e46dd74f1b264736f6c63430008090033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600080fdfea2646970667358221220ea0158e02ae87802d203148b7c9fbd57c2a3488603e0d74071995e46dd74f1b264736f6c63430008090033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
-  "sourceMap": "70:683:8:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "70:683:8:-:0;;;;;;;;",
-  "source": "// SPDX-License-Identifier: MIT\r\n\r\npragma solidity >=0.8.7 <0.9.0;\r\n\r\nlibrary OpenLibrary {\r\n\t\t\t// For MainNet\r\n\t\t// address internagitl constant BNB = 0xB8c77482e45F1F44dE1745F52C74426C631bDD52;\r\n\t\t// address internal constant STACK = 0x6B175474E89094C44Da98b954EedeAC495271d0F;\r\n\t \r\n\t\t// address internal constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;\r\n\r\n\t\t// For Testnet\r\n\t\t// address  constant BNB = 0x02822e968856186a20fEc2C824D4B174D0b70502;\r\n\t\t// address  constant STACK = 0x04DF6e4121c27713ED22341E7c7Df330F56f289B;\r\n\t\t// address  constant USDC = 0x9780881Bf45B83Ee028c4c1De7e0C168dF8e9eEF;\r\n\t\t\r\n\r\n\t\tenum STATE { DEPOSIT, LOAN, WITHDRAWAL, COLLATERAL}\r\n\t\tenum STATETYPE{ FIXED, FLEXIBLE }\r\n\t\t// enum LoanType{ FIXED, FLEXIBLE }\r\n\r\n}",
+  "sourceMap": "70:689:10:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "70:689:10:-:0;;;;;;;;",
+  "source": "// SPDX-License-Identifier: MIT\r\n\r\npragma solidity >=0.8.7 <0.9.0;\r\n\r\nlibrary OpenLibrary {\r\n\t\t\t// For MainNet\r\n\t\t// address internagitl constant BNB = 0xB8c77482e45F1F44dE1745F52C74426C631bDD52;\r\n\t\t// address internal constant STACK = 0x6B175474E89094C44Da98b954EedeAC495271d0F;\r\n\t \r\n\t\t// address internal constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;\r\n\r\n\t\t// For Testnet\r\n\t\t// address  constant BNB = 0x02822e968856186a20fEc2C824D4B174D0b70502;\r\n\t\t// address  constant STACK = 0x04DF6e4121c27713ED22341E7c7Df330F56f289B;\r\n\t\t// address  constant USDC = 0x9780881Bf45B83Ee028c4c1De7e0C168dF8e9eEF;\r\n\t\t\r\n\r\n\t\tenum STATE { DEPOSIT, LOAN, WITHDRAWAL, COLLATERAL}\r\n\t\tenum STATETYPE{ FIXED, FLEXIBLE }\r\n\t\t// enum LoanType{ FIXED, FLEXIBLE }\r\n\r\n\t\t\r\n\r\n}",
   "sourcePath": "F:\\workspace\\Open-protocol\\contracts\\Library\\OpenLibrary.sol",
   "ast": {
     "absolutePath": "project:/contracts/Library/OpenLibrary.sol",
     "exportedSymbols": {
       "OpenLibrary": [
-        961
+        2483
       ]
     },
-    "id": 962,
+    "id": 2484,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 952,
+        "id": 2474,
         "literals": [
           "solidity",
           ">=",
@@ -34,7 +34,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "35:31:8"
+        "src": "35:31:10"
       },
       {
         "abstract": false,
@@ -43,97 +43,97 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 961,
+        "id": 2483,
         "linearizedBaseContracts": [
-          961
+          2483
         ],
         "name": "OpenLibrary",
-        "nameLocation": "78:11:8",
+        "nameLocation": "78:11:10",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "OpenLibrary.STATE",
-            "id": 957,
+            "id": 2479,
             "members": [
               {
-                "id": 953,
+                "id": 2475,
                 "name": "DEPOSIT",
-                "nameLocation": "634:7:8",
+                "nameLocation": "634:7:10",
                 "nodeType": "EnumValue",
-                "src": "634:7:8"
+                "src": "634:7:10"
               },
               {
-                "id": 954,
+                "id": 2476,
                 "name": "LOAN",
-                "nameLocation": "643:4:8",
+                "nameLocation": "643:4:10",
                 "nodeType": "EnumValue",
-                "src": "643:4:8"
+                "src": "643:4:10"
               },
               {
-                "id": 955,
+                "id": 2477,
                 "name": "WITHDRAWAL",
-                "nameLocation": "649:10:8",
+                "nameLocation": "649:10:10",
                 "nodeType": "EnumValue",
-                "src": "649:10:8"
+                "src": "649:10:10"
               },
               {
-                "id": 956,
+                "id": 2478,
                 "name": "COLLATERAL",
-                "nameLocation": "661:10:8",
+                "nameLocation": "661:10:10",
                 "nodeType": "EnumValue",
-                "src": "661:10:8"
+                "src": "661:10:10"
               }
             ],
             "name": "STATE",
-            "nameLocation": "626:5:8",
+            "nameLocation": "626:5:10",
             "nodeType": "EnumDefinition",
-            "src": "621:51:8"
+            "src": "621:51:10"
           },
           {
             "canonicalName": "OpenLibrary.STATETYPE",
-            "id": 960,
+            "id": 2482,
             "members": [
               {
-                "id": 958,
+                "id": 2480,
                 "name": "FIXED",
-                "nameLocation": "692:5:8",
+                "nameLocation": "692:5:10",
                 "nodeType": "EnumValue",
-                "src": "692:5:8"
+                "src": "692:5:10"
               },
               {
-                "id": 959,
+                "id": 2481,
                 "name": "FLEXIBLE",
-                "nameLocation": "699:8:8",
+                "nameLocation": "699:8:10",
                 "nodeType": "EnumValue",
-                "src": "699:8:8"
+                "src": "699:8:10"
               }
             ],
             "name": "STATETYPE",
-            "nameLocation": "681:9:8",
+            "nameLocation": "681:9:10",
             "nodeType": "EnumDefinition",
-            "src": "676:33:8"
+            "src": "676:33:10"
           }
         ],
-        "scope": 962,
-        "src": "70:683:8",
+        "scope": 2484,
+        "src": "70:689:10",
         "usedErrors": []
       }
     ],
-    "src": "35:718:8"
+    "src": "35:724:10"
   },
   "legacyAST": {
     "absolutePath": "project:/contracts/Library/OpenLibrary.sol",
     "exportedSymbols": {
       "OpenLibrary": [
-        961
+        2483
       ]
     },
-    "id": 962,
+    "id": 2484,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 952,
+        "id": 2474,
         "literals": [
           "solidity",
           ">=",
@@ -144,7 +144,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "35:31:8"
+        "src": "35:31:10"
       },
       {
         "abstract": false,
@@ -153,83 +153,83 @@
         "contractDependencies": [],
         "contractKind": "library",
         "fullyImplemented": true,
-        "id": 961,
+        "id": 2483,
         "linearizedBaseContracts": [
-          961
+          2483
         ],
         "name": "OpenLibrary",
-        "nameLocation": "78:11:8",
+        "nameLocation": "78:11:10",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "OpenLibrary.STATE",
-            "id": 957,
+            "id": 2479,
             "members": [
               {
-                "id": 953,
+                "id": 2475,
                 "name": "DEPOSIT",
-                "nameLocation": "634:7:8",
+                "nameLocation": "634:7:10",
                 "nodeType": "EnumValue",
-                "src": "634:7:8"
+                "src": "634:7:10"
               },
               {
-                "id": 954,
+                "id": 2476,
                 "name": "LOAN",
-                "nameLocation": "643:4:8",
+                "nameLocation": "643:4:10",
                 "nodeType": "EnumValue",
-                "src": "643:4:8"
+                "src": "643:4:10"
               },
               {
-                "id": 955,
+                "id": 2477,
                 "name": "WITHDRAWAL",
-                "nameLocation": "649:10:8",
+                "nameLocation": "649:10:10",
                 "nodeType": "EnumValue",
-                "src": "649:10:8"
+                "src": "649:10:10"
               },
               {
-                "id": 956,
+                "id": 2478,
                 "name": "COLLATERAL",
-                "nameLocation": "661:10:8",
+                "nameLocation": "661:10:10",
                 "nodeType": "EnumValue",
-                "src": "661:10:8"
+                "src": "661:10:10"
               }
             ],
             "name": "STATE",
-            "nameLocation": "626:5:8",
+            "nameLocation": "626:5:10",
             "nodeType": "EnumDefinition",
-            "src": "621:51:8"
+            "src": "621:51:10"
           },
           {
             "canonicalName": "OpenLibrary.STATETYPE",
-            "id": 960,
+            "id": 2482,
             "members": [
               {
-                "id": 958,
+                "id": 2480,
                 "name": "FIXED",
-                "nameLocation": "692:5:8",
+                "nameLocation": "692:5:10",
                 "nodeType": "EnumValue",
-                "src": "692:5:8"
+                "src": "692:5:10"
               },
               {
-                "id": 959,
+                "id": 2481,
                 "name": "FLEXIBLE",
-                "nameLocation": "699:8:8",
+                "nameLocation": "699:8:10",
                 "nodeType": "EnumValue",
-                "src": "699:8:8"
+                "src": "699:8:10"
               }
             ],
             "name": "STATETYPE",
-            "nameLocation": "681:9:8",
+            "nameLocation": "681:9:10",
             "nodeType": "EnumDefinition",
-            "src": "676:33:8"
+            "src": "676:33:10"
           }
         ],
-        "scope": 962,
-        "src": "70:683:8",
+        "scope": 2484,
+        "src": "70:689:10",
         "usedErrors": []
       }
     ],
-    "src": "35:718:8"
+    "src": "35:724:10"
   },
   "compiler": {
     "name": "solc",
@@ -237,7 +237,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-09-30T01:03:14.740Z",
+  "updatedAt": "2021-09-30T23:52:23.926Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

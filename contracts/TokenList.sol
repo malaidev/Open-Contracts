@@ -3,10 +3,14 @@ pragma solidity >=0.8.7 <0.9.0;
 
 import "./AccessRegistry.sol";
 import "./util/Address.sol";
+import "./util/IBEP20.sol";
+import "./util/Pausable.sol";
 
-contract TokenList {
+contract TokenList is Pausable{
 
   bytes32 adminTokenList;
+  address adminTokenListAddress;
+  address superAdminAddress;
   
   struct MarketData {
     bytes32 market;
@@ -25,8 +29,24 @@ contract TokenList {
   event TokenSupportAdded(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
   event TokenSupportUpdated(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
   event TokenSupportRemoved(bytes32 indexed market_, uint256 indexed _timestamp);
+  
+  constructor(address superAdminAddr_) {
+    superAdminAddress = superAdminAddr_;
+    adminTokenListAddress = msg.sender;
+  }
+  receive() external payable {
+    payable(adminTokenListAddress).transfer(msg.value);
+  }
+  
+  fallback() external payable {
+    payable(adminTokenListAddress).transfer(msg.value);
+  }
+  
+  function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
+    IBEP20(token_).transfer(recipient_, value_);
+    return true;
+  }
 
- 
   function isTokenSupported(bytes32  market_) external view returns (bool)	{
 		_isTokenSupported(market_);
 		return true;
@@ -35,9 +55,17 @@ contract TokenList {
 	function _isTokenSupported(bytes32  market_) internal view {
 		require(tokenSupportCheck[market_] == true, "Hey, Token is not supported");
 	}
+
+  function getMarketTokenAddress(bytes32 market_) external view returns (address) {
+    return indMarketData[market_].tokenAddress;
+  }
+
+  function getMarketDecimal(bytes32 market_) external view returns (uint) {
+    return indMarketData[market_].decimals;
+  }
   
   // ADD A NEW TOKEN SUPPORT
-  function addTokenSupport(bytes32 market_,uint256 decimals_,address tokenAddress_) external returns (bool) {
+  function addTokenSupport(bytes32 market_,uint256 decimals_,address tokenAddress_) external onlyAdmin returns (bool) {
     _addTokenSupport(market_, decimals_, tokenAddress_);
 
     emit TokenSupportAdded(market_,decimals_,tokenAddress_,block.timestamp);
@@ -55,7 +83,7 @@ contract TokenList {
     marketIndex[market_] = markets.length-1;
   }
 
-  function removeTokenSupport(bytes32 market_) external returns(bool) {
+  function removeTokenSupport(bytes32 market_) external onlyAdmin returns(bool) {
     _removeTokenSupport(market_);
     emit TokenSupportRemoved(market_, block.timestamp);
     return bool(true);
@@ -80,7 +108,7 @@ contract TokenList {
     delete marketIndex[market_];
   }
   
-  function updateTokenSupport(bytes32 market_, uint256 decimals_,address tokenAddress_) external returns(bool){
+  function updateTokenSupport(bytes32 market_, uint256 decimals_,address tokenAddress_) external onlyAdmin returns(bool){
     _updateTokenSupport(market_, decimals_, tokenAddress_);
     emit TokenSupportUpdated(market_,decimals_,tokenAddress_,block.timestamp);
     return bool(true);
@@ -90,7 +118,8 @@ contract TokenList {
     bytes32 market_,
     uint256 decimals_,
     address tokenAddress_
-  ) internal {
+  ) internal
+  {
     MarketData storage marketData = indMarketData[market_];
 
     marketData.market = market_;
@@ -99,4 +128,20 @@ contract TokenList {
 
     tokenSupportCheck[market_] = true;
   }
+
+  modifier onlyAdmin() {
+    require(msg.sender == adminTokenListAddress ||
+      msg.sender == superAdminAddress,
+      "Only the TokenList admin can modify this function"
+    );
+    _;
+  }
+
+  function pause() external onlyAdmin() nonReentrant() {
+       _pause();
+	}
+	
+	function unpause() external onlyAdmin() nonReentrant() {
+       _unpause();   
+	}
 }
