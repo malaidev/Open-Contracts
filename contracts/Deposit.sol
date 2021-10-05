@@ -108,7 +108,6 @@ contract Deposit is Pausable {
 
 	function savingsBalance(bytes32 market_, bytes32 commitment_, BALANCETYPE request_) external returns (uint) {
 		uint savingsBalance_;
-<<<<<<< HEAD
 
 		_savingsBalance(msg.sender, market_, commitment_, request_);
 		return savingsBalance_;
