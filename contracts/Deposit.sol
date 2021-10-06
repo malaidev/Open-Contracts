@@ -23,6 +23,7 @@ contract Deposit {
         DepositRecords[] deposits;
         Yield[] accruedYieldLedger;
     }
+
     struct DepositRecords   {
         uint id;
         uint firstDeposit;
@@ -39,8 +40,9 @@ contract Deposit {
         bytes32 market; // market_ this yield is calculated for
         uint accruedYield; // accruedYield in 
         bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
         uint timelockValidity; // timelock duration
-        uint activationBlock; // blocknumber when yield withdrawal request was placed.
+        uint releaseAfter; // block.number(isTimelockActivated) + timelockValidity.
     }
 
 	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
@@ -58,12 +60,12 @@ contract Deposit {
 		adminDepositAddress = msg.sender;
 	}
 
-	function hasAccount(address account_) public view returns (bool)	{
+	function hasAccount(address account_) external view returns (bool)	{
 		_hasAccount(account_);
 		return true;
 	}
 
-	function hasYield(address account_, bytes32 market_, bytes32 commitment_) public view returns (bool)	{
+	function hasYield(address account_, bytes32 market_, bytes32 commitment_) external view returns (bool)	{
 		_hasYield(account_, market_, commitment_);
 		return true;
 	}
@@ -90,20 +92,30 @@ contract Deposit {
 
 
 	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external nonReentrant() returns (bool){
-		require(_isMarketSupported(market_) && _hasAccount(msg.sender), "Account does not exist, or Unsupportd market");
-		
-		uint savingsBalance_;
-		_savingsBalance(msg.sender, market_, commitment_, request_);
 
-		require(amount_ >= savingsBalance_, "Insufficient balance");
-		_updateSavingsBalance(msg.sender, commitment_, amount_, request_);
-		_connectMarket(market_, amount_);
-		token.transfer(reserve.address, amount_);
-		// token.transfer(address(reserve), amount_);
+		_withdrawFunds(msg.sender, market_, commitment_, amount_, request_);
 
 		emit Withdrawal(msg.sender,market_, amount_, commitment_, block.timestamp);
 		return true;
 		
+	}
+
+
+	function _withdrawFunds(address account_, bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) internal{
+		require(_isMarketSupported(market_) && _hasAccount(msg.sender), "Account does not exist, or Unsupportd market");
+		
+		// if withdrawal permitted? else ActivateTimelock.
+		//  if withdrawn funds, convertYield to deposit of the sameKind.
+		// withdrawYield can be another function with similar functionality.
+		uint savingsBalance_;
+		_savingsBalance(account_, market_, commitment_, request_);
+
+		require(amount_ >= savingsBalance_, "Insufficient balance");
+		_updateSavingsBalance(account_, commitment_, amount_, request_);
+		markets._connectMarket(market_, amount_);
+		token.transfer(reserve.address, amount_);
+		// token.transfer(address(reserve), amount_);
+
 	}
 
 	// function convertDeposit() external nonReentrant() {}
@@ -124,7 +136,6 @@ contract Deposit {
 	) internal {
 		_isMarketSupported(market_);
 		_createSavingsAccount(account_);
-		IBEP20 token;
 		
 		markets._connectMarket(market_, amount_, token);
 		return this;
@@ -145,7 +156,7 @@ contract Deposit {
 
 	function _updateYield(address account_,bytes32 market_,bytes32 commitment_) internal {
 		
-		Yield storage yield = indYieldRecords[account_][market_][commitment_];
+		Yield storage yield = indYieldRecord[account_][market_][commitment_];
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
 		APY storage apy = comptroller.indAPYRecords[commitment_];
 
@@ -194,12 +205,13 @@ contract Deposit {
 		APY storage apy = comptroller.indAPYRecords[commitment_];
 		uint256 id;
 
-		if (deposit.firstDeposit == 0 && commitment_ != comptroller.commitment[0]) {
-			if (savingsAccount.deposits.length == 0) {
+		if (savingsAccount.deposits.length == 0) {
 				id = 1;
 			} else {
 				id = savingsAccount.deposits.length + 1;
-			}
+		}
+
+		if (deposit.firstDeposit == 0 && commitment_ != comptroller.commitment[0]) {
 
 			deposit = DepositRecords({
 				id: id,
@@ -210,7 +222,6 @@ contract Deposit {
 				lastUpdate: block.number
 			});
 
-			savingsAccount.deposits.push(deposit);
 			yield = Yield({
 				id: id,
 				oldLengthAccruedYield: apy.blockNumbers.length,
@@ -219,16 +230,14 @@ contract Deposit {
 				accruedYield: 0,
 				timelockApplicable: true,
 				timelockValidity: 86400,
-				activationBlock: 0
+				activationBlock: _withdrawFunds(msg.sender,)
 			});
+			
+			savingsAccount.deposits.push(deposit);
+			savingsAccount.accruedYieldLedger.push(yield);
 		} else if (
-			deposit.firstDeposit == 0 && commitment_ == comptroller.commitment[0]
-		) {
-			if (savingsAccount.deposits.length == 0) {
-				id = 1;
-			} else {
-				id = savingsAccount.deposits.length + 1;
-			}
+			deposit.firstDeposit == 0 && commitment_ == comptroller.commitment[0]) {
+			
 			// id = savingsAccount.deposits.length;
 			deposit = DepositRecords({
 				id: id,
@@ -249,11 +258,18 @@ contract Deposit {
 				timelockValidity: 0,
 				activationBlock: 0
 			});
+
+			savingsAccount.deposits.push(deposit);
+			savingsAccount.accruedYieldLedger.push(yield);
+
 			} else if (deposit.firstDeposit != 0) {
 				deposit.amount_ += amount_;
 				deposit.lastUpdate = block.number;
-				savingsAccount.deposits[deposit.id].amount += amount_;
-				savingsAccount.deposits[deposit.id].lastUpdate += block.number;
+
+				savingsAccount.deposits[deposit.id-1].amount += amount_;
+				savingsAccount.deposits[deposit.id-1].lastUpdate += block.number;
+
+				// _updateYield(account_, market_, commitment_);
 			}
 	}
 
@@ -262,7 +278,7 @@ contract Deposit {
 	}
 
 	function _hasYield(address account_, bytes32 market_, bytes32 commitment_) internal 	{
-		Yield storage yield = indYieldRecords[account_][market_][commitment_];
+		Yield storage yield = indYieldRecord[account_][market_][commitment_];
 		require(yield.id !=0, "Yield does not exist");
 		return this;
 	}
@@ -290,7 +306,7 @@ contract Deposit {
 		function _savingsBalance(address account_, bytes32 market_, bytes32 commitment_, BALANCETYPE request_) internal	{
 		
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
-		Yield storage yield = indYieldRecords[account_][market_][commitment_];
+		Yield storage yield = indYieldRecord[account_][market_][commitment_];
 
 		if (request_ == BALANCETYPE.DEPOSIT)	{
 			savingsBalance_ = deposit.amount;
@@ -308,7 +324,7 @@ contract Deposit {
 	function _updateSavingsBalance(address account_, bytes32 commitment_, uint amount_, BALANCETYPE request_) internal {
 
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
-		Yield storage yield = indYieldRecords[account_][market_][commitment_];
+		Yield storage yield = indYieldRecord[account_][market_][commitment_];
 
 		if (request_ == BALANCETYPE.DEPOSIT)	{
 			deposit.amount -= amount_;
