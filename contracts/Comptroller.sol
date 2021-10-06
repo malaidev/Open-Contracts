@@ -14,19 +14,22 @@ contract Comptroller is Pausable {
   uint public apr;
   uint public apy;
 
+
+/// @notice each APY or APR struct holds the recorded changes in interest data & the
+/// corresponding blocknumbers for a particular commitment type.
+
   struct APY  {
-    bytes32 commitment; // validity
-    uint[] blockNumbers; // when the apy changes were made
-    uint[] apyChangeRecords; // the apy changes.
+    bytes32 commitment; 
+    uint[] blockNumbers; // ledger of blockNumbers when the APY changes were made.
+    uint[] apyChangeRecords; // ledger of APY changes.
   }
 
   struct APR  {
     bytes32 commitment; // validity
-    uint[] blockNumbers; // when the apy changes were made
-    uint[] aprChangeRecords; // the apy changes.
+    uint[] blockNumbers; // ledger of blockNumbers when the APR changes were made.
+    uint[] aprChangeRecords; // ledger of APR changes.
   }
 
-  
   
   // Latest Individual apy/apr data
   mapping(bytes32 => APY) indAPYRecords;
@@ -36,10 +39,6 @@ contract Comptroller is Pausable {
   event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
   event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
   
-<<<<<<< HEAD
-  constructor() {
-    adminComptrollerAddress = msg.sender;
-=======
   constructor(address superAdminAddr_) {
     superAdminAddress = superAdminAddr_;
     adminComptrollerAddress = msg.sender;
@@ -56,7 +55,6 @@ contract Comptroller is Pausable {
   function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
     IBEP20(token_).transfer(recipient_, value_);
     return true;
->>>>>>> origin/main
   }
 
   function getAPR() external view returns (uint) {
@@ -75,10 +73,6 @@ contract Comptroller is Pausable {
     return apy;
   }
 
-<<<<<<< HEAD
-  function _getAPY(bytes32 commitment_) internal  {
-    // return indAPYRecords.commitment_.apy;
-=======
   function getAPY(bytes32 commitment_) external view returns (uint) {
     return _getAPY(commitment_);
   }
@@ -125,7 +119,6 @@ contract Comptroller is Pausable {
 
   function _getAprBlockNumber(bytes32 commitment_, uint index_) internal view returns (uint) {
     return indAPRRecords[commitment_].blockNumbers[index_];
->>>>>>> origin/main
   }
 
   function liquidationTrigger() external {}
@@ -193,26 +186,9 @@ contract Comptroller is Pausable {
 }
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-// calcYield()
-// calcInterest()
-// struct InterestRates()
-// struct ApyLedger()
-// struct APRLedger()
-// struct SupportedAssets {}
-// updateCdr()
-// updateApy() DONE
-// updateAPR() DONE
-=======
 
 // struct ApyLedger()
 // struct APRLedger()
-=======
-
-// struct ApyLedger()
-// struct APRLedger()
->>>>>>> staging
 // permissibleCDR()
 // reserveFactor() - ReserveFactor is an integer from 1 to 100. Here 1 means 1%.
 // 100 means 100%. Reserve factor determines the minimum reserves that need
@@ -226,7 +202,6 @@ contract Comptroller is Pausable {
 
 // updateApy()
 // updateAPR()
->>>>>>> staging
 // updatePreclosureCharges()
 // updateLoanIssuanceFees()
 // updateLoanClosureFees()

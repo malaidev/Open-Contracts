@@ -5,12 +5,13 @@ import "./AccessRegistry.sol";
 import "./util/IBEP20.sol";
 import "./util/Address.sol";
 import "./util/IBEP20.sol";
-import "./util/Pausable.sol";
+// import "./util/Pausable.sol";
 
-contract TokenList is Pausable{
+contract TokenList /* is Pausable */{
 
   bytes32 adminTokenList;
   address adminTokenListAddress;
+  address superAdminAddress;
 
   bool isReentrant = false;
   
@@ -48,17 +49,12 @@ contract TokenList is Pausable{
     IBEP20(token_).transfer(recipient_, value_);
     return true;
   }
-
-<<<<<<< HEAD
-=======
-
->>>>>>> staging
-  function isTokenSupported(bytes32  market_) external view returns (bool)	{
-		_isTokenSupported(market_);
+  function isMarketSupported(bytes32  market_) external view returns (bool)	{
+		_isMarketSupported(market_);
 		return true;
 	}
 
-	function _isTokenSupported(bytes32  market_) internal view {
+	function _isMarketSupported(bytes32  market_) internal view {
 		require(tokenSupportCheck[market_] == true, "Hey, Token is not supported");
 	}
 
@@ -99,7 +95,6 @@ contract TokenList is Pausable{
 
 
     tokenSupportCheck[market_] = false;
-
     delete indMarketData[market_];
     
     if (marketIndex[market_] >= markets.length) return;
@@ -120,7 +115,7 @@ contract TokenList is Pausable{
     return bool(true);
   }
 
-  function _connectMarket(bytes32 market_, uint256 amount_, IBEP20 token) internal {
+  function _connectMarket(bytes32 market_, uint256 amount_, IBEP20 token) internal view {
 		MarketData storage marketData = indMarketData[market_];
 		address marketAddress = marketData.tokenAddress;
 		token = IBEP20(marketAddress);
