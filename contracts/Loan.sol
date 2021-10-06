@@ -87,7 +87,7 @@ contract Loan {
   mapping(address => mapping(bytes32 => mapping(bytes32 => DeductibleInterest))) indaccruedInterest;
   mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralYield))) indCollateralisedDepositRecords;
 
-  event LoanProcessed(address indexed account,bytes32 indexed market,uint256 indexed amount,bytes32 loanCommitment,uint256 timestamp);
+  event NewLoanProcessed(address indexed account,bytes32 indexed market,uint256 indexed amount,bytes32 loanCommitment,uint256 timestamp);
   event LoanRepaid(address indexed account, uint256 indexed id,  bytes32 market, uint256 indexed amount, uint256 timestamp);
   event WithdrawLoan(address indexed account, uint256 indexed id,  bytes32 market, uint256 indexed amount, uint256 timestamp);
 
@@ -108,13 +108,14 @@ contract Loan {
       APR storage apr = comptroller.indAPRRecords[commitment_];
       
       _ensureLoanAccount(msg.sender);
-      _processLoan(msg.sender,market_,commitment_, loanAmount_, collateral_, collateralAmount_);
       
-      emit LoanProcessed(msg.sender, market_,loanAmount_, commitment_, block.timetstamp);
+      require(loan.id == 0, "Add on loans on the same market is not permitted");
+      _processNewLoan(msg.sender,market_,commitment_, loanAmount_, collateral_, collateralAmount_);
+      
+      emit NewLoanProcessed(msg.sender, market_,loanAmount_, commitment_, block.timetstamp);
       return bool(sucess);
       // Process the loan & update the records.
   }
-
   function _preLoanRequestProcess(bytes32 market_,
     bytes32 commitment_,
     uint256 loanAmount_,
@@ -141,15 +142,15 @@ contract Loan {
     //   (totalDeposits) - activeLoans.
   }
 
-  function _connectMarkets(bytes32 market_, uint256 loanAmount_, bytes32 collateralMarket_, uint256 collateralAmount_) internal {
-		MarketData storage marketData = markets.indMarketData[market_];
-		marketAddress = marketData.tokenAddress;
-		token = IBEP20(marketAddress);
-		amount_ *= marketData.decimals;
-	}
+  // function _connectMarkets(bytes32 market_, uint256 loanAmount_, bytes32 collateralMarket_, uint256 collateralAmount_) internal {
+	// 	MarketData storage marketData = markets.indMarketData[market_];
+	// 	marketAddress = marketData.tokenAddress;
+	// 	token = IBEP20(marketAddress);
+	// 	amount_ *= marketData.decimals;
+	// }
 
 
-    function _processLoan(address account_, bytes32 market_,
+    function _processNewLoan(address account_, bytes32 market_,
       bytes32 commitment_,
       uint256 loanAmount_,
       bytes32 collateralMarket_,
@@ -171,16 +172,15 @@ contract Loan {
           id = loanAccount.loans.length + 1;
       }
 
-      if (loan.initialLoan == 0 && commitment_ == comptroller.commitment[0]) {
-
-        loan = LoanRecords({
-          id:id,
-          initialLoan: block.number,
-          market: market_,
-          commitment: commitment_,
-          loanAmount:loanAmount_,
-          lastUpdate: block.number
-        });
+      if (commitment_ == comptroller.commitment[0]) {
+          loan = LoanRecords({
+            id:id,
+            initialLoan: block.number,
+            market: market_,
+            commitment: commitment_,
+            loanAmount:loanAmount_,
+            lastUpdate: block.number
+          });
 
         collateral = CollateralRecords({
           id:id,
@@ -191,7 +191,7 @@ contract Loan {
           timelockValidity: 0,
           isTimelockActivated: true,
           activationBlock: 0
-        });
+          });
 
         deductibleInterest = DeductibleInterest({
           id:id,
@@ -203,14 +203,14 @@ contract Loan {
           isTimelockActivated: true,
           timelockValidity: 0,
           timelockActivationBlock: block.number
-        });
+          });
 
         loanAccount.loans.push(loan);
         loanAccount.collaterals.push(collateral);
-        loanAccount.accruedYield.push(0);
         loanAccount.accruedInterest.push(deductibleInterest);
-
-      } else if (loan.initialLoan == 0 && commitment_ == comptroller.commitment[2]) {
+        loanAccount.accruedYield.push(0);
+      }
+      else if (comptroller.commitment[2]) {
         /// Here the commitment is for ONEMONTH. But Yield is for TWOWEEKMCP
         loan = LoanRecords({
           id:id,
@@ -246,20 +246,19 @@ contract Loan {
         cYield = CollateralYield({
           id:id,
           market:collateralMarket_,
-          commitment: commitment_,
-          amount: collateralAmount_
-
+          commitment: comptroller.commitment[1],
+          amount: collateralAmount_,
+          isCollateralisedDeposit: true,
+          timelockValidity: 86400,
+          isTimelockActivated:false,
+          activationBlock:0             
         });
 
         loanAccount.loans.push(loan);
         loanAccount.collaterals.push(collateral);
         loanAccount.accruedInterest.push(deductibleInterest);
-        loanAccount.accruedYield.push(0);
-
-      } else if (loan.initialLoan != 0)  {
-        
-      }
-
+        loanAccount.accruedYield.push(cYield);
+      } 
     }
 
     function _hasLoanAccount(address account_) internal  {

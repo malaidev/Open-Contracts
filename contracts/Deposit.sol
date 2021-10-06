@@ -65,6 +65,22 @@ contract Deposit {
 		return true;
 	}
 
+	function savingsBalance(bytes32 market_, bytes32 commitment_, BALANCETYPE request_) external returns (uint) {
+		uint savingsBalance_;
+
+		_savingsBalance(msg.sender, market_, commitment_, request_);
+		return savingsBalance_;
+	}
+
+	function convertYield(bytes32 market_, bytes32 oldCommitment_, bytes32 newCommitment_) external nonReentrant() returns (bool){
+		_convertYield(market_,oldCommitment_, newCommitment_) ;
+
+		uint amount_;
+
+		emit YieldDeposited(msg.sender, market_, newCommitment_, amount_);
+		return true;
+	}
+
 	function hasYield(address account_, bytes32 market_, bytes32 commitment_) external view returns (bool)	{
 		_hasYield(account_, market_, commitment_);
 		return true;
@@ -82,14 +98,6 @@ contract Deposit {
 		emit NewDeposit(msg.sender, market_, commitment_, amount_);
 		return true;
 	}
-
-	function savingsBalance(bytes32 market_, bytes32 commitment_, BALANCETYPE request_) external returns (uint) {
-		uint savingsBalance_;
-
-		_savingsBalance(msg.sender, market_, commitment_, request_);
-		return savingsBalance_;
-	}
-
 
 	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external nonReentrant() returns (bool){
 
@@ -119,15 +127,6 @@ contract Deposit {
 	}
 
 	// function convertDeposit() external nonReentrant() {}
-
-	function convertYield(bytes32 market_, bytes32 oldCommitment_, bytes32 newCommitment_) external nonReentrant() returns (bool){
-		_convertYield(market_,oldCommitment_, newCommitment_) ;
-
-		uint amount_;
-
-		emit YieldDeposited(msg.sender, market_, newCommitment_, amount_);
-		return true;
-	}
 
 	function _preDepositProcess(
 		address account_,
