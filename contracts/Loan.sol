@@ -89,7 +89,8 @@ contract Loan {
   mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralYield))) indCollateralisedDepositRecords;
 
   event NewLoanProcessed(address indexed account,bytes32 indexed market,uint256 indexed amount,bytes32 loanCommitment,uint256 timestamp);
-  event LoanRepaid(address indexed account, uint256 indexed id,  bytes32 market, uint256 indexed amount, uint256 timestamp);
+  event LoanRepaid(address indexed account, uint256 indexed id,  bytes32 indexed market, uint256 timestamp);
+  // event LoanClosed(address indexed account, uint256 indexed id,  bytes32 market, uint256 indexed amount, uint256 timestamp);
   event CollateralAdd(address indexed account, uint256 indexed id,  uint amount, uint256 timestamp);
   event WithdrawLoan(address indexed account, uint256 indexed id,  bytes32 market, uint256 indexed amount, uint256 timestamp);
 
@@ -119,26 +120,32 @@ contract Loan {
       return bool(sucess);
       // Process the loan & update the records.
   }
-  function _preLoanRequestProcess(bytes32 market_,
-    bytes32 commitment_,
-    uint256 loanAmount_,
-    bytes32 collateralMarket_,
-    uint256 collateralAmount_) internal {
-    require(loanAmount_ !=0 && collateralAmount_!=0, "Loan or collateral cannot be zero");
-    _isMarketSupported(market_, collateral_);
 
-    // IBEP20 loanToken;
-    // IBEP20 collateralToken;
 
-    markets._connectMarket(market_, loanAmount_, loanToken);
+  function addCollateral(bytes32 loanMarket_, bytes32 loanCommitment_, bytes32 collateralMarket_, bytes32 collateralAmount_) external returns (bool)  {
+    LoanAccount storage loanAccount = loanPassbook[msg.sender];
+    LoanRecords storage loan = indLoanRecords[msg.sender][loanMarket_][loanCommitment_];
+    CollateralRecords storage collateral = indCollateralRecords[msg.sender][loanMarket_][loanCommitment_];
+    DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][loanMarket_][loanCommitment_];
+    CollateralYield storage cYield = indCollateralisedDepositRecords[msg.sender][loanMarket_][loanCommitment_];
+    APR storage apr = comptroller.indAPRRecords[loanCommitment_];
+
+    _preAddCollateralProcess(msg.sender, loanMarket_, loanCommitment_);
+
+    _updateDeductibleInterest(msg.sender, loan.id);
+    if (collateral.isCollateralisedDeposit)  {
+      _updateCollateralYield(msg.sender, cYield.id);
+    }
+    
     markets._connectMarket(collateralMarket_, collateralAmount_, collateralToken);
-    _cdrCheck(loanAmount_, collateralAmount_);
-  }
+    collateralToken.transfer(address(reserve), collateralAmount_);
 
-  function _isMarketSupported(bytes32 market_, bytes32 collateralMarket_) internal {
-    require(markets.tokenSupportCheck[market_] != false && markets.tokenSupportCheck[collateral_] != false, "Unsupported market");
-  }
+    _addCollateral(loan.id, loanMarket_, loanCommitment_, collateralMarket_, collateralAmount_);
+    
+    emit CollateralAdd(msg.sender, loan.id, collateralAmount_, block.timestamp);
 
+    return true;
+  }
   function _cdrCheck(uint loanAmount_, uint collateralAmount_) internal {
     // fetch the usd price of the loanAmount_, and collateralAmount.
     //   check if the collateral amount / loanAmount_ is within the permissible
@@ -278,34 +285,8 @@ contract Loan {
 		}
     return this;
 	}
-
-  function addCollateral(bytes32 loanMarket_, bytes32 loanCommitment_, bytes32 collateralMarket_, bytes32 collateralAmount_) external returns (bool)  {
-    LoanAccount storage loanAccount = loanPassbook[msg.sender];
-    LoanRecords storage loan = indLoanRecords[msg.sender][loanMarket_][loanCommitment_];
-    CollateralRecords storage collateral = indCollateralRecords[msg.sender][loanMarket_][loanCommitment_];
-    DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][loanMarket_][loanCommitment_];
-    CollateralYield storage cYield = indCollateralisedDepositRecords[msg.sender][loanMarket_][loanCommitment_];
-    APR storage apr = comptroller.indAPRRecords[loanCommitment_];
-
-    _preAddCollateralProcess(msg.sender, loanMarket_, loanCommitment_);
-
-    _updateDeductibleInterest(msg.sender, loan.id);
-    if (collateral.isCollateralisedDeposit)  {
-      _updateCollateralYield(msg.sender, cYield.id);
-    }
-    
-    markets._connectMarket(collateralMarket_, collateralAmount_, collateralToken);
-    collateralToken.transfer(address(reserve), collateralAmount_);
-
-    _addCollateral(loan.id, loanMarket_, loanCommitment_, collateralMarket_, collateralAmount_);
-    
-    emit CollateralAdd(msg.sender, loan.id, collateralAmount_, block.timestamp);
-
-    return true;
-  }
-
   function _preAddCollateralProcess(address account_,bytes32 loanMarket_, bytes32 loanCommitment_) internal {
-    _isMarketSupported(loanMarket_, loanCommitment_);
+    _isMarketSupported(loanMarket_);
 
     require(loanAccount.accOpenTime !=0, "Loan account does not exist");
     require(loan.id !=0, "Loan record does not exist");
@@ -316,6 +297,7 @@ contract Loan {
     
     require(loan.id == collateral.id == deductibleInterest.id,"Something is wrong" );
     require(loanAccount.collaterals[id-1].id == collateral.id, "Collateral does not match");
+    
     return this;
   }
 
@@ -333,10 +315,11 @@ contract Loan {
    function _addCollateral(uint id, bytes32 loanMarket_, bytes32 loanCommitment_, bytes32 collateralMarket_, bytes32 collateralAmount_ ) internal {
       
     require(collateral.id == loan.id && collateral.id == deductibleInterest.id, "crosscheck once");
-    // update collateralRecords
+    
     collateral.amount += collateralAmount_;
-    // update loanAccountPointer 
     loanAccount.collaterals[loan.id-1].amount = collateral.amount;
+
+    return this;
   }
 
   function swapLoan(bytes32 market, uint loanId,uint amount, bytes32 secondaryMarket, uint swappedAmount) external returns(bool)  {}
@@ -348,23 +331,41 @@ contract Loan {
   function switchLoanType() external {}
 
   function _switchLoanType() internal {}
-
-  function currentApr() public {}
+  
+  function _calcValue(bytes32 market_, uint amount_) internal {
+    
+  }
 
   function _calcCdr() internal {} // performs a cdr check internally
 
-  function repayLoan(
-    bytes32 market_,
-    bytes32 commitment_,
-    bytes32 amount_
-  ) external nonReentrant returns (bool) {}
+  function repayLoan(bytes32 market_,bytes32 commitment_,bytes32 repayAmount_) external nonReentrant() returns (bool) {
+    
+    _isMarketSupported(market_);
+    require(repayAmount_ !=0, "Amount can not be zero");
 
-  function _repayLoan(
-    bytes32 market_,
-    bytes32 commitment_,
-    bytes32 amount_
-  ) internal {}
+    LoanAccount storage loanAccount = loanPassbook[msg.sender];
+    LoanRecords storage loan = indLoanRecords[msg.sender][market_][commitment_];
+    
+    require(loanAccount.accOpenTime !=0, "Loan account does not exist");
+    require(loan.id !=0, "Loan record does not exist");
+    require(loan.loanAmount - repayAmount_ == 0, "Incorrect payment");
 
+    loanToken.transfer(address(reserve), msg.sender, repayAmount_);
+
+    id = loan.id;
+    
+    delete loanAccount.loans[loan.id-1];
+    delete loan;
+
+    // _releaseCollateral() & _releaseColalteralYield();
+
+    emit LoanRepaid (msg.sender, id, market_, block.timestamp);
+    return true;
+  }
+
+  function _isMarketSupported(bytes32 market_) internal {
+    require(markets.tokenSupportCheck[market_] != false, "Unsupported market");
+  }
   function liquidation(
     bytes32 market_,
     bytes32 commitment_,
@@ -372,10 +373,27 @@ contract Loan {
   ) external nonReentrant returns (bool) {
     //   calls the liqudiate function in the liquidator contract.
   }
+  function _preLoanRequestProcess(bytes32 market_,
+    bytes32 commitment_,
+    uint256 loanAmount_,
+    bytes32 collateralMarket_,
+    uint256 collateralAmount_) internal {
+    require(loanAmount_ !=0 && collateralAmount_!=0, "Loan or collateral cannot be zero");
+    _isMarketSupported(market_);
+    _isMarketSupported(collateralMarket_);
+
+    // IBEP20 loanToken;
+    // IBEP20 collateralToken;
+
+    markets._connectMarket(market_, loanAmount_, loanToken);
+    markets._connectMarket(collateralMarket_, collateralAmount_, collateralToken);
+    _cdrCheck(loanAmount_, collateralAmount_);
+  }
+
 
   function collateralRelease(uint256 loanId, uint256 amount_)
     external
-    nonReentrant
+    nonReentrant()
   {}
 
   modifier nonReentrant() {

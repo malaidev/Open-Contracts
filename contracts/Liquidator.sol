@@ -21,6 +21,7 @@ contract Liquidator is Pausable {
         return true;
     }
 
+
     function pause() external authLiquidator() nonReentrant() {
        _pause();
 	}

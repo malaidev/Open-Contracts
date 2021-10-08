@@ -187,6 +187,8 @@ contract Deposit {
     }  else if (apy.apyChangeRecords.length == yield.oldLengthAccruedYield)  {
           aggregateYield += (block.number - blockNum)*apy.apyChangeRecords[index]/100;
     }
+	// need to add a condition that accounts for multiple deposits of the same kind? Meaning, if 
+	// there is an add-on deposit,
 		yield.accruedYield += deposit.amount * aggregatedYield;
 		yield.oldLengthAccruedYield = apy.blockNumbers.length;
 		yield.oldBlockNum = block.number;
