@@ -121,7 +121,7 @@ contract Comptroller is Pausable {
     return indAPRRecords[commitment_].blockNumbers[index_];
   }
 
-  function liquidationTrigger() external {}
+  function liquidationTrigger(uint loanID) external {}
 
   // SETTERS
   function updateAPY(bytes32 commitment_, uint apy_) external onlyAdmin returns (bool) {

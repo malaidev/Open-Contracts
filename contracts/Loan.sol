@@ -20,7 +20,7 @@ contract Loan {
   Deposit deposit = Deposit(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
   OracleOpen oracle = OracleOpen(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
   Liquidator liquidator = Liquidator(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
-  Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));
+  Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B)); 
   
   IBEP20 loanToken;
   IBEP20 collateralToken;
@@ -32,19 +32,26 @@ contract Loan {
     LoanRecords[] loans; // 2 types of loans. 3 markets intially. So, a maximum o f6 records.
     CollateralRecords[] collaterals;
     DeductibleInterest[] accruedInterest;
-    SwapMarket[] swapMarkets;
+    SwapRecord[] swapMarkets;
     CollateralYield[] accruedYield;
+    LoanState[] loanState;
   }
   struct LoanRecords {
     uint256 id;
-    uint256 initialLoan;
+    uint256 amount;
     bytes32 market;
     bytes32 commitment;
     bool isSwapped; //true or false. Update when a loan is swapped
-    uint256 loanAmount;
     uint256 lastUpdate;
   }
 
+  struct LoanState  {
+    uint id;
+    bytes32 loanMarket;
+    uint actualLoanAmount;
+    bytes32 currentMarket;
+    uint currentLoanAmount;
+  }
   struct CollateralRecords {
     uint256 id;
     bytes32 market;
@@ -80,7 +87,7 @@ contract Loan {
     uint256 timelockActivationBlock; // blocknumber when yield withdrawal request was placed.
   }
 
-  struct SwapMarket {
+  struct SwapRecord {
     uint id; // same as LoanId
     bytes32 loanMarket;
     bytes32 swapMarket;
@@ -88,7 +95,6 @@ contract Loan {
   }
 
   enum CONSIDER {YES, NO}
-
   CONSIDER consider;
 
   mapping(address => LoanAccount) loanPassbook;
@@ -97,22 +103,22 @@ contract Loan {
   mapping(address => mapping(bytes32 => mapping(bytes32 => DeductibleInterest))) indaccruedInterest;
   mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralYield))) indCollateralisedDepositRecords;
   mapping(address => mapping(bytes32 => mapping(bytes32 => SwapMarket))) indSwapRecords;
+  mapping(address => mapping(bytes32 => mapping(bytes32 => LoanState))) indLoanState;
 
   event NewLoanProcessed(address indexed account,bytes32 indexed market,uint256 indexed amount,bytes32 loanCommitment,uint256 timestamp);
   event LoanRepaid(address indexed account, uint256 indexed id,  bytes32 indexed market, uint256 timestamp);
-  // event LoanClosed(address indexed account, uint256 indexed id,  bytes32 market, uint256 indexed amount, uint256 timestamp);
-  event CollateralAdd(address indexed account, uint256 indexed id,  uint amount, uint256 timestamp);
+  event AddCollateral(address indexed account, uint256 indexed id,  uint amount, uint256 timestamp);
   event WithdrawLoan(address indexed account, uint256 indexed id,  bytes32 market, uint256 indexed amount, uint256 timestamp);
-  event SwappedMarket(address indexed account, uint indexed id, bytes32 marketFrom, bytes32 marketTo);
+  event SwappedMarket(address indexed account, uint indexed id, bytes32 marketFrom, bytes32 marketTo, uint timestamp);
 
   constructor() {
     adminLoanAddress = msg.sender;
   }
 
   function loanRequest(bytes32 market_,bytes32 commitment_,uint256 loanAmount_,bytes32 collateralMarket_,uint256 collateralAmount_) external nonReentrant() returns(bool success) {
-      
+
       _preLoanRequestProcess(market_, commitment_, loanAmount_, collateralMarket_, collateralAmount_);      
-      
+            
       LoanAccount storage loanAccount = loanPassbook[msg.sender];
       LoanRecords storage loan = indLoanRecords[msg.sender][market_][commitment_];
       CollateralRecords storage collateral = indCollateralRecords[msg.sender][market_][commitment_];
@@ -123,7 +129,7 @@ contract Loan {
       collateralToken.transfer(address(reserve), collateralAmount_);      
       _ensureLoanAccount(msg.sender);
       
-      require(loan.id == 0 && loan.initialLoan == 0, "Add on loans on the same market is not permitted");
+      require(loan.id == 0 && loan.amount == 0, "Add on loans on the same market is not permitted");
       _processNewLoan(msg.sender,market_,commitment_, loanAmount_, collateral_, collateralAmount_);
       loanToken.transfer(address(reserve), msg.sender, loanAmount_);
       
@@ -133,7 +139,7 @@ contract Loan {
   }
 
 
-  function addCollateral(bytes32 loanMarket_, bytes32 loanCommitment_, bytes32 collateralMarket_, bytes32 collateralAmount_) external returns (bool)  {
+  function addCollateral(bytes32 loanMarket_, bytes32 loanCommitment_, bytes32 collateralMarket_, bytes32 collateralAmount_) external returns (bool success)  {
     LoanAccount storage loanAccount = loanPassbook[msg.sender];
     LoanRecords storage loan = indLoanRecords[msg.sender][loanMarket_][loanCommitment_];
     CollateralRecords storage collateral = indCollateralRecords[msg.sender][loanMarket_][loanCommitment_];
@@ -153,11 +159,11 @@ contract Loan {
 
     _addCollateral(loan.id, loanMarket_, loanCommitment_, collateralMarket_, collateralAmount_);
     
-    emit CollateralAdd(msg.sender, loan.id, collateralAmount_, block.timestamp);
+    emit AddCollateral(msg.sender, loan.id, collateralAmount_, block.timestamp);
 
-    return true;
+    return success;
   }
-  function _cdrCheck(uint loanAmount_, uint collateralAmount_) internal {
+  // function _cdrCheck(uint loanAmount_, uint collateralAmount_) internal {
     // fetch the usd price of the loanAmount_, and collateralAmount.
     //   check if the collateral amount / loanAmount_ is within the permissible
     //   CDR. Permissible cdr is a determinant of reserveFactor. RF =
@@ -170,6 +176,14 @@ contract Loan {
 	// 	token = IBEP20(marketAddress);
 	// 	amount_ *= marketData.decimals;
 	// }
+
+  function _cdrCheck(bytes32 loanMarket_, bytes32 collateralMarket_, uint loanAmount_, uint collateralAmount_) internal {
+    //  check if the 
+
+    oracle.getLatestPrice(loanMarket_);
+    oracle.getLatestPrice(collateralMarket_);
+
+  }
 
 
     function _processNewLoan(address account_, bytes32 market_,
@@ -197,7 +211,7 @@ contract Loan {
       if (commitment_ == comptroller.commitment[0]) {
           loan = LoanRecords({
             id:id,
-            initialLoan: block.number,
+            amount: block.number,
             market: market_,
             commitment: commitment_,
             isSwapped: false,
@@ -237,7 +251,7 @@ contract Loan {
         /// Here the commitment is for ONEMONTH. But Yield is for TWOWEEKMCP
         loan = LoanRecords({
           id:id,
-          initialLoan: block.number,
+          amount: block.number,
           market: market_,
           commitment: commitment_,
           isSwapped: false,
@@ -283,13 +297,14 @@ contract Loan {
         loanAccount.accruedInterest.push(deductibleInterest);
         loanAccount.accruedYield.push(cYield);
       }
-
       return this;
     }
+
 
   function _hasLoanAccount(address account_) internal  {
     require(loanPassbook[account_].accOpenTime!=0, "Loan account does not exist");
   }
+
 
   function _ensureLoanAccount(address account_) internal {
 		if (loanAccount.accOpenTime == 0) {
@@ -298,6 +313,8 @@ contract Loan {
 		}
     return this;
 	}
+
+
   function _preAddCollateralProcess(address account_,bytes32 loanMarket_, bytes32 loanCommitment_) internal {
     _isMarketSupported(loanMarket_);
 
@@ -313,6 +330,8 @@ contract Loan {
     
     return this;
   }
+
+
 
   function _updateDeductibleInterest(address account_, uint loanID) internal {
     if (collateral.commitment == comptroller.commitment[2]) {
@@ -334,36 +353,116 @@ contract Loan {
     return this;
   }
 
+
   function swapLoan(bytes32 loanMarket_, bytes32 commitment_, bytes32 swapMarket_) external nonReentrant() returns (bool success)  {
     
     _hasLoanAccount(msg.sender);
-
     _isMarketSupported(loanMarket_);
     _isMarketSupported(swapMarket_);
 
     LoanAccount storage loanAccount = loanPassbook[msg.sender];
     LoanRecords storage loan = indLoanRecords[msg.sender][loanMarket_][commitment_];
+    LoanState storage loanState = indLoanState[msg.sender][loanMarket_][commitment_];
     DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][loanMarket_][commitment_];
-    SwapMarket storage swap = indSwapRecords[msg.sender][loanMarket_][commitment_];
+    SwapRecord storage swap = indSwapRecords[msg.sender][loanMarket_][commitment_];
 
     require (loan.id !=0, "loan does not exist");
-    require(!loan.isSwapped, "Swapped market exists");
+    require(loan.isSwapped == false, "Swapped market exists");
 
-    swap = SwapRecords({
+    uint swappedAmount;
+    uint num = loan.id - 1;
+
+    ///  ensuring there is no duplicate Loanstate structs
+    delete loanState;
+    delete swap;
+    delete loanAccount.loanState[num];
+    delete loanAccount.swapMarkets[num];
+
+/// Preswap LiquidationCheck()
+    // implement liquidationCheck. i.e. if the swap could lead to a USD price
+    // such that the net asset value is less than or equal to LiquidationPrice.
+    swappedAmount = liquidator.swap(loanMarket_, swapMarket_, loan.amount);
+
+/// Updating SwapRecord
+    swap = SwapRecord({
       id:loan.id,
       loanMarket: loanMarket_,
       swapMarket: swapMarket_,
-      amount: liquidator.swap(loanMarket_, swapMarket_)
+      amount: swappedAmount
     });
 
+/// Updating LoanRecord
     loan.isSwapped = true;
-    loan.lastUpdate = block.number;
-    loanAccount.swapMarkets[id-1] = swap;
+    loan.lastUpdate = block.timestamp;
 
-    emit SwappedMarket(msg.sender, loan.id, loanMarket_, swapMarket_);
+/// Updating LoanState
+    loanState = LoanState({id:loan.id, loanMarket:loanMarket_, actualLoanAmount:loan.amount,currentMarket:swapMarket_, currentLoanAmount:swap.amount});
 
+/// Updating LoanAccount
+    loanAccount.swapMarkets[num] = swap;
+    loanAccount.loan[num].isSwapped = true;
+    loanAccount.loan[num].lastUpdate = block.timestamp;
+    loanAccount.loanState[num] = loanState;
+
+    emit SwappedMarket(msg.sender, loan.id, loanMarket_, swapMarket_, block.timestamp);
     return success;
   }
+
+
+  // SwapToLoan
+
+  function swapToLoan(bytes32 loanMarket_, bytes32 commitment_, bytes32 swapMarket_) external nonReentrant() returns (bool success)  {
+    
+    _hasLoanAccount(msg.sender);
+    _isMarketSupported(loanMarket_);
+    _isMarketSupported(swapMarket_);
+
+    LoanAccount storage loanAccount = loanPassbook[msg.sender];
+    LoanRecords storage loan = indLoanRecords[msg.sender][loanMarket_][commitment_];
+    LoanState storage loanState = indLoanState[msg.sender][loanMarket_][commitment_];
+    DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][loanMarket_][commitment_];
+    SwapRecord storage swap = indSwapRecords[msg.sender][loanMarket_][commitment_];
+
+    require(loan.id !=0, "loan does not exist");
+    require(loan.isSwapped == true, "Swapped market exists");
+    require(swap.swapMarket == swapMarket_, "From market is different than the actual");
+    require(swap.loanMarket == loanMarket_, "loan market is different than the actual");
+
+    uint swappedAmount;
+    uint num = loan.id - 1;
+
+/// Preswap LiquidationCheck()
+    // implement liquidationCheck. i.e. if the swap could lead to a USD price
+    // such that the net asset value is less than or equal to LiquidationPrice.
+    swappedAmount = liquidator.swap(swapMarket_, loanMarket_, swap.amount);
+
+/// Updating LoanRecord
+    loan.amount = swappedAmount;
+    loan.isSwapped = false;
+    loan.lastUpdate = block.timestamp;
+
+/// updating the LoanState
+    loanState.currentMarket = loanMarket_;
+    loanState.currentLoanAmount = swappedAmount;
+  
+  ///  Deleting the swapMarket Record
+    delete swap;
+    delete loanAccount.swapMarkets[num];
+
+/// Updating LoanAccount
+    loanAccount.swapMarkets[num] = swap;
+    loanAccount.loan[num].amount = swappedAmount;
+    loanAccount.loan[num].isSwapped = false;
+    loanAccount.loan[num].lastUpdate = block.timestamp;
+    
+    loanAccount.loanState[num].currentMarket = loanMarket_;
+    loanAccount.loanState[num].currentLoanAmount = swappedAmount;
+
+    emit SwappedMarket(msg.sender, loan.id, swapMarket_, loanMarket_ block.timestamp);
+    return success;
+  }
+
+
   function permissibleWithdrawal() external returns (bool) {}
 
   function _permissibleWithdrawal() internal returns (bool) {}
@@ -372,10 +471,6 @@ contract Loan {
 
   function _switchLoanType() internal {}
   
-  function _calcValue(bytes32 market_, uint amount_) internal {
-    
-  }
-
   function _calcCdr() internal {} // performs a cdr check internally
 
   function repayLoan(CONSIDER repayMarket, CONSIDER swapMarket, bytes32 loanMarket_, bytes32 commitment_ ,  uint amount_) external returns (bool success)  {
@@ -386,26 +481,25 @@ contract Loan {
     CollateralRecords storage collateral = indCollateralRecords[msg.sender][loanMarket_][commitment_];
     DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][loanMarket_][commitment_];
     CollateralYield storage cYield = indCollateralisedDepositRecords[msg.sender][loanMarket_][commitment_];
-    SwapMarket storage swap = indSwapRecords[msg.sender][loanMarket_][commitment_];
+    SwapRecord storage swap = indSwapRecords[msg.sender][loanMarket_][commitment_];
     APR storage apr = comptroller.indAPRRecords[commitment_];
-    
+
+    require (loan.id !=0, "loan does not exist"); // do not need to check whether a loanAccount exists, because loan.id !=0 inherently checks for both the possibiltiies.
+
     if (swapMarket == consider.yes) {
       require(loan.isSwapped == true, "Loan is not swapped");
 
+      // swapMarket.swap(swapMarket(from), loanMarket(to)
+      // _repayLoan(repayAmount == loanAmount from above point, swapAmount ==0)
+
       markets._connectMarket(swap.swapMarket, swap.amount, swapToken);
-
-
-
     }
 
     
     // loanMarket, loanCommitment, repayMarket, repayAmount,  swapMarket
 
     if (SwapMarket == consider.yes) {
-
-
       require (loan.isSwapped == true, "this loan is not swapped");
-
     } else {
       
     }
@@ -413,10 +507,10 @@ contract Loan {
   }
 
 
-
   function _isMarketSupported(bytes32 market_) internal {
     require(markets.tokenSupportCheck[market_] != false, "Unsupported market");
   }
+ 
   function liquidation(
     bytes32 market_,
     bytes32 commitment_,
@@ -424,28 +518,21 @@ contract Loan {
   ) external nonReentrant returns (bool) {
     //   calls the liqudiate function in the liquidator contract.
   }
+
   function _preLoanRequestProcess(bytes32 market_,
     bytes32 commitment_,
     uint256 loanAmount_,
     bytes32 collateralMarket_,
     uint256 collateralAmount_) internal {
     require(loanAmount_ !=0 && collateralAmount_!=0, "Loan or collateral cannot be zero");
+
     _isMarketSupported(market_);
     _isMarketSupported(collateralMarket_);
-
-    // IBEP20 loanToken;
-    // IBEP20 collateralToken;
 
     markets._connectMarket(market_, loanAmount_, loanToken);
     markets._connectMarket(collateralMarket_, collateralAmount_, collateralToken);
     _cdrCheck(loanAmount_, collateralAmount_);
   }
-
-
-  function collateralRelease(uint256 loanId, uint256 amount_)
-    external
-    nonReentrant()
-  {}
 
   modifier nonReentrant() {
     require(isReentrant == false, "Re-entrant alert!");
