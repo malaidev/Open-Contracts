@@ -231,7 +231,7 @@ contract Deposit {
 				accruedYield: 0,
 				timelockApplicable: true,
 				timelockValidity: 86400,
-				activationBlock: _withdrawFunds(msg.sender,)
+				activationBlock: _withdrawFunds(msg.sender)
 			});
 			
 			savingsAccount.deposits.push(deposit);

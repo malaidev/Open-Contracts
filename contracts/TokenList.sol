@@ -4,7 +4,6 @@ pragma solidity >=0.8.7 <0.9.0;
 import "./AccessRegistry.sol";
 import "./util/IBEP20.sol";
 import "./util/Address.sol";
-import "./util/IBEP20.sol";
 // import "./util/Pausable.sol";
 
 contract TokenList /* is Pausable */{
@@ -23,9 +22,15 @@ contract TokenList /* is Pausable */{
   }
 
   bytes32[] markets;
+  bytes32[] markets2;
+
   mapping (bytes32 => bool) public tokenSupportCheck;
   mapping (bytes32=>uint256) marketIndex;
   mapping (bytes32 => MarketData) public indMarketData;
+
+  mapping (bytes32 => bool) public token2SupportCheck;
+  mapping (bytes32=>uint256) market2Index;
+  mapping (bytes32 => MarketData) public indMarket2Data;
 
 //   MarketData internal rmMarketData;
 
@@ -33,6 +38,22 @@ contract TokenList /* is Pausable */{
   event TokenSupportUpdated(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
   event TokenSupportRemoved(bytes32 indexed market_, uint256 indexed _timestamp);
   
+  event Token2Added(
+    bytes32 indexed market_,
+    uint256 decimals_,
+    address indexed tokenAddress_,
+    uint256 indexed _timestamp
+  );
+  
+  event Token2Updated(
+    bytes32 indexed market_,
+    uint256 decimals_,
+    address indexed tokenAddress_,
+    uint256 indexed _timestamp
+  );
+  
+  event Token2Removed(bytes32 indexed market_, uint256 indexed _timestamp);
+
   constructor(address superAdminAddr_) {
     superAdminAddress = superAdminAddr_;
     adminTokenListAddress = msg.sender;
@@ -137,6 +158,89 @@ contract TokenList /* is Pausable */{
     tokenSupportCheck[market_] = true;
   }
 
+  //SecondaryToken
+  function isToken2Supported(bytes32  market_) external view returns (bool)	{
+		_isToken2Supported(market_);
+		return true;
+	}
+
+	function _isToken2Supported(bytes32  market_) internal view {
+		require(token2SupportCheck[market_] == true, "Secondary Token is not supported");
+	}
+
+  function getMarketToken2Address(bytes32 market_) external view returns (address) {
+    return indMarket2Data[market_].tokenAddress;
+  }
+
+  function getMarket2Decimal(bytes32 market_) external view returns (uint) {
+    return indMarket2Data[market_].decimals;
+  }
+  
+  // ADD A NEW TOKEN SUPPORT
+  function addToken2Support(bytes32 market_,uint256 decimals_,address tokenAddress_) 
+    external authTokenList returns (bool) 
+  {
+    _addToken2Support(market_, decimals_, tokenAddress_);
+
+    emit Token2Added(market_,decimals_,tokenAddress_,block.timestamp);
+    return bool(true);
+  }
+
+  function _addToken2Support( bytes32 market_,uint256 decimals_,address tokenAddress_) internal {
+    MarketData storage marketData = indMarket2Data[market_];
+    
+    marketData.market = market_;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = decimals_;
+    
+    markets2.push(market_);
+    token2SupportCheck[market_] = true;
+    market2Index[market_] = markets2.length-1;
+  }
+
+  function removeToken2Support(bytes32 market_) external authTokenList returns(bool) {
+    _removeToken2Support(market_);
+    emit Token2Removed(market_, block.timestamp);
+    return bool(true);
+  }
+
+  function _removeToken2Support(bytes32 market_) internal {
+    token2SupportCheck[market_] = false;
+    delete indMarket2Data[market_];
+
+    if (market2Index[market_] >= markets2.length) return;
+
+    bytes32 lastmarket = markets2[markets2.length - 1];
+
+    if (market2Index[lastmarket] != market2Index[market_]) {
+      market2Index[lastmarket] = market2Index[market_];
+      markets2[market2Index[market_]] = lastmarket;
+    }
+    markets2.pop();
+    delete market2Index[market_];
+  }
+  
+  function updateToken2Support(bytes32 market_, uint256 decimals_,address tokenAddress_) 
+    external authTokenList returns(bool)
+  {
+    _updateToken2Support(market_, decimals_, tokenAddress_);
+    emit Token2Updated(market_,decimals_,tokenAddress_,block.timestamp);
+    return bool(true);
+  }
+
+  function _updateToken2Support(
+    bytes32 market_,
+    uint256 decimals_,
+    address tokenAddress_
+  ) internal {
+    MarketData storage marketData = indMarket2Data[market_];
+
+    marketData.market = market_;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = decimals_;
+
+    token2SupportCheck[market_] = true;
+  }
 
 	modifier nonReentrant() {
 		require(isReentrant == false, "Re-entrant alert!");
