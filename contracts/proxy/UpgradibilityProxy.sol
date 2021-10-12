@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
+pragma solidity >=0.8.9 <0.9.0;
 import "./Proxy.sol";
 import "../util/IBEP20.sol";
 import "../util/Pausable.sol";

@@ -9,7 +9,7 @@
   "deployedGeneratedSources": [],
   "sourceMap": "155:510:14:-:0;;;;;;;;;;;;;;;;;;;",
   "deployedSourceMap": "155:510:14:-:0;;;;;",
-  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity >=0.8.7 <0.9.0;\r\n\r\nimport './TokenList.sol';\r\nimport './Comptroller.sol';\r\nimport './Reserve.sol';\r\n\r\n\r\n\r\ncontract Passbook {\r\n\r\n    // bytes32[] commitment; \r\n\r\n    // bytes32 adminPassbook;\r\n    // address adminPassbookAddress;\r\n\r\n    // TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);\r\n    // Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);\r\n    // Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));\r\n\r\n   \r\n    \r\n\r\n    \r\n\r\n    \r\n\r\n// PayableInterest{} stores the amount_ of interest deducted.\r\n    \r\n\r\n        \r\n\r\n    \r\n}",
+  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity >=0.8.9 <0.9.0;\r\n\r\nimport './TokenList.sol';\r\nimport './Comptroller.sol';\r\nimport './Reserve.sol';\r\n\r\n\r\n\r\ncontract Passbook {\r\n\r\n    // bytes32[] commitment; \r\n\r\n    // bytes32 adminPassbook;\r\n    // address adminPassbookAddress;\r\n\r\n    // TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);\r\n    // Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);\r\n    // Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));\r\n\r\n   \r\n    \r\n\r\n    \r\n\r\n    \r\n\r\n// PayableInterest{} stores the amount_ of interest deducted.\r\n    \r\n\r\n        \r\n\r\n    \r\n}",
   "sourcePath": "F:\\workspace\\Open-protocol\\contracts\\Passbook.sol",
   "ast": {
     "absolutePath": "project:/contracts/Passbook.sol",

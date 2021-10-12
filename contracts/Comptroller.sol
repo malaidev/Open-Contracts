@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
+pragma solidity >=0.8.9 <0.9.0;
 import "./util/Address.sol";
 import "./util/Pausable.sol";
 import "./util/IBEP20.sol";
@@ -219,7 +219,7 @@ contract Comptroller is Pausable {
       }
     } else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
       if (apy.time[index] < time || apy.time[index] == time) {
-        aggregateYield += (block.timestamp - time)*apy.aprChangeRecords[index]/100;
+        aggregateYield += (block.timestamp - time)*apy.apyChangeRecords[index]/100;
         // Convert the aprChangeRecords to the lowest unit value.
         // aggregateYield = (((apr.time[newIndex] - time) *apr.aprChangeRecords[index])/100)*365/(100*1000);
       }

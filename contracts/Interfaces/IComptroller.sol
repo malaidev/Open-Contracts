@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
+pragma solidity >=0.8.9 <0.9.0;
 interface IComptroller {
     function getAPR() external view returns (uint);
     function getAPR(bytes32 commitment_) external view returns (uint);

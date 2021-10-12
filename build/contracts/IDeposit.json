@@ -67,7 +67,7 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity >=0.8.7 <0.9.0;\r\ninterface IDeposit {\r\n    function createDeposit(bytes32 market_,bytes32 commitment_,uint256 amount_) external    returns (bool);\r\n    function savingsBalance() external;\r\n\tfunction withdrawFunds() external;\r\n\tfunction convertDeposit() external;\r\n\tfunction convertYield() external;\r\n}",
+  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity >=0.8.9 <0.9.0;\r\ninterface IDeposit {\r\n    function createDeposit(bytes32 market_,bytes32 commitment_,uint256 amount_) external    returns (bool);\r\n    function savingsBalance() external;\r\n\tfunction withdrawFunds() external;\r\n\tfunction convertDeposit() external;\r\n\tfunction convertYield() external;\r\n}",
   "sourcePath": "F:\\workspace\\Open-protocol\\contracts\\Interfaces\\IDeposit.sol",
   "ast": {
     "absolutePath": "project:/contracts/Interfaces/IDeposit.sol",
