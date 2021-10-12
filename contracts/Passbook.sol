@@ -29,20 +29,31 @@ contract Passbook   {
         uint firstDeposit;
         bytes32 market;
         bytes32 commitment;
-        uint amount; // Non fractional amount
+        uint amount; 
         uint lastUpdate;
     }
 
     struct Yield    {
         uint id;
-        uint oldLengthAccruedYield; // length of the APY blockNumbers array.
-        uint oldBlockNum; // last recorded block num
-        bytes32 market; // market_ this yield is calculated for
-        uint accruedYield; // accruedYield in 
-        bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-        uint timelockValidity; // timelock duration
-        uint activationBlock; // blocknumber when yield withdrawal request was placed.
+        uint oldLengthAccruedYield; 
+        uint oldBlockNum; 
+        bytes32 market;
+        uint accruedYield; 
+        bool timelockApplicable;
+        uint timelockValidity;
+        uint activationBlock;
     }
+    
+    // struct Yield    {
+    //     uint id;
+    //     uint oldLengthAccruedYield; // length of the APY blockNumbers array.
+    //     uint oldBlockNum; // last recorded block num
+    //     bytes32 market; // market_ this yield is calculated for
+    //     uint accruedYield; // accruedYield in 
+    //     bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+    //     uint timelockValidity; // timelock duration
+    //     uint activationBlock; // blocknumber when yield withdrawal request was placed.
+    // }
 
     struct LoanAccount  {
         uint accOpenTime;

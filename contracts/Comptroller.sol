@@ -11,19 +11,23 @@ contract Comptroller is Pausable {
   address adminComptrollerAddress;
   address superAdminAddress;
 
-  uint apr;
-  uint apy;
+  uint public apr;
+  uint public apy;
+
+
+/// @notice each APY or APR struct holds the recorded changes in interest data & the
+/// corresponding blocknumbers for a particular commitment type.
 
   struct APY  {
-    bytes32 commitment; // validity
-    uint[] blockNumbers; // when the apy changes were made
-    uint[] apyChangeRecords; // the apy changes.
+    bytes32 commitment; 
+    uint[] blockNumbers; // ledger of blockNumbers when the APY changes were made.
+    uint[] apyChangeRecords; // ledger of APY changes.
   }
 
   struct APR  {
     bytes32 commitment; // validity
-    uint[] blockNumbers; // when the apy changes were made
-    uint[] aprChangeRecords; // the apy changes.
+    uint[] blockNumbers; // ledger of blockNumbers when the APR changes were made.
+    uint[] aprChangeRecords; // ledger of APR changes.
   }
 
   
@@ -35,10 +39,6 @@ contract Comptroller is Pausable {
   event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
   event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
   
-<<<<<<< HEAD
-  constructor() {
-    adminComptrollerAddress = msg.sender;
-=======
   constructor(address superAdminAddr_) {
     superAdminAddress = superAdminAddr_;
     adminComptrollerAddress = msg.sender;
@@ -55,7 +55,6 @@ contract Comptroller is Pausable {
   function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
     IBEP20(token_).transfer(recipient_, value_);
     return true;
->>>>>>> origin/main
   }
 
   function getAPR() external view returns (uint) {
@@ -74,10 +73,6 @@ contract Comptroller is Pausable {
     return apy;
   }
 
-<<<<<<< HEAD
-  function _getAPY(bytes32 commitment_) internal  {
-    // return indAPYRecords.commitment_.apy;
-=======
   function getAPY(bytes32 commitment_) external view returns (uint) {
     return _getAPY(commitment_);
   }
@@ -124,17 +119,16 @@ contract Comptroller is Pausable {
 
   function _getAprBlockNumber(bytes32 commitment_, uint index_) internal view returns (uint) {
     return indAPRRecords[commitment_].blockNumbers[index_];
->>>>>>> origin/main
   }
 
   function liquidationTrigger() external {}
 
   // SETTERS
-  function updateAPY(bytes32 commitment_, uint apy_) external onlyAdmin returns (bool) {
+  function updateAPY(bytes32 commitment_, uint apy_) external authComptroller returns (bool) {
     return _updateApy(commitment_, apy_);
   }
 
-  function updateAPR(bytes32 commitment_, uint apr_) external onlyAdmin returns (bool ){
+  function updateAPR(bytes32 commitment_, uint apr_) external authComptroller returns (bool ){
     return _updateApr(commitment_, apr_);
   }
 
@@ -164,50 +158,53 @@ contract Comptroller is Pausable {
   }
 
 
-  function updateLoanIssuanceFees() external onlyAdmin() {}
-  function updateLoanClosureFees() external onlyAdmin() {}
-  function updateLoanpreClosureFees() external onlyAdmin() {}
-  function updateDepositPreclosureFees() external onlyAdmin() {}
-  function updateSwitchDepositTypeFee() external onlyAdmin() {}
+  function updateLoanIssuanceFees() external authComptroller() {}
+  function updateLoanClosureFees() external authComptroller() {}
+  function updateLoanpreClosureFees() external authComptroller() {}
+  function updateDepositPreclosureFees() external authComptroller() {}
+  function updateSwitchDepositTypeFee() external authComptroller() {}
 
-  function updateReserveFactor(uint reserveFactor) external  onlyAdmin() {} // sets a factor from 0 ot 1. This factor is the minimum reserves in the system.
-  function updateMaxWithdrawal(uint factor, uint blockLimit) external  onlyAdmin() {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
+  function updateReserveFactor(uint reserveFactor) external  authComptroller() {} // sets a factor from 0 ot 1. This factor is the minimum reserves in the system.
+  function updateMaxWithdrawal(uint factor, uint blockLimit) external  authComptroller() {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
 
-  modifier onlyAdmin() {
-    require(msg.sender == adminComptrollerAddress
-      || msg.sender == superAdminAddress, 
+  modifier authComptroller() {
+    require(msg.sender == adminComptrollerAddress,
       "Only the comptroller admin can modify this function" 
     );
     _;
   }
 
-  function pause() external onlyAdmin() nonReentrant() {
+  function pause() external authComptroller() nonReentrant() {
        _pause();
 	}
 	
-	function unpause() external onlyAdmin() nonReentrant() {
+	function unpause() external authComptroller() nonReentrant() {
        _unpause();   
 	}
 
 }
 
 
-// calcYield()
-// calcInterest()
-// struct InterestRates()
+
 // struct ApyLedger()
 // struct APRLedger()
-// struct SupportedAssets {}
-// updateCdr()
-// updateApy() DONE
-// updateAPR() DONE
+// permissibleCDR()
+// reserveFactor() - ReserveFactor is an integer from 1 to 100. Here 1 means 1%.
+// 100 means 100%. Reserve factor determines the minimum reserves that need
+// maintaining. Minimum reserves against the total deposits.
+
+// permissionlessWithdrawal(uint factor, uint blockLimit) - This function like reserve factor takes an input
+// from 1 to 100. If 1, it means, upto 1% of total available reserves can be
+// released within a defined block limit. Eg: factor = 10, blockLimit = 4800.
+// This means, 10% of reserves can be withdrawn during a 4800 bsc block window.
+// This check is implemented to mitigate excess loss of funds during exploits.
+
+// updateApy()
+// updateAPR()
 // updatePreclosureCharges()
 // updateLoanIssuanceFees()
 // updateLoanClosureFees()
-// priceOracle()
-// balancingAccounts()
-// liquidationTrigger()
-// liquidationCall()
+// updateConvertYieldFees()
 
 
 

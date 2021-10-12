@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.7 <0.9.0;
 
-interface IAccessRegistry {
+interface IAccessRegistry is Pausable {
     function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool);
     function hasRole(bytes32 role, address account) external view returns (bool);
     function addRole(bytes32 role, address account) external;
