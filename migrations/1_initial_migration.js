@@ -6,7 +6,6 @@ const Deposit = artifacts.require("Deposit");
 const Liquidator = artifacts.require("Liquidator");
 const Loan = artifacts.require("Loan");
 const OracleOpen = artifacts.require("OracleOpen");
-const ProxyAccessRegistry = artifacts.require("ProxyAccessRegistry");
 
 module.exports = function (deployer, network, accounts) {
   
@@ -32,11 +31,11 @@ module.exports = function (deployer, network, accounts) {
   );
   const deposit = Deposit.deployed();
   
-  await deployer.deploy(OracleOpen, accounts[0], accessRegistry, tokenList);
-  const oracleOpen = OracleOpen.deployed();
-  
-  await deployer.deploy(Loan, accounts[0]);
+  await deployer.deploy(Loan, accounts[0], tokenList, comptroller, reserve, liquidator);
   const loan = Loan.deployed();
+
+  await deployer.deploy(OracleOpen, accounts[0], tokenList, loan);
+  const oracleOpen = OracleOpen.deployed();
 
   await deployer.deploy(
     AccessRegistry, 
@@ -49,4 +48,5 @@ module.exports = function (deployer, network, accounts) {
     loan.address,
     liquidator.address
   );
+  
 };

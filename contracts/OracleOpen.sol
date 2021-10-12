@@ -2,15 +2,15 @@
 pragma solidity >=0.8.7 <0.9.0;
 import "./util/Pausable.sol";
 import "./util/IBEP20.sol";
-import "./interfaces/IAccessRegistry.sol";
 import "./interfaces/ITokenList.sol";
+import "./interfaces/ILoan.sol";
 contract OracleOpen is Pausable {
 
     bytes32 adminOpenOracle;
     address adminOpenOracleAddress;
     address superAdminAddress;
-    IAccessRegistry accessRegistry;
     ITokenList tokenList;
+    ILoan loan;
 
     uint minConsensus = 2;
 
@@ -38,15 +38,14 @@ contract OracleOpen is Pausable {
 
     constructor(
         address superAdminAddr_, 
-        address accessRegistryAddr_, 
-        address tokenListAddr_
+        address tokenListAddr_,
+        address loanAddr_
     )
     {
         superAdminAddress = superAdminAddr_;
-        accessRegistry = IAccessRegistry(accessRegistryAddr_);
         tokenList = ITokenList(tokenListAddr_);
+        loan = ILoan(loanAddr_);
         adminOpenOracleAddress = msg.sender;
-        accessRegistry.addAdminRole(adminOpenOracle, adminOpenOracleAddress);
     }
 
     receive() external payable {
@@ -57,18 +56,26 @@ contract OracleOpen is Pausable {
         payable(adminOpenOracleAddress).transfer(_msgValue());
     }
     
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
+    function transferAnyERC20(address token_,address recipient_,uint256 value_) 
+        external returns(bool) 
+    {
         IBEP20(token_).transfer(recipient_, value_);
         return true;
     }
 
+    function getLatestPrice(bytes32 _market) external view returns (uint256) {
+        return latestPrice[_market].price;
+    }
+    
+    function getLatestTimestamp(bytes32 _market) external view returns (uint256) {
+        return latestPrice[_market].timestamp;
+    }
+    
     function newPriceRequest (
         string memory _url,
         bytes32 _market,
         uint _price
-    )
-    external
-    {
+    ) external {
         PriceData storage r = latestPrice[_market];
         r.timestamp = block.timestamp;
         r.market = _market;
@@ -80,9 +87,7 @@ contract OracleOpen is Pausable {
     function updatedChainRequest (
         bytes32 _market,
         uint _price
-    ) 
-    external 
-    {
+    ) external {
         PriceData storage trackRequest = latestPrice[_market];
 
         //Check if the token is supported. In TokenList Contract.
@@ -124,6 +129,8 @@ contract OracleOpen is Pausable {
     ) public
     {
         //Call liquidate() in Loan contract.
+        // uint price = latestPrice[market].price;
+        loan.liquidateLoan(account, market, commitment, loanId);
     }
 
     function pause() external onlyAdmin() nonReentrant() {
