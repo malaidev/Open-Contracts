@@ -30,6 +30,7 @@ contract Reserve is Pausable {
         return true;
     }
 
+<<<<<<< HEAD
     // function transferAnyBEP20(address token_,address recipient_,uint256 value_) external nonReentrant  authReserve  returns(bool)   {
     //     token = IBEP20(token_);
     //     token.transfer(recipient_, value_);
@@ -38,6 +39,15 @@ contract Reserve is Pausable {
 
     function transferToken(IBEP20 token_, address recipient_, uint amount_ ) internal nonReentrant() returns (bool)  {
         token_.transfer(recipient_, amount_);
+=======
+    function transferAnyBEP20(
+        address token_,
+        address recipient_,
+        uint256 value_) external nonReentrant  authReserve  returns(bool)   
+    {
+        token = IBEP20(token_);
+        token.transfer(recipient_, value_);
+>>>>>>> 47c5ea2b5401517c45981f6d74ac257bfb0c0fc3
         return true;
     }
 

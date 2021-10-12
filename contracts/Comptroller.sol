@@ -124,11 +124,11 @@ contract Comptroller is Pausable {
   function liquidationTrigger(uint loanID) external {}
 
   // SETTERS
-  function updateAPY(bytes32 commitment_, uint apy_) external onlyAdmin returns (bool) {
+  function updateAPY(bytes32 commitment_, uint apy_) external authComptroller returns (bool) {
     return _updateApy(commitment_, apy_);
   }
 
-  function updateAPR(bytes32 commitment_, uint apr_) external onlyAdmin returns (bool ){
+  function updateAPR(bytes32 commitment_, uint apr_) external authComptroller returns (bool ){
     return _updateApr(commitment_, apr_);
   }
 
@@ -158,28 +158,27 @@ contract Comptroller is Pausable {
   }
 
 
-  function updateLoanIssuanceFees() external onlyAdmin() {}
-  function updateLoanClosureFees() external onlyAdmin() {}
-  function updateLoanpreClosureFees() external onlyAdmin() {}
-  function updateDepositPreclosureFees() external onlyAdmin() {}
-  function updateSwitchDepositTypeFee() external onlyAdmin() {}
+  function updateLoanIssuanceFees() external authComptroller() {}
+  function updateLoanClosureFees() external authComptroller() {}
+  function updateLoanpreClosureFees() external authComptroller() {}
+  function updateDepositPreclosureFees() external authComptroller() {}
+  function updateSwitchDepositTypeFee() external authComptroller() {}
 
-  function updateReserveFactor(uint reserveFactor) external  onlyAdmin() {} // sets a factor from 0 ot 1. This factor is the minimum reserves in the system.
-  function updateMaxWithdrawal(uint factor, uint blockLimit) external  onlyAdmin() {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
+  function updateReserveFactor(uint reserveFactor) external  authComptroller() {} // sets a factor from 0 ot 1. This factor is the minimum reserves in the system.
+  function updateMaxWithdrawal(uint factor, uint blockLimit) external  authComptroller() {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
 
-  modifier onlyAdmin() {
-    require(msg.sender == adminComptrollerAddress
-      || msg.sender == superAdminAddress, 
+  modifier authComptroller() {
+    require(msg.sender == adminComptrollerAddress,
       "Only the comptroller admin can modify this function" 
     );
     _;
   }
 
-  function pause() external onlyAdmin() nonReentrant() {
+  function pause() external authComptroller() nonReentrant() {
        _pause();
 	}
 	
-	function unpause() external onlyAdmin() nonReentrant() {
+	function unpause() external authComptroller() nonReentrant() {
        _unpause();   
 	}
 
