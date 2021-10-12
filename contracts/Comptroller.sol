@@ -190,7 +190,7 @@ contract Comptroller is Pausable {
   }
 
 
-  function _calcAPY(address _account, bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal {
+  function _calcAPY(address _account, bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal  view {
     
     APY storage apy = indAPYRecords[_commitment];
 
