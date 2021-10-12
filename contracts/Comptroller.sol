@@ -11,25 +11,24 @@ contract Comptroller is Pausable {
   address adminComptrollerAddress;
   address superAdminAddress;
 
-  uint public apr;
-  uint public apy;
+  uint public latestAPR;
+  uint public latestAPY;
 
 
 /// @notice each APY or APR struct holds the recorded changes in interest data & the
-/// corresponding blocknumbers for a particular commitment type.
+/// corresponding time for a particular commitment type.
 
   struct APY  {
     bytes32 commitment; 
-    uint[] blockNumbers; // ledger of blockNumbers when the APY changes were made.
+    uint[] time; // ledger of time when the APY changes were made.
     uint[] apyChangeRecords; // ledger of APY changes.
   }
 
   struct APR  {
     bytes32 commitment; // validity
-    uint[] blockNumbers; // ledger of blockNumbers when the APR changes were made.
-    uint[] aprChangeRecords; // ledger of APR changes.
+    uint[] time; // ledger of time when the APR changes were made.
+    uint[] aprChangeRecords; // Per block.timestamp APR is tabulated in here.
   }
-
   
   // Latest Individual apy/apr data
   mapping(bytes32 => APY) indAPYRecords;
@@ -81,16 +80,16 @@ contract Comptroller is Pausable {
     return _getAPY(commitment_, index_);
   }
 
-  function getApyBlockNumber(bytes32 commitment_, uint index_) external view returns (uint){
-    return _getApyBlockNumber(commitment_, index_);
+  function getApytimeber(bytes32 commitment_, uint index_) external view returns (uint){
+    return _getApytimeber(commitment_, index_);
   }
 
-  function getAprBlockNumber(bytes32 commitment_, uint index_) external view returns (uint){
-    return _getAprBlockNumber(commitment_, index_);
+  function getAprtimeber(bytes32 commitment_, uint index_) external view returns (uint){
+    return _getAprtimeber(commitment_, index_);
   }
 
   function getApyRecordCount(bytes32 commitment_) external view returns (uint) {
-    return indAPYRecords[commitment_].apyChangeRecords.length;
+    return indAPYRecords[commitment_].aprChangeRecords.length;
   }
 
   function getAprRecordCount(bytes32 commitment_) external view returns (uint) {
@@ -98,11 +97,11 @@ contract Comptroller is Pausable {
   }
 
   function _getAPY(bytes32 commitment_) internal view returns (uint) {
-    return indAPYRecords[commitment_].apyChangeRecords[indAPYRecords[commitment_].apyChangeRecords.length - 1];
+    return indAPYRecords[commitment_].aprChangeRecords[indAPYRecords[commitment_].aprChangeRecords.length - 1];
   }
 
   function _getAPY(bytes32 commitment_, uint index_) internal view returns (uint) {
-    return indAPYRecords[commitment_].apyChangeRecords[index_];
+    return indAPYRecords[commitment_].aprChangeRecords[index_];
   }
 
   function _getAPR(bytes32 commitment_) internal view returns (uint){
@@ -113,12 +112,12 @@ contract Comptroller is Pausable {
     return indAPRRecords[commitment_].aprChangeRecords[index_];
   }
 
-  function _getApyBlockNumber(bytes32 commitment_, uint index_) internal view returns (uint) {
-    return indAPYRecords[commitment_].blockNumbers[index_];
+  function _getApytimeber(bytes32 commitment_, uint index_) internal view returns (uint) {
+    return indAPYRecords[commitment_].time[index_];
   }
 
-  function _getAprBlockNumber(bytes32 commitment_, uint index_) internal view returns (uint) {
-    return indAPRRecords[commitment_].blockNumbers[index_];
+  function _getAprtimeber(bytes32 commitment_, uint index_) internal view returns (uint) {
+    return indAPRRecords[commitment_].time[index_];
   }
 
   function liquidationTrigger(uint loanID) external {}
@@ -135,27 +134,104 @@ contract Comptroller is Pausable {
   function _updateApy(bytes32 commitment_, uint apy_) internal returns (bool) {
     APY storage apyUpdate = indAPYRecords[commitment_];
 
-    if(apyUpdate.blockNumbers.length != apyUpdate.apyChangeRecords.length) return false;
+    if(apyUpdate.time.length != apyUpdate.aprChangeRecords.length) return false;
 
     apyUpdate.commitment = commitment_;
-    apyUpdate.blockNumbers.push(block.number);
-    apyUpdate.apyChangeRecords.push(apy_);
+    apyUpdate.time.push(block.number);
+    apyUpdate.aprChangeRecords.push(apy_);
     return true;
   }
   
   function _updateApr(bytes32 commitment_, uint apr_) internal returns (bool) {
     APR storage aprUpdate = indAPRRecords[commitment_];
 
-    if(aprUpdate.blockNumbers.length != aprUpdate.aprChangeRecords.length) return false;
+    if(aprUpdate.time.length != aprUpdate.aprChangeRecords.length) return false;
 
     aprUpdate.commitment = commitment_;
-    aprUpdate.blockNumbers.push(block.number);
+    aprUpdate.time.push(block.number);
     aprUpdate.aprChangeRecords.push(apr_);
     return true;
   }
   function _updateAPR(bytes32 commitment_, uint apy_) internal returns (bool) {
-
   }
+
+  function _calcAPR(address _account, bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal {
+    
+    APR storage apr = indAPRRecords[_commitment];
+
+		uint256 index = oldLengthAccruedInterest - 1;
+		uint256 time = oldTime;
+
+    // 1. apr.time.length > oldLengthAccruedInterest => there is some change.
+
+    if (apr.time.length > oldLengthAccruedInterest)  {
+
+      if (apr.time[index] < time) {
+        uint256 newIndex = index + 1;
+        // Convert the aprChangeRecords to the lowest unit value.
+        aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChangeRecords[index])/100)*365/(100*1000);
+      
+        for (uint256 i = newIndex; i < apr.aprChangeRecords.length; i++) {
+          uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+          aggregateInterest += (timeDiff*apr.aprChangeRecords[newIndex] / 100)*365/(100*1000);
+        }
+      }
+      else if (apr.time[index] == time) {
+        for (uint256 i = index; i < apr.aprChangeRecords.length; i++) {
+          uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+          aggregateInterest += (timeDiff*apr.aprChangeRecords[index] / 100)*365/(100*1000);
+        }
+      }
+    } else if (apr.time.length == oldLengthAccruedInterest && block.timestamp > oldLengthAccruedInterest) {
+      if (apr.time[index] < time || apr.time[index] == time) {
+        aggregateInterest += (block.timestamp - time)*apr.aprChangeRecords[index]/100;
+        // Convert the aprChangeRecords to the lowest unit value.
+        // aggregateYield = (((apr.time[newIndex] - time) *apr.aprChangeRecords[index])/100)*365/(100*1000);
+      }
+    }
+    oldLengthAccruedInterest = apr.time.length;
+    oldTime = block.timestamp;
+  }
+
+
+  function _calcAPY(address _account, bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal {
+    
+    APY storage apy = indAPYRecords[_commitment];
+
+		uint256 index = oldLengthAccruedYield - 1;
+		uint256 time = oldTime;
+
+    // 1. apr.time.length > oldLengthAccruedInterest => there is some change.
+
+    if (apy.time.length > oldLengthAccruedYield)  {
+
+      if (apy.time[index] < time) {
+        uint256 newIndex = index + 1;
+        // Convert the aprChangeRecords to the lowest unit value.
+        aggregateYield = (((apy.time[newIndex] - time) *apy.apyChangeRecords[index])/100)*365/(100*1000);
+      
+        for (uint256 i = newIndex; i < apy.apyChangeRecords.length; i++) {
+          uint256 timeDiff = apy.time[i + 1] - apy.time[i];
+          aggregateYield += (timeDiff*apy.apyChangeRecords[newIndex] / 100)*365/(100*1000);
+        }
+      }
+      else if (apy.time[index] == time) {
+        for (uint256 i = index; i < apy.apyChangeRecords.length; i++) {
+          uint256 timeDiff = apy.time[i + 1] - apy.time[i];
+          aggregateYield += (timeDiff*apy.apyChangeRecords[index] / 100)*365/(100*1000);
+        }
+      }
+    } else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
+      if (apy.time[index] < time || apy.time[index] == time) {
+        aggregateYield += (block.timestamp - time)*apy.aprChangeRecords[index]/100;
+        // Convert the aprChangeRecords to the lowest unit value.
+        // aggregateYield = (((apr.time[newIndex] - time) *apr.aprChangeRecords[index])/100)*365/(100*1000);
+      }
+    }
+    oldLengthAccruedYield = apy.time.length;
+    oldTime = block.timestamp;
+  }
+  
 
 
   function updateLoanIssuanceFees() external authComptroller() {}

@@ -35,8 +35,8 @@ contract Deposit {
 
     struct Yield    {
         uint id;
-        uint oldLengthAccruedYield; // length of the APY blockNumbers array.
-        uint oldBlockNum; // last recorded block num. This is when this struct is lastly updated.
+        uint oldLengthAccruedYield; // length of the APY time array.
+        uint oldTime; // last recorded block num. This is when this struct is lastly updated.
         bytes32 market; // market_ this yield is calculated for
         uint accruedYield; // accruedYield in 
         bool timelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
@@ -160,38 +160,41 @@ contract Deposit {
 		APY storage apy = comptroller.indAPYRecords[commitment_];
 
 		uint256 index = yield.oldLengthAccruedYield - 1;
-		uint256 blockNum = yield.oldBlockNum;
+		uint256 blockNum = yield.oldTime;
 		uint256 aggregateYield = yield.accruedYield;
 
     if (apy.apyChangeRecords.length > yield.oldLengthAccruedYield)  {
-      if (apy.blockNumbers[index] < blockNum) {
+      if (apy.time[index] < blockNum) {
         uint256 newIndex = index + 1;
         aggregateYield +=
-          ((apy.blockNumbers[newIndex] - blockNum) *apy.apyChangeRecords[index])/100;
+          ((apy.time[newIndex] - blockNum) *apy.apyChangeRecords[index])/100;
 
         for (uint256 i = newIndex; i < apy.apyChangeRecords.length; i++) {
-          uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
+          uint256 blockDiff = apy.time[i + 1] - apy.time[i];
           aggregateYield += blockDiff*apy.apyChangeRecords[newIndex] / 100;
         }
-      } else if (apy.blockNumbers[index] == blockNum) {
+      } else if (apy.time[index] == blockNum) {
         for (uint256 i = index; i < apy.apyChangeRecords.length; i++) {
-          uint256 blockDiff = apy.blockNumbers[i + 1] - apy.blockNumbers[i];
+          uint256 blockDiff = apy.time[i + 1] - apy.time[i];
           aggregateYield += blockDiff*apy.apyChangeRecords[index] / 100;
         }
       }
       
-      if (block.number >= apy.blockNumbers[apy.blockNumbers.length - 1]) {
-        	aggregateYield += ((block.Number - apy.blockNumbers[apy.blockNumbers.length - 1]) *apy.apyChangeRecords[apy.blockNumbers.length - 1]) /100;
+      if (block.number >= apy.time[apy.time.length - 1]) {
+        	aggregateYield += ((block.Number - apy.time[apy.time.length - 1]) *apy.apyChangeRecords[apy.time.length - 1]) /100;
 		}
 
     }  else if (apy.apyChangeRecords.length == yield.oldLengthAccruedYield)  {
           aggregateYield += (block.number - blockNum)*apy.apyChangeRecords[index]/100;
     }
+
 	// need to add a condition that accounts for multiple deposits of the same kind? Meaning, if 
-	// there is an add-on deposit,
+	// there is an add-on deposit, 
+	/// Update: 12th October. 2021
+	// trigger updateYield for newDeposit, add-onDeposit as well.
 		yield.accruedYield += deposit.amount * aggregatedYield;
-		yield.oldLengthAccruedYield = apy.blockNumbers.length;
-		yield.oldBlockNum = block.number;
+		yield.oldLengthAccruedYield = apy.time.length;
+		yield.oldTime = block.number;
 	}
 
 	function _processDeposit(
@@ -225,8 +228,8 @@ contract Deposit {
 
 			yield = Yield({
 				id: id,
-				oldLengthAccruedYield: apy.blockNumbers.length,
-				oldBlockNum: block.number,
+				oldLengthAccruedYield: apy.time.length,
+				oldTime: block.number,
 				market: market_,
 				accruedYield: 0,
 				timelockApplicable: true,
@@ -251,8 +254,8 @@ contract Deposit {
 			savingsAccount.deposits.push(deposit);
 			yield = Yield({
 				id: id,
-				oldLengthAccruedYield: apy.blockNumbers.length,
-				oldBlockNum: block.number,
+				oldLengthAccruedYield: apy.time.length,
+				oldTime: block.number,
 				market: market_,
 				accruedYield: 0,
 				timelockApplicable: false,
@@ -336,7 +339,7 @@ contract Deposit {
 			if (yield.timelockApplicable == false || block.number >= yield.activationBlock+yield.timelockValidity)	{
 				_updateYield(msg.sender,market_,commitment_);
 				yield.accruedYield -= amount_;
-				yield.oldBlockNum = block.number;
+				yield.oldTime = block.number;
 			}	else if (yield.timelockApplicable != false || block.number < yield.activationBlock+yield.timelockValidity)	{
 				revert ('Withdrawal can not be processed');
 			}
@@ -348,7 +351,7 @@ contract Deposit {
 			if (yield.timelockApplicable == false || block.number >= yield.activationBlock+yield.timelockValidity)	{
 				_updateYield(msg.sender,market_,commitment_);
 				yield.accruedYield -= amount_;
-				yield.oldBlockNum = block.number;
+				yield.oldTime = block.number;
 
 			}	else if (yield.timelockApplicable != false || block.number < yield.activationBlock+yield.timelockValidity)	{
 				revert ('Withdrawal can not be processed');
