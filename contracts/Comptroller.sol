@@ -11,9 +11,10 @@ contract Comptroller is Pausable {
   address adminComptrollerAddress;
   address superAdminAddress;
 
-  uint public latestAPR;
-  uint public latestAPY;
-
+  // uint public latestAPR;
+  // uint public latestAPY;
+  
+  bytes32[] internal commitment;
 
 /// @notice each APY or APR struct holds the recorded changes in interest data & the
 /// corresponding time for a particular commitment type.
@@ -55,22 +56,17 @@ contract Comptroller is Pausable {
     IBEP20(token_).transfer(recipient_, value_);
     return true;
   }
-
-  function getAPR() external view returns (uint) {
-    return apr;
-  }
-
+  
   function getAPR(bytes32 commitment_) external view returns (uint) {
     return _getAPR(commitment_);
   }
-
-  function getAPR(bytes32 commitment_, uint index_) external view returns (uint) {
-    return _getAPR(commitment_, index_);
+  function getAPR(bytes32 commitment_, uint index) external view returns (uint) {
+    return _getAPR(commitment_, index);
   }
 
-  function getAPY() external view returns (uint) {
-    return apy;
-  }
+  // function getAPY() external view returns (uint) {
+  //   return apy;
+  // }
 
   function getAPY(bytes32 commitment_) external view returns (uint) {
     return _getAPY(commitment_);
@@ -89,7 +85,7 @@ contract Comptroller is Pausable {
   }
 
   function getApyRecordCount(bytes32 commitment_) external view returns (uint) {
-    return indAPYRecords[commitment_].aprChangeRecords.length;
+    return indAPYRecords[commitment_].apyChangeRecords.length;
   }
 
   function getAprRecordCount(bytes32 commitment_) external view returns (uint) {
@@ -97,11 +93,11 @@ contract Comptroller is Pausable {
   }
 
   function _getAPY(bytes32 commitment_) internal view returns (uint) {
-    return indAPYRecords[commitment_].aprChangeRecords[indAPYRecords[commitment_].aprChangeRecords.length - 1];
+    return indAPYRecords[commitment_].apyChangeRecords[indAPYRecords[commitment_].apyChangeRecords.length - 1];
   }
 
   function _getAPY(bytes32 commitment_, uint index_) internal view returns (uint) {
-    return indAPYRecords[commitment_].aprChangeRecords[index_];
+    return indAPYRecords[commitment_].apyChangeRecords[index_];
   }
 
   function _getAPR(bytes32 commitment_) internal view returns (uint){
@@ -123,22 +119,22 @@ contract Comptroller is Pausable {
   function liquidationTrigger(uint loanID) external {}
 
   // SETTERS
-  function updateAPY(bytes32 commitment_, uint apy_) external authComptroller returns (bool) {
+  function updateAPY(bytes32 commitment_, uint apy_) external authComptroller() returns (bool) {
     return _updateApy(commitment_, apy_);
   }
 
-  function updateAPR(bytes32 commitment_, uint apr_) external authComptroller returns (bool ){
+  function updateAPR(bytes32 commitment_, uint apr_) external authComptroller() returns (bool ){
     return _updateApr(commitment_, apr_);
   }
 
   function _updateApy(bytes32 commitment_, uint apy_) internal returns (bool) {
     APY storage apyUpdate = indAPYRecords[commitment_];
 
-    if(apyUpdate.time.length != apyUpdate.aprChangeRecords.length) return false;
+    if(apyUpdate.time.length != apyUpdate.apyChangeRecords.length) return false;
 
     apyUpdate.commitment = commitment_;
     apyUpdate.time.push(block.number);
-    apyUpdate.aprChangeRecords.push(apy_);
+    apyUpdate.apyChangeRecords.push(apy_);
     return true;
   }
   

@@ -25,29 +25,18 @@ contract Reserve is Pausable {
         payable(adminReserveAddress).transfer(_msgValue());
     }
     
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
-        IBEP20(token_).transfer(recipient_, value_);
-        return true;
-    }
-
-<<<<<<< HEAD
-    // function transferAnyBEP20(address token_,address recipient_,uint256 value_) external nonReentrant  authReserve  returns(bool)   {
-    //     token = IBEP20(token_);
-    //     token.transfer(recipient_, value_);
+    // function transferAnyERC20(address token_,address _recipient,uint256 _value) external returns(bool) {
+    //     IBEP20(token_).transfer(_recipient, _value);
     //     return true;
     // }
 
-    function transferToken(IBEP20 token_, address recipient_, uint amount_ ) internal nonReentrant() returns (bool)  {
-        token_.transfer(recipient_, amount_);
-=======
     function transferAnyBEP20(
         address token_,
-        address recipient_,
-        uint256 value_) external nonReentrant  authReserve  returns(bool)   
+        address _recipient,
+        uint256 _value) external nonReentrant  authReserve  returns(bool)   
     {
         token = IBEP20(token_);
-        token.transfer(recipient_, value_);
->>>>>>> 47c5ea2b5401517c45981f6d74ac257bfb0c0fc3
+        token.transfer(_recipient, _value);
         return true;
     }
 
