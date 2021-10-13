@@ -418,9 +418,11 @@ contract Loan {
 
           emit CollateralReleased(account, collateral.amount, collateral.market, block.timestamp);
         }
-      return success;
-    }
-    
+        }
+      }
+    return success;
+  }
+
   function _updateDeductibleInterest(address _account, uint loanID) internal {
     _accruedInterest(_account, loanID);
     return this;
