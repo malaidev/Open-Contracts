@@ -63,7 +63,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: ">=0.8.7 <0.9.0",
+      version: ">=0.8.9 <0.9.0",
     }
   },
   plugins: [

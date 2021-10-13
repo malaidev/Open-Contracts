@@ -151,7 +151,7 @@ contract Comptroller is Pausable {
   function _updateAPR(bytes32 commitment_, uint apy_) internal returns (bool) {
   }
 
-  function _calcAPR(address _account, bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal {
+  function _calcAPR(address _account, bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view {
     
     APR storage apr = indAPRRecords[_commitment];
 

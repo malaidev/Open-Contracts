@@ -284,9 +284,11 @@ contract Loan {
         }
     } else if (_repayAmount > 0) {
       
+/// transfering the repayAmount to the reserve contract.
       markets._connectMarket(_loanMarket, _repayAmount, loanToken);
       loanToken.transfer(msg.sender, address(reserve), _repayAmount);
 
+/// Exploring conditions. repayAmount > loan.amount & vice-versa.
       if (_repayAmount > loan.amount) {
         uint _remnantAmount = _repayAmount - loan.amount;
         collateral.amount +=  cYield.accruedYield - deductibleInterest.accruedInterest;
@@ -345,43 +347,83 @@ contract Loan {
 
           emit CollateralReleased(account, collateral.amount, collateral.market, block.timestamp);
         }
-      } else if (_repayAmount < loan.amount){
+      } else if (_repayAmount <= loan.amount){
         // loan.amount -= _repayAmount;
         // loanState.actualLoanAmount = loan.amount;
-        uint _remnantDue = loan.amount - _repayAmount;
-        
+        uint _remnantAmount;
         collateral.amount +=  cYield.accruedYield - deductibleInterest.accruedInterest;
-        liquidator.swap(collateral.market, loan.market, collateral.amount);
-        
-        loan.amount = 0;
-        loan.isSwapped = false;
-        loan.lastUpdate = block.timestamp;
 
         if (loanState.currentMarket == _loanMarket) {
-          loanToken.transfer(address(reserve), msg.sender, loanState.currentAmount+_remnantAmount);
-          
+          _repayAmount += loanState.currentAmount;
+
+          if (_repayAmount > loan.amount) {
+            _remnantAmount = _repayAmount - loan.amount;
+            loanToken.transfer(address(reserve), msg.sender, _remnantAmount);
+
+          } else if (_repayAmount <= loan.amount)  {
+            _repayAmount += liquidator.swap(collateral.market, _loanMarket, collateral.amount);
+            _remnantAmount = _repayAmount - loan.amount;
+            
+            collateral.amount += liquidator.swap(loan.market, collateral.market, _remnantAmount);
+          }
         } else if (loanState.currentMarket != _loanMarket)  {
-          uint amount = liquidator.swap(loanState.currentMarket, _loanMarket, loanState.currentAmount);
-          
-          loan.currentMarket = _loanMarket;
-          loan.currentAmount = amount;
+          _repayAmount += liquidator.swap(loanState.currentMarket, loan.market, loanState.curcurrentAmount);
 
-          loanToken.transfer(address(reserve), msg.sender, loanState.currentAmount+_remnantAmount);
+          if (_repayAmount > loan.amount) {
+            _remnantAmount = _repayAmount - loan.amount;
+            loanToken.transfer(address(reserve), msg.sender, _remnantAmount);
+
+          } else if (_repayAmount <= loan.amount)  {
+            _repayAmount += liquidator.swap(collateral.market, _loanMarket, collateral.amount);
+            _remnantAmount = _repayAmount - loan.amount;
+            
+            collateral.amount += liquidator.swap(loan.market, collateral.market, _remnantAmount);
+          }
         }
+        delete cYield;
+        delete deductibleInterest;
+        delete loanAccount.accruedInterest[loan.id-1];
+        delete loanAccount.accruedYield[loan.id-1];
 
-      }
+        emit LoanRepaid(msg.sender, loan.id, loan.market, block.timestamp);
+
+        if (_commitment == comptroller.commitment[2]) {
+    /// updating LoanRecords
+          loan.amount = 0;
+          loan.isSwapped = false;
+          loan.lastUpdate = block.timestamp;
+    /// updating LoanState
+          loanState.actualLoanAmount = 0;
+          Loanstate.currentAmount = 0;
+          loanState.state = STATE.REPAID;
+    /// updating CollateralRecords
+          collateral.isCollateralisedDeposit = false;
+          collateral.isTimelockActivated = true;
+          collateral.activationTime = block.timestamp;
+        
+        } else if (_commitment == comptroller.commitment[0]) {
+    /// transfer collateral.amount from reserve contract to the msg.sender
+          markets._connectMarket(collateral.market, collateral.amount, collateralToken);
+          reserve.transferAnyBEP20(collateralToken, account, collateral.amount);
+
+          uint num = loan.id - 1;
+    /// delete loan Entries, loanRecord, loanstate, collateralrecords
+          delete loanState;
+          delete loan;
+          delete collateral;
+
+          delete loanAccount.loanState[num];
+          delete loanAccount.loans[num];
+          delete loanAccount.collaterals[num];
+
+          emit CollateralReleased(account, collateral.amount, collateral.market, block.timestamp);
+        }
+      return success;
     }
-    return success;
-  }
-
-  function _hasLoanAccount(address _account) internal  {
-    require(loanPassbook[account].accOpenTime!=0, "Loan _account does not exist");
-  }
-
+    
   function _updateDeductibleInterest(address _account, uint loanID) internal {
-    if (collateral.commitment == comptroller.commitment[2]) {
-      _accruedYield(account, cYield.id);
-    }
+    _accruedInterest(_account, loanID);
+    return this;
   }
 
   function _accruedYield(address _account, uint collateralID_) internal {    
@@ -436,16 +478,9 @@ contract Loan {
     return this;
   }
 
-
-
   function permissibleWithdrawal() external returns (bool) {}
 
   function _permissibleWithdrawal() internal returns (bool) {}
-
-  // function switchLoanType(CONSIDER from, CONSIDER to) external nonReentrant() returns (bool success){
-//  this feature is kept on hold as a lower priority task.
-  // }
-  
   function _calcCdr() internal {} // performs a cdr check internally
 
   function _repaymentLogic(address account, LoanAccount storage loanAccount,LoanRecords storage loan,LoanState storage loanState,CollateralRecords storage collateral,DeductibleInterest storage deductibleInterest,CollateralYield storage cYield ) internal  {
@@ -524,68 +559,22 @@ contract Loan {
   }
 
 
-    function _processNewLoan(address _account, bytes32 _lMarket,
-      bytes32 _commitment,
-      uint256 _lAmount,
-      bytes32 _collateralMarket,
-      uint256 _collateralAmount) internal {
+  function _processNewLoan(address _account, bytes32 _lMarket,
+    bytes32 _commitment,
+    uint256 _lAmount,
+    bytes32 _collateralMarket,
+    uint256 _collateralAmount) internal {
 
-      // comptroller.commitment[] loans == TWOWEEKMCP, ONEMONTHCOMMITMENT.
-      uint id;
+    // comptroller.commitment[] loans == TWOWEEKMCP, ONEMONTHCOMMITMENT.
+    uint id;
 
-      if (loanAccount.loans.length == 0)   {
-          id = 1;
-      } else if (loanAccount.loans.length != 0)    {
-          id = loanAccount.loans.length + 1;
-      }
+    if (loanAccount.loans.length == 0)   {
+        id = 1;
+    } else if (loanAccount.loans.length != 0)    {
+        id = loanAccount.loans.length + 1;
+    }
 
-      if (_commitment == comptroller.commitment[0]) {
-          loan = LoanRecords({
-            id:id,
-            amount:_lAmount,
-            market: _lMarket,
-            commitment: _commitment,
-            isSwapped: false,
-            lastUpdate: block.timestamp
-          });
-
-        collateral = CollateralRecords({
-          id:id,
-          market:_collateralMarket,
-          commitment: _commitment,
-          amount: _collateralAmount,
-          isCollateralisedDeposit: false,
-          timelockValidity: 0,
-          isTimelockActivated: true,
-          activationTime: 0
-        });
-
-        deductibleInterest = DeductibleInterest({
-          id:id,
-          market: _collateralMarket,
-          oldLengthAccruedInterest: apr.time.length,
-          oldTime:block.timestamp,
-          accruedInterest: 0
-        });
-
-        loanState = LoanState({
-          id:id,
-          loanMarket: _lMarket,
-          actualLoanAmount: _lAmount,
-          currentMarket: _lMarket,
-          currentAmount: _lAmount,
-          state: STATE.ACTIVE
-        });
-
-        loanAccount.loans.push(loan);
-        loanAccount.collaterals.push(collateral);
-        loanAccount.accruedInterest.push(deductibleInterest);
-        loanAccount.loanState.push(loanState);
-        // loanAccount.accruedYield.push(accruedYield); - no yield because it is
-        // a flexible loan
-      }
-      else if (comptroller.commitment[2]) {
-        /// Here the commitment is for ONEMONTH. But Yield is for TWOWEEKMCP
+    if (_commitment == comptroller.commitment[0]) {
         loan = LoanRecords({
           id:id,
           amount:_lAmount,
@@ -595,51 +584,97 @@ contract Loan {
           lastUpdate: block.timestamp
         });
 
-        collateral = CollateralRecords({
-          id:id,
-          market:_collateralMarket,
-          commitment: _commitment,
-          amount: _collateralAmount,
-          isCollateralisedDeposit: true,
-          timelockValidity: 86400, // convert this into block.timestamp
-          isTimelockActivated: false,
-          activationTime: 0
-        });
+      collateral = CollateralRecords({
+        id:id,
+        market:_collateralMarket,
+        commitment: _commitment,
+        amount: _collateralAmount,
+        isCollateralisedDeposit: false,
+        timelockValidity: 0,
+        isTimelockActivated: true,
+        activationTime: 0
+      });
 
-        cYield = CollateralYield({
-          id:id,
-          market:_collateralMarket,
-          commitment: comptroller.commitment[1],
-          oldLengthAccruedYield: apy.time.length,
-          oldTime: block.timestamp,
-          accruedYield: 0
-        });
+      deductibleInterest = DeductibleInterest({
+        id:id,
+        market: _collateralMarket,
+        oldLengthAccruedInterest: apr.time.length,
+        oldTime:block.timestamp,
+        accruedInterest: 0
+      });
 
-        deductibleInterest = DeductibleInterest({
-          id:id,
-          market: _collateralMarket,
-          oldLengthAccruedInterest: apr.time.length,
-          oldTime:block.timestamp,
-          accruedInterest: 0
-        });
+      loanState = LoanState({
+        id:id,
+        loanMarket: _lMarket,
+        actualLoanAmount: _lAmount,
+        currentMarket: _lMarket,
+        currentAmount: _lAmount,
+        state: STATE.ACTIVE
+      });
 
-        loanState = LoanState({
-          id:id,
-          loanMarket: _lMarket,
-          actualLoanAmount: _lAmount,
-          currentMarket: _lMarket,
-          currentAmount: _lAmount,
-          state: STATE.ACTIVE
-        });
-
-        loanAccount.loans.push(loan);
-        loanAccount.collaterals.push(collateral);
-        loanAccount.accruedYield.push(cYield);
-        loanAccount.accruedInterest.push(deductibleInterest);
-        loanAccount.loanState.push(loanState);
-      }
-      return this;
+      loanAccount.loans.push(loan);
+      loanAccount.collaterals.push(collateral);
+      loanAccount.accruedInterest.push(deductibleInterest);
+      loanAccount.loanState.push(loanState);
+      // loanAccount.accruedYield.push(accruedYield); - no yield because it is
+      // a flexible loan
     }
+    else if (comptroller.commitment[2]) {
+      /// Here the commitment is for ONEMONTH. But Yield is for TWOWEEKMCP
+      loan = LoanRecords({
+        id:id,
+        amount:_lAmount,
+        market: _lMarket,
+        commitment: _commitment,
+        isSwapped: false,
+        lastUpdate: block.timestamp
+      });
+
+      collateral = CollateralRecords({
+        id:id,
+        market:_collateralMarket,
+        commitment: _commitment,
+        amount: _collateralAmount,
+        isCollateralisedDeposit: true,
+        timelockValidity: 86400, // convert this into block.timestamp
+        isTimelockActivated: false,
+        activationTime: 0
+      });
+
+      cYield = CollateralYield({
+        id:id,
+        market:_collateralMarket,
+        commitment: comptroller.commitment[1],
+        oldLengthAccruedYield: apy.time.length,
+        oldTime: block.timestamp,
+        accruedYield: 0
+      });
+
+      deductibleInterest = DeductibleInterest({
+        id:id,
+        market: _collateralMarket,
+        oldLengthAccruedInterest: apr.time.length,
+        oldTime:block.timestamp,
+        accruedInterest: 0
+      });
+
+      loanState = LoanState({
+        id:id,
+        loanMarket: _lMarket,
+        actualLoanAmount: _lAmount,
+        currentMarket: _lMarket,
+        currentAmount: _lAmount,
+        state: STATE.ACTIVE
+      });
+
+      loanAccount.loans.push(loan);
+      loanAccount.collaterals.push(collateral);
+      loanAccount.accruedYield.push(cYield);
+      loanAccount.accruedInterest.push(deductibleInterest);
+      loanAccount.loanState.push(loanState);
+    }
+    return this;
+  }
 
   function _preAddCollateralProcess(address _account,bytes32 _loanMarket, bytes32 _commitment) internal {
     _isMarketSupported(_loanMarket);
