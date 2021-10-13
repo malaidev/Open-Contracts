@@ -18,7 +18,6 @@ contract Comptroller is Pausable {
 
 /// @notice each APY or APR struct holds the recorded changes in interest data & the
 /// corresponding time for a particular commitment type.
-
   struct APY  {
     bytes32 commitment; 
     uint[] time; // ledger of time when the APY changes were made.
@@ -227,8 +226,6 @@ contract Comptroller is Pausable {
     oldLengthAccruedYield = apy.time.length;
     oldTime = block.timestamp;
   }
-  
-
 
   function updateLoanIssuanceFees() external authComptroller() {}
   function updateLoanClosureFees() external authComptroller() {}
