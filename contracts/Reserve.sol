@@ -46,12 +46,37 @@ contract Reserve is Pausable {
         return true;
     }
 
-    function marketReserve(bytes32 _market) external view returns(uint) {
-        _marketReserve(_market);
+    // function marketReserves(bytes32 _market) external view returns(uint) {
+    //     _avblReserves(_market);
+    // }
+    // function _avblReserves(bytes32 _market) internal view returns(uint) {
+    //     return loan.reserves(_market) + deposit.reserves(_market);
+    // }
+
+    function avblMarketReserves(bytes32 _market) external returns (uint)    {
+        _avblMarketReserves(_market);
     }
-    function _marketReserve(bytes32 _market) internal view returns(uint) {
-        return loan.reserves(_market) + deposit.reserves(_market);
+    function _avblMarketReserves(bytes32 _market) internal {
+        require(_marketReserves(_market) - _marketUtilisation(_market) >=0, "Mathematical error");
+        
+        return _marketReserves(_market) - _marketUtilisation(_market);
     }
+
+	function marketReserves(bytes32 _market) external returns(uint)	{
+		_marketReserves(_market);
+	}
+
+	function _marketReserves(bytes32 _market) internal  {
+		return deposit._avblReserves(_market)+loan._avblReserves(_market);
+	}
+	
+	function marketUtilisation(bytes32 _market) external returns(uint)	{
+		_marketUtilisation(_market);
+	}
+
+	function _marketUtilisation(bytes32 _market) internal  {
+		return deposit._utilisedReserves(_market) + loan._utilisedReserves(_market);
+	}
 
     modifier authReserve()  {
         require(msg.sender == adminReserveAddress || 
@@ -70,6 +95,3 @@ contract Reserve is Pausable {
 	}
 
 }
-
-//  reserver contract holds all the funds. While the comptroller is the auditor
-//  general.

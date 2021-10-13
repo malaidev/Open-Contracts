@@ -98,6 +98,7 @@ contract Loan {
 
 	///  Balance monitoring  - Loan
 	mapping(bytes32 => uint) marketReserves; // mapping(market => marketBalance)
+	mapping(bytes32 => uint) marketUtilisation; // mapping(market => marketBalance)
 
 	/// EVENTS
 	event NewLoan(
@@ -146,20 +147,30 @@ contract Loan {
 	}
 
 	// External view functions
-
 	function hasLoanAccount(address _account) external returns (bool) {
 		_hasLoanAccount(_account);
 		return true;
 	}
 
-	function reserves(bytes32 _market) external view returns(uint)	{
-		return _reserves(_market);
-	}
-	function _reserves(bytes32 _market) internal view returns(uint)	{
+
+	// function avblReserves(bytes32 _market) external view returns(uint)	{
+	// 	_avblReserves(_market);
+	// }
+
+	function _avblReserves(bytes32 _market) internal view returns(uint)	{
 		return marketReserves[_market];
 	}
+	
+	// function utilisedReserves(bytes32 _market) external view returns(uint)	{
+	// 	_utilisedReserves[_market];
+	// }
 
-	function _updateReserves(bytes32 _market, uint _amount, uint _num) internal view
+	function _utilisedReserves(bytes32 _market) internal view returns(uint)	{
+		return marketUtilisation[_market];
+	}
+
+
+	function _updateReserves(bytes32 _market, uint _amount, uint _num) private
 	{
 		if (_num == 0)	{
 			marketReserves[_market] += _amount;
@@ -169,19 +180,29 @@ contract Loan {
 		return this;
 	}
 
-	/// NEW LOAN REQUEST
+	function _updateUtilisation(bytes32 _market, uint _amount, uint _num) private 
+	{
+		if (_num == 0)	{
+			marketUtilisation[_market] += _amount;
+		} else if (_num == 1)	{
+			marketUtilisation[_market] -= _amount;
+		}
+		return this;
+	}
 
+	
+	/// NEW LOAN REQUEST
 	function loanRequest(
 		bytes32 _lMarket,
 		bytes32 _commitment,
-		uint256 _lAmount,
+		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) external nonReentrant returns (bool success) {
 		_preLoanRequestProcess(
 			_lMarket,
 			_commitment,
-			_lAmount,
+			_loanAmount,
 			_collateralMarket,
 			_collateralAmount
 		);
@@ -206,9 +227,12 @@ contract Loan {
 		require(loan.id == 0, "Active loan");
 
 		collateralToken.transfer(address(reserve), _collateralAmount);
-		_ensureLoanAccount(msg.sender, loanAccount);
 		_updateReserves(_collateralMarket, _collateralAmount, 0);
+		_ensureLoanAccount(msg.sender, loanAccount);
 
+
+		// check permissibleCDR.  - If loan request is not permitted, I have to
+		//a require();
 		// check permissibleCDR.  - If loan request is not permitted, I have to
 		//a require();
 
@@ -216,14 +240,12 @@ contract Loan {
 			msg.sender,
 			_lMarket,
 			_commitment,
-			_lAmount,
+			_loanAmount,
 			collateral_,
 			_collateralAmount
 		);
 
-		comptroller.
-
-		emit NewLoan(msg.sender, _lMarket, _lAmount, _commitment, block.timetstamp);
+		emit NewLoan(msg.sender, _lMarket, _loanAmount, _commitment, block.timetstamp);
 		return success;
 	}
 
@@ -468,7 +490,13 @@ contract Loan {
 			/// transfering the repayAmount to the reserve contract.
 			markets._connectMarket(_loanMarket, _repayAmount, loanToken);
 			loanToken.transfer(msg.sender, address(reserve), _repayAmount);
-			_updateReserves(_loanMarket, _repayAmount, 0);
+
+			/// Exploring conditions. repayAmount > loan.amount & vice-versa.
+			if (_repayAmount > loan.amount) {
+				uint256 _remnantAmount = _repayAmount - loan.amount;
+				collateral.amount +=
+					cYield.accruedYield -
+					deductibleInterest.accruedInterest;
 
 			/// Exploring conditions. repayAmount > loan.amount & vice-versa.
 			if (_repayAmount > loan.amount) {
@@ -487,7 +515,14 @@ contract Loan {
 						msg.sender,
 						loanState.currentAmount + _remnantAmount
 					);
-					_updateReserves(_loanMarket, _repayAmount, 1);
+				} else if (loanState.currentMarket != _loanMarket) {
+					uint256 amount = liquidator.swap(
+						loanState.currentMarket,
+						_loanMarket,
+						loanState.currentAmount
+					);
+
+					loan.currentMarket = _loanMarket;
 				} else if (loanState.currentMarket != _loanMarket) {
 					uint256 amount = liquidator.swap(
 						loanState.currentMarket,
@@ -503,7 +538,14 @@ contract Loan {
 						msg.sender,
 						loanState.currentAmount + _remnantAmount
 					);
-					_updateReserves(_loanMarket, _repayAmount, 1);
+				}
+
+				delete cYield;
+				delete deductibleInterest;
+				delete loanAccount.accruedInterest[loan.id - 1];
+				delete loanAccount.accruedYield[loan.id - 1];
+
+				emit LoanRepaid(msg.sender, loan.id, loan.market, block.timestamp);
 				}
 
 				delete cYield;
@@ -570,7 +612,13 @@ contract Loan {
 					if (_repayAmount > loan.amount) {
 						_remnantAmount = _repayAmount - loan.amount;
 						loanToken.transfer(address(reserve), msg.sender, _remnantAmount);
-						_updateReserves(_loanMarket, _repayAmount, 1);
+					} else if (_repayAmount <= loan.amount) {
+						_repayAmount += liquidator.swap(
+							collateral.market,
+							_loanMarket,
+							collateral.amount
+						);
+						_remnantAmount = _repayAmount - loan.amount;
 					} else if (_repayAmount <= loan.amount) {
 						_repayAmount += liquidator.swap(
 							collateral.market,
@@ -595,7 +643,13 @@ contract Loan {
 					if (_repayAmount > loan.amount) {
 						_remnantAmount = _repayAmount - loan.amount;
 						loanToken.transfer(address(reserve), msg.sender, _remnantAmount);
-						_updateReserves(_loanMarket, _repayAmount, 1);
+					} else if (_repayAmount <= loan.amount) {
+						_repayAmount += liquidator.swap(
+							collateral.market,
+							_loanMarket,
+							collateral.amount
+						);
+						_remnantAmount = _repayAmount - loan.amount;
 					} else if (_repayAmount <= loan.amount) {
 						_repayAmount += liquidator.swap(
 							collateral.market,
@@ -659,6 +713,7 @@ contract Loan {
 				}
 			}
 		}
+		_updateUtilisation(_loanMarket, loan.amount, 1);
 		return success;
 	}
 
@@ -802,6 +857,14 @@ contract Loan {
 			delete collateral;
 
 			delete loanAccount.loanState[num];
+
+			uint256 num = loan.id - 1;
+			/// delete loan Entries, loanRecord, loanstate, collateralrecords
+			delete loanState;
+			delete loan;
+			delete collateral;
+
+			delete loanAccount.loanState[num];
 			delete loanAccount.loans[num];
 			delete loanAccount.collaterals[num];
 
@@ -830,32 +893,32 @@ contract Loan {
 	function _preLoanRequestProcess(
 		bytes32 _lMarket,
 		bytes32 _commitment,
-		uint256 _lAmount,
+		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) internal {
 		require(
-			_lAmount != 0 && _collateralAmount != 0,
+			_loanAmount != 0 && _collateralAmount != 0,
 			"Loan or collateral cannot be zero"
 		);
 
 		_isMarketSupported(_lMarket);
 		_isMarketSupported(_collateralMarket);
 
-		markets._connectMarket(_lMarket, _lAmount, loanToken);
+		markets._connectMarket(_lMarket, _loanAmount, loanToken);
 		markets._connectMarket(
 			_collateralMarket,
 			_collateralAmount,
 			collateralToken
 		);
-		_cdrCheck(_lAmount, _collateralAmount);
+		_permissibleCDR(_lMarket,_collateralMarket,_loanAmount,_collateralAmount);
 	}
 
 	function _processNewLoan(
 		address _account,
 		bytes32 _lMarket,
 		bytes32 _commitment,
-		uint256 _lAmount,
+		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) internal {
@@ -871,7 +934,7 @@ contract Loan {
 		if (_commitment == comptroller.commitment[0]) {
 			loan = LoanRecords({
 				id: id,
-				amount: _lAmount,
+				amount: _loanAmount,
 				market: _lMarket,
 				commitment: _commitment,
 				isSwapped: false,
@@ -900,9 +963,9 @@ contract Loan {
 			loanState = LoanState({
 				id: id,
 				loanMarket: _lMarket,
-				actualLoanAmount: _lAmount,
+				actualLoanAmount: _loanAmount,
 				currentMarket: _lMarket,
-				currentAmount: _lAmount,
+				currentAmount: _loanAmount,
 				state: STATE.ACTIVE
 			});
 
@@ -916,7 +979,7 @@ contract Loan {
 			/// Here the commitment is for ONEMONTH. But Yield is for TWOWEEKMCP
 			loan = LoanRecords({
 				id: id,
-				amount: _lAmount,
+				amount: _loanAmount,
 				market: _lMarket,
 				commitment: _commitment,
 				isSwapped: false,
@@ -954,9 +1017,9 @@ contract Loan {
 			loanState = LoanState({
 				id: id,
 				loanMarket: _lMarket,
-				actualLoanAmount: _lAmount,
+				actualLoanAmount: _loanAmount,
 				currentMarket: _lMarket,
-				currentAmount: _lAmount,
+				currentAmount: _loanAmount,
 				state: STATE.ACTIVE
 			});
 
@@ -966,6 +1029,7 @@ contract Loan {
 			loanAccount.accruedInterest.push(deductibleInterest);
 			loanAccount.loanState.push(loanState);
 		}
+		_updateUtilisation(_lMarket, _loanAmount, 0);
 		return this;
 	}
 
@@ -993,16 +1057,32 @@ contract Loan {
 		return this;
 	}
 
-	function _cdrCheck(
+	function _permissibleCDR(
 		bytes32 _loanMarket,
 		bytes32 _collateralMarket,
-		uint256 _lAmount,
+		uint256 _loanAmount,
 		uint256 _collateralAmount
 	) internal {
 		//  check if the
+		
+		uint loanByCollateral;
+		uint amount = reserve._avblMarketReserves(_loanMarket) - _loanAmount ;
 
-		oracle.getLatestPrice(_loanMarket);
-		oracle.getLatestPrice(_collateralMarket);
+		uint usdLoan = (oracle.getLatestPrice(_loanMarket))*_loanAmount;
+		uint usdCollateral = (oracle.getLatestPrice(_collateralMarket))*_collateralAmount;
+
+		require(amount > 0, "loan cannot exceeds reserves");
+		require(reserve._marketReserves(_loanMarket) / amount >= 10, "Minimum reserve exeception");
+		require (usdLoan/usdCollateral <=3, "Exceeds max permissible cdr");
+
+		// calculating cdrPermissible.
+		if ((amount) >= comptroller.reserveFactor)	{
+			loanByCollateral = 3;
+		} else 	{
+			loanByCollateral = 2;
+		}
+		require (usdLoan/usdCollateral <= loanByCollateral, "Exceeds max permissible cdr");
+		return this;
 	}
 
 	modifier nonReentrant() {
