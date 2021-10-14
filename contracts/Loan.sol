@@ -141,6 +141,14 @@ contract Loan {
 		uint256 timestamp
 	);
 
+	event Liquidation(
+		address indexed account,
+		bytes32 indexed market,
+		bytes32 indexed commitment,
+		uint amount,
+		uint time
+	);
+
 	/// Constructor
 	constructor() {
 		adminLoanAddress = msg.sender;
@@ -203,7 +211,7 @@ contract Loan {
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
-	) external nonReentrant returns (bool success) {
+	) external nonReentrant() returns (bool success) {
 		_preLoanRequestProcess(
 			_loanMarket,
 			_commitment,
@@ -295,7 +303,7 @@ contract Loan {
 		bytes32 _loanMarket,
 		bytes32 _commitment,
 		bytes32 _swapMarket
-	) external nonReentrant returns (bool success) {
+	) external nonReentrant() returns (bool success) {
 		_hasLoanAccount(msg.sender);
 		_isMarketSupported(_loanMarket);
 		_isMarketSupported(_swapMarket);
@@ -348,7 +356,7 @@ contract Loan {
 		bytes32 _loanMarket,
 		bytes32 _commitment,
 		bytes32 _swapMarket
-	) external nonReentrant returns (bool success) {
+	) external nonReentrant() returns (bool success) {
 		_hasLoanAccount(msg.sender);
 		_isMarketSupported(_loanMarket);
 		_isMarketSupported(_swapMarket);
@@ -902,12 +910,65 @@ contract Loan {
 		require(markets.tokenSupportCheck[_market] != false, "Unsupported market");
 	}
 
-	function liquidation(
-		bytes32 _loanMarket,
-		bytes32 _commitment,
-		bytes32 amount_
-	) external nonReentrant returns (bool) {
-		//   calls the liqudiate function in the liquidator contract.
+	function liquidation(address _account, uint id) external nonReentrant()	authLoan() {
+		
+		LoanAccount storage loanAccount = loanPassbook[_account];
+		
+		bytes32 _commitment = loanAccount.loans[id-1].commitment;
+		bytes32 _loanMarket = loanAccount.loans[id-1].market;
+
+		LoanRecords storage loan = indLoanRecords[_account][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[_account][_loanMarket][_commitment];
+		CollateralRecords storage collateral = indCollateralRecords[_account][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[_account][_loanMarket][_commitment];
+
+		require(loan.id == id, "ERROR: id mismatch");
+
+		_accruedInterest(_account, id);
+		
+		if (loan.commitment == comptroller.commitment[2])	{
+			CollateralYield storage cYield = indCollateralisedDepositRecords[_account][_loanMarket][_commitment];
+			collateral.amount += cYield.accruedYield - deductibleInterest.accruedInterest;
+			
+		} else if (loan.commitment == comptroller.commitment[2]) {
+			collateral.amount -= deductibleInterest.accruedInterest;
+		}
+
+		delete cYield;
+		delete deductibleInterest;
+		delete loanAccount.accruedInterest[loan.id - 1];
+		delete loanAccount.accruedYield[loan.id - 1];
+
+		// Convert to USD.
+		uint usdCollateral = oracle.getLatestPrice(collateral.market);
+		uint usdLoanCurrent = oracle.getLatestPrice(loanState.currentMarket);
+		uint usdLoanActual = oracle.getLatestPrice(loan.market);
+
+		uint cAmount = usdCollateral*collateral.amount;
+		uint lAmountCurrent = usdLoanCurrent*loanState.currentAmount;
+		uint lAmount = usdLoanActual*loan.market;
+
+		// convert collateral & loanCurrent into loanActual
+		uint _repaymentAmount = liquidator.swap(collateral.market, loan.market, cAmount);
+		_repaymentAmount += liquidator.swap(loanState.currentMarket, loan.market, lAmountCurrent);
+
+		uint _remnantAmount = _repaymentAmount - lAmount;
+
+		uint256 num = id - 1;
+		delete loanState;
+		delete loan;
+		delete collateral;
+
+		delete loanAccount.loanState[num];
+		delete loanAccount.loans[num];
+		delete loanAccount.collaterals[num];
+
+		_updateUtilisation(loan.market, loan.amount, 1);
+
+		emit LoanRepaid(_account, id, loan.market, block.timestamp);
+		emit Liquidation(_account,_loanMarket, _commitment, loan.amount, block.timestamp);
+		
+		return success;
 	}
 
 	function _preLoanRequestProcess(
@@ -1106,7 +1167,7 @@ contract Loan {
 	}
 
 	modifier nonReentrant() {
-		require(isReentrant == false, "Re-entrant alert!");
+		require(isReentrant == false, "ERROR: re-entrant");
 		isReentrant = true;
 		_;
 		isReentrant = false;
@@ -1115,7 +1176,7 @@ contract Loan {
 	modifier authLoan() {
 		require(
 			msg.sender == adminLoanAddress,
-			"Only an admin can call this function"
+			"ERROR: Require Admin access"
 		);
 		_;
 	}
