@@ -27,7 +27,7 @@ contract Loan {
 
 	IBEP20 loanToken;
 	IBEP20 collateralToken;
-	IBEP20 swapToken;
+	IBEP20 withdrawToken;
 
 	enum STATE {
 		ACTIVE,
@@ -120,11 +120,11 @@ contract Loan {
 		uint256 amount,
 		uint256 timestamp
 	);
-	event PermissibleWithdrawal(
+	event WithdrawalProcessed(
 		address indexed account,
 		uint256 indexed id,
-		bytes32 market,
 		uint256 indexed amount,
+		bytes32 market,
 		uint256 timestamp
 	);
 	event MarketSwapped(
@@ -147,9 +147,14 @@ contract Loan {
 	}
 
 	// External view functions
-	function hasLoanAccount(address _account) external returns (bool) {
+	function hasLoanAccount(address _account) external view returns (bool) {
 		_hasLoanAccount(_account);
 		return true;
+	}
+
+	function _hasLoanAccount(address _account) internal {
+		require(loanPassbook[_account].accOpenTime !=0, "No loan account");
+		return this;
 	}
 
 
@@ -193,14 +198,14 @@ contract Loan {
 	
 	/// NEW LOAN REQUEST
 	function loanRequest(
-		bytes32 _lMarket,
+		bytes32 _loanMarket,
 		bytes32 _commitment,
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) external nonReentrant returns (bool success) {
 		_preLoanRequestProcess(
-			_lMarket,
+			_loanMarket,
 			_commitment,
 			_loanAmount,
 			_collateralMarket,
@@ -208,12 +213,8 @@ contract Loan {
 		);
 
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
-		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][
-			_commitment
-		];
-		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][
-			_commitment
-		];
+		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
 		CollateralRecords storage collateral = indCollateralRecords[msg.sender][
 			_loanMarket
 		][_commitment];
@@ -238,14 +239,14 @@ contract Loan {
 
 		_processNewLoan(
 			msg.sender,
-			_lMarket,
+			_loanMarket,
 			_commitment,
 			_loanAmount,
 			collateral_,
 			_collateralAmount
 		);
 
-		emit NewLoan(msg.sender, _lMarket, _loanAmount, _commitment, block.timetstamp);
+		emit NewLoan(msg.sender, _loanMarket, _loanAmount, _commitment, block.timetstamp);
 		return success;
 	}
 
@@ -261,12 +262,8 @@ contract Loan {
 		bytes32 _collateralAmount
 	) external returns (bool success) {
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
-		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][
-			_commitment
-		];
-		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][
-			_commitment
-		];
+		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
 		CollateralRecords storage collateral = indCollateralRecords[msg.sender][
 			_loanMarket
 		][_commitment];
@@ -279,9 +276,9 @@ contract Loan {
 
 		_preAddCollateralProcess(msg.sender, _loanMarket, _commitment);
 
+		_collateralAmount = markets._quantifyAmount(_collateralMarket, _collateralAmount);
 		markets._connectMarket(
 			_collateralMarket,
-			_collateralAmount,
 			collateralToken
 		);
 		
@@ -316,12 +313,8 @@ contract Loan {
 		_isMarketSupported(_swapMarket);
 
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
-		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][
-			_commitment
-		];
-		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][
-			_commitment
-		];
+		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
 		DeductibleInterest storage deductibleInterest = indaccruedInterest[
 			msg.sender
 		][_loanMarket][_commitment];
@@ -375,12 +368,8 @@ contract Loan {
 		_isMarketSupported(_swapMarket);
 
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
-		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][
-			_commitment
-		];
-		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][
-			_commitment
-		];
+		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
 		DeductibleInterest storage deductibleInterest = indaccruedInterest[
 			msg.sender
 		][_loanMarket][_commitment];
@@ -438,12 +427,8 @@ contract Loan {
 		);
 
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
-		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][
-			_commitment
-		];
-		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][
-			_commitment
-		];
+		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
 		CollateralRecords storage collateral = indCollateralRecords[msg.sender][
 			_loanMarket
 		][_commitment];
@@ -687,6 +672,7 @@ contract Loan {
 					collateral.activationTime = block.timestamp;
 				} else if (_commitment == comptroller.commitment[0]) {
 					/// transfer collateral.amount from reserve contract to the msg.sender
+					
 					markets._connectMarket(
 						collateral.market,
 						collateral.amount,
@@ -745,12 +731,8 @@ contract Loan {
 		uint256 num = loanId - 1;
 
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
-		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][
-			_commitment
-		];
-		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][
-			_commitment
-		];
+		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
 		CollateralRecords storage collateral = indCollateralRecords[msg.sender][
 			_loanMarket
 		][_commitment];
@@ -759,7 +741,6 @@ contract Loan {
 		][_loanMarket][_commitment];
 
 		comptroller._calcAPR(
-			_account,
 			loan.commitment,
 			deductibleInterest.oldLengthAccruedInterest,
 			deductibleInterest.oldTime,
@@ -790,7 +771,48 @@ contract Loan {
 		return this;
 	}
 
-	function permissibleWithdrawal() external returns (bool) {}
+	function permissibleWithdrawal(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint _amount) external returns (bool) {
+		
+		_hasLoanAccount(msg.sender);
+
+		LoanAccount storage loanAccount = loanPassbook[msg.sender];
+		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
+		CollateralRecords storage collateral = indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][_loanMarket][_commitment];
+		
+		markets._quantifyAmount(loanState.currentMarket, _amount);
+		require(_amount <= loanState.currentAmount, "Error: Exceeds available loan");
+		
+		_accruedInterest(msg.sender, loan.id);
+		uint collateralAvbl = collateral.amount - deductibleInterest.accruedInterest;
+
+		// fetch usdPrices
+		uint usdCollateral = oracle.getLatestPrice(_collateralMarket);
+		uint usdLoan = oracle.getLatestPrice(_loanMarket);
+		uint usdLoanCurrent = oracle.getLatestPrice(loanState.currentMarket);
+
+		// Quantification of the assets
+		uint cAmount = usdCollateral*collateral.amount;
+		uint cAmountAvbl = usdCollateral*collateralAvbl;
+
+		uint lAmountCurrent = usdLoanCurrent*loanState.currentAmount;
+		uint lAmount = usdLoanCurrent*loan.amount;
+
+// 
+		uint permissibleAmount = ((cAmountAvbl - (30*cAmount/100))/usdLoanCurrent);
+
+		require(permissibleAmount > 0, "Error: Can not withdraw zero funds");
+		require(permissibleAmount > (_amount), "Error:Request exceeds funds");
+		
+		// calcualted in usdterms
+		require((cAmountAvbl + lAmountCurrent - (_amount*usdLoanCurrent)) >= (11*(usdLoan*loan.amount)/10), "Error: Risks liquidation");
+		
+		markets._connectMarket(loanState.currentMarket,/* _amount, */withdrawToken);
+		withdrawToken.transfer(msg.sender,_amount);
+
+		emit WithdrawalProcessed(msg.sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
+	}
 
 	function _permissibleWithdrawal() internal returns (bool) {}
 
@@ -883,7 +905,7 @@ contract Loan {
 	}
 
 	function liquidation(
-		bytes32 _lMarket,
+		bytes32 _loanMarket,
 		bytes32 _commitment,
 		bytes32 amount_
 	) external nonReentrant returns (bool) {
@@ -891,7 +913,7 @@ contract Loan {
 	}
 
 	function _preLoanRequestProcess(
-		bytes32 _lMarket,
+		bytes32 _loanMarket,
 		bytes32 _commitment,
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
@@ -902,21 +924,21 @@ contract Loan {
 			"Loan or collateral cannot be zero"
 		);
 
-		_isMarketSupported(_lMarket);
+		_isMarketSupported(_loanMarket);
 		_isMarketSupported(_collateralMarket);
 
-		markets._connectMarket(_lMarket, _loanAmount, loanToken);
+		markets._connectMarket(_loanMarket, _loanAmount, loanToken);
 		markets._connectMarket(
 			_collateralMarket,
 			_collateralAmount,
 			collateralToken
 		);
-		_permissibleCDR(_lMarket,_collateralMarket,_loanAmount,_collateralAmount);
+		_permissibleCDR(_loanMarket,_collateralMarket,_loanAmount,_collateralAmount);
 	}
 
 	function _processNewLoan(
 		address _account,
-		bytes32 _lMarket,
+		bytes32 _loanMarket,
 		bytes32 _commitment,
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
@@ -935,7 +957,7 @@ contract Loan {
 			loan = LoanRecords({
 				id: id,
 				amount: _loanAmount,
-				market: _lMarket,
+				market: _loanMarket,
 				commitment: _commitment,
 				isSwapped: false,
 				lastUpdate: block.timestamp
@@ -962,9 +984,9 @@ contract Loan {
 
 			loanState = LoanState({
 				id: id,
-				loanMarket: _lMarket,
+				loanMarket: _loanMarket,
 				actualLoanAmount: _loanAmount,
-				currentMarket: _lMarket,
+				currentMarket: _loanMarket,
 				currentAmount: _loanAmount,
 				state: STATE.ACTIVE
 			});
@@ -980,7 +1002,7 @@ contract Loan {
 			loan = LoanRecords({
 				id: id,
 				amount: _loanAmount,
-				market: _lMarket,
+				market: _loanMarket,
 				commitment: _commitment,
 				isSwapped: false,
 				lastUpdate: block.timestamp
@@ -1016,9 +1038,9 @@ contract Loan {
 
 			loanState = LoanState({
 				id: id,
-				loanMarket: _lMarket,
+				loanMarket: _loanMarket,
 				actualLoanAmount: _loanAmount,
-				currentMarket: _lMarket,
+				currentMarket: _loanMarket,
 				currentAmount: _loanAmount,
 				state: STATE.ACTIVE
 			});
@@ -1029,7 +1051,7 @@ contract Loan {
 			loanAccount.accruedInterest.push(deductibleInterest);
 			loanAccount.loanState.push(loanState);
 		}
-		_updateUtilisation(_lMarket, _loanAmount, 0);
+		_updateUtilisation(_loanMarket, _loanAmount, 0);
 		return this;
 	}
 

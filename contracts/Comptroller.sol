@@ -14,7 +14,7 @@ contract Comptroller is Pausable {
 	// uint public latestAPR;
 	// uint public latestAPY;
 	
-	bytes32[] internal commitment;
+	bytes32[] commitment;
 	uint reserveFactor;
 
 /// @notice each APY or APR struct holds the recorded changes in interest data & the
@@ -148,7 +148,7 @@ contract Comptroller is Pausable {
 		return true;
 	}
 
-	function _calcAPR(address _account, bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view {
+	function _calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view {
 		
 		APR storage apr = indAPRRecords[_commitment];
 
@@ -187,7 +187,7 @@ contract Comptroller is Pausable {
 	}
 
 
-	function _calcAPY(address _account, bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal  view {
+	function _calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal  view {
 		
 		APY storage apy = indAPYRecords[_commitment];
 

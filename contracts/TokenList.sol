@@ -136,12 +136,17 @@ contract TokenList /* is Pausable */{
     return bool(true);
   }
 
-  function _connectMarket(bytes32 market_, uint256 amount_, IBEP20 token) internal view {
+  function _connectMarket(bytes32 market_, /* uint256 amount_, */ IBEP20 token) internal view {
 		MarketData storage marketData = indMarketData[market_];
 		address marketAddress = marketData.tokenAddress;
 		token = IBEP20(marketAddress);
-		amount_ *= marketData.decimals;
+		// amount_ *= marketData.decimals;
 	}
+
+  function _quantifyAmount(bytes32 _market, uint _amount) internal view {
+    MarketData storage marketData = indMarketData[_market];
+    _amount *= marketData.decimals;
+  }
 
   function _updateTokenSupport(
     bytes32 market_,
