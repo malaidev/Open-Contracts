@@ -215,15 +215,9 @@ contract Loan {
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
 		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
-		CollateralRecords storage collateral = indCollateralRecords[msg.sender][
-			_loanMarket
-		][_commitment];
-		CollateralYield storage cYield = indCollateralisedDepositRecords[
-			msg.sender
-		][_loanMarket][_commitment];
-		DeductibleInterest storage deductibleInterest = indaccruedInterest[
-			msg.sender
-		][_loanMarket][_commitment];
+		CollateralRecords storage collateral = indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		CollateralYield storage cYield = indCollateralisedDepositRecords[msg.sender][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][_loanMarket][_commitment];
 
 		require(loan.id == 0, "Active loan");
 
@@ -264,15 +258,9 @@ contract Loan {
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
 		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
-		CollateralRecords storage collateral = indCollateralRecords[msg.sender][
-			_loanMarket
-		][_commitment];
-		DeductibleInterest storage deductibleInterest = indaccruedInterest[
-			msg.sender
-		][_loanMarket][_commitment];
-		CollateralYield storage cYield = indCollateralisedDepositRecords[
-			msg.sender
-		][_loanMarket][_commitment];
+		CollateralRecords storage collateral = indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][_loanMarket][_commitment];
+		CollateralYield storage cYield = indCollateralisedDepositRecords[msg.sender][_loanMarket][_commitment];
 
 		_preAddCollateralProcess(msg.sender, _loanMarket, _commitment);
 
@@ -315,9 +303,7 @@ contract Loan {
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
 		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
-		DeductibleInterest storage deductibleInterest = indaccruedInterest[
-			msg.sender
-		][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][_loanMarket][_commitment];
 
 		require(loan.id != 0, "loan does not exist");
 		require(loan.isSwapped == false, "Swapped market exists");
@@ -370,9 +356,7 @@ contract Loan {
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
 		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
-		DeductibleInterest storage deductibleInterest = indaccruedInterest[
-			msg.sender
-		][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][_loanMarket][_commitment];
 
 		require(loan.id != 0, "loan does not exist");
 		require(loan.isSwapped == true, "Swapped market does not exist");
@@ -416,6 +400,34 @@ contract Loan {
 		return success;
 	}
 
+	function withdrawCollateral(bytes32 _loanMarket, bytes32 _commitment) external returns (bool success)	{
+		
+		_withdrawCollateral(msg.sender, _loanMarket, _commitment);
+		
+		emit CollateralReleased(msg.sender, collateral.amount, collateral.market, block.timestamp);
+		return success;
+	}
+	function _withdrawCollateral(address _account, bytes32 _loanMarket, bytes32 _commitment) internal	{
+		
+		_hasLoanAccount(_account);
+
+		LoanAccount storage loanAccount = loanPassbook[_account];
+		LoanRecords storage loan = indLoanRecords[_account][_loanMarket][_commitment];
+		LoanState storage loanState = indLoanState[_account][_loanMarket][_commitment];
+		CollateralRecords storage collateral = indCollateralRecords[_account][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[_account][_loanMarket][_commitment];
+		CollateralYield storage cYield = indCollateralisedDepositRecords[_account][_loanMarket][_commitment];
+
+		require(loan.id !=0, "Error: Loan does not exist");
+		require(loanState.state == STATE.REPAID, "Error: active loan");
+		require(collateral.timelockValidity >= block.timestamp, "Error: Valid timelock");
+
+		markets._connectMarket(collateral.market, collateralToken);
+		collateralToken.transfer(address(reserve), _account, collateral.amount);
+		
+		return this;
+	}
+
 	function repayLoan(
 		bytes32 _loanMarket,
 		bytes32 _commitment,
@@ -429,15 +441,9 @@ contract Loan {
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
 		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
-		CollateralRecords storage collateral = indCollateralRecords[msg.sender][
-			_loanMarket
-		][_commitment];
-		DeductibleInterest storage deductibleInterest = indaccruedInterest[
-			msg.sender
-		][_loanMarket][_commitment];
-		CollateralYield storage cYield = indCollateralisedDepositRecords[
-			msg.sender
-		][_loanMarket][_commitment];
+		CollateralRecords storage collateral = indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][_loanMarket][_commitment];
+		CollateralYield storage cYield = indCollateralisedDepositRecords[msg.sender][_loanMarket][_commitment];
 
 		_accruedInterest(msg.sender, loan.id);
 		_accruedYield(msg.sender, loan.id);
@@ -733,12 +739,8 @@ contract Loan {
 		LoanAccount storage loanAccount = loanPassbook[msg.sender];
 		LoanRecords storage loan = indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LoanState storage loanState = indLoanState[msg.sender][_loanMarket][_commitment];
-		CollateralRecords storage collateral = indCollateralRecords[msg.sender][
-			_loanMarket
-		][_commitment];
-		DeductibleInterest storage deductibleInterest = indaccruedInterest[
-			msg.sender
-		][_loanMarket][_commitment];
+		CollateralRecords storage collateral = indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		DeductibleInterest storage deductibleInterest = indaccruedInterest[msg.sender][_loanMarket][_commitment];
 
 		comptroller._calcAPR(
 			loan.commitment,
@@ -813,10 +815,6 @@ contract Loan {
 
 		emit WithdrawalProcessed(msg.sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
 	}
-
-	function _permissibleWithdrawal() internal returns (bool) {}
-
-	function _calcCdr() internal {} // performs a cdr check internally
 
 	function _repaymentProcess(
 		address account,
