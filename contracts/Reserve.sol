@@ -7,10 +7,10 @@ import "./Interfaces/ILoan.sol";
 import "./Interfaces/IDeposit.sol";
 
 contract Reserve is Pausable {
-    
-
-    ILoan loan = ILoan(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
-    IDeposit deposit = IDeposit(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
+    IDeposit deposit;
+    ILoan loan;
+    // ILoan loan = ILoan(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
+    // IDeposit deposit = IDeposit(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
 
     IBEP20 token;
 
@@ -18,9 +18,10 @@ contract Reserve is Pausable {
     address adminReserveAddress;
     address superAdminAddress;
 
-    constructor(address superAdminAddr_) {
+    constructor(address superAdminAddr_, address depositAddr_) {
         superAdminAddress = superAdminAddr_;
         adminReserveAddress = msg.sender;
+        deposit = IDeposit(depositAddr_);
     }
     
     receive() external payable {
@@ -77,6 +78,10 @@ contract Reserve is Pausable {
 	function _marketUtilisation(bytes32 _market) internal  {
 		return deposit._utilisedReserves(_market) + loan._utilisedReserves(_market);
 	}
+
+    function setLoanAddress(address loanAddr_) public authReserve {
+        loan = ILoan(loanAddr_);
+    }
 
     modifier authReserve()  {
         require(msg.sender == adminReserveAddress || 

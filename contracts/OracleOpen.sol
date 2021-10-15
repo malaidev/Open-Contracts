@@ -11,6 +11,7 @@ contract OracleOpen is Pausable {
     address superAdminAddress;
     ITokenList tokenList;
     ILoan loan;
+    uint decimals = 12;
 
     uint minConsensus = 2;
 
@@ -38,14 +39,12 @@ contract OracleOpen is Pausable {
 
     constructor(
         address superAdminAddr_, 
-        address tokenListAddr_,
-        address loanAddr_
+        address tokenListAddr_
     )
     {
         superAdminAddress = superAdminAddr_;
-        tokenList = ITokenList(tokenListAddr_);
-        loan = ILoan(loanAddr_);
         adminOpenOracleAddress = msg.sender;
+        tokenList = ITokenList(tokenListAddr_);
     }
 
     receive() external payable {
@@ -91,7 +90,7 @@ contract OracleOpen is Pausable {
         PriceData storage trackRequest = latestPrice[_market];
 
         //Check if the token is supported. In TokenList Contract.
-        require(tokenList.isTokenSupported(trackRequest.market), "Token is not supported.");
+        require(tokenList.isMarketSupported(trackRequest.market), "Token is not supported.");
 
         if(trackRequest.nest[msg.sender] == 1){
             trackRequest.nest[msg.sender] = 2;
@@ -112,7 +111,7 @@ contract OracleOpen is Pausable {
                         trackRequest.price = _price;
                         
                         //Add token to TokenList Contract.
-                        tokenList.addTokenSupport(trackRequest.market, decimals_, tokenAddress_);
+                        tokenList.addTokenSupport(trackRequest.market, decimals, address(tokenList));
 
                         emit UpdatedRequest (_market, _price);
                     }
@@ -123,14 +122,14 @@ contract OracleOpen is Pausable {
 
     function liquidationTrigger(
         address account, 
-        bytes32 market,
-        bytes32 commitment,
+        // bytes32 market,
+        // bytes32 commitment,
         uint loanId
     ) public
     {
         //Call liquidate() in Loan contract.
         // uint price = latestPrice[market].price;
-        loan.liquidateLoan(account, market, commitment, loanId);
+        loan.liquidation(account, loanId);
     }
 
     function pause() external onlyAdmin() nonReentrant() {
@@ -140,6 +139,10 @@ contract OracleOpen is Pausable {
 	function unpause() external onlyAdmin() nonReentrant() {
        _unpause();   
 	}
+
+    function setLoanAddress(address _loanAddress) public onlyAdmin {
+        loan = ILoan(_loanAddress);
+    }
 
     modifier onlyAdmin() {
         require(msg.sender == adminOpenOracleAddress || 

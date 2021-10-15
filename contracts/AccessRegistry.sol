@@ -60,6 +60,7 @@ contract AccessRegistry is Pausable {
     ) 
     {
         adminAddress = account_;
+        adminAccess = keccak256("AccessRegistry.adminAccess");
         _addAdminRole(adminAccess, adminAddress);
         _addAdminRole(keccak256("tokenList"), tokenListAddr_);
         _addAdminRole(keccak256("comptroller"), comptrollerAddr_);

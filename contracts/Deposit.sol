@@ -1,20 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "./TokenList.sol";
+import "./interfaces/ITokenList.sol";
 import "./util/IBEP20.sol";
-import "./Comptroller.sol";
-import "./Reserve.sol";
+import "./interfaces/IComptroller.sol";
 
 contract Deposit {
 	bytes32 adminDeposit;
 	address adminDepositAddress;
+	address superAdminAddress;
+	address reserveAddress;
+
+	ITokenList markets;
+	IComptroller comptroller;
 
 	bool isReentrant = false;
 
-	TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-	Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-	Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));
+	// TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+	// Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+	// Reserve reserve = Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));
 	IBEP20 token;
 
 	struct SavingsAccount {
@@ -56,8 +60,16 @@ contract Deposit {
 	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
 
 
-	constructor() {
+	constructor(
+		address superAdminAddr_,
+		address tokenListAddr_,
+		address comptrollerAddr_
+	) 
+	{
+		superAdminAddress = superAdminAddr_;
 		adminDepositAddress = msg.sender;
+		markets = ITokenList(tokenListAddr_);
+		comptroller = IComptroller(comptrollerAddr_);
 	}
 
 	function hasAccount(address account_) external view returns (bool)	{
@@ -121,7 +133,7 @@ contract Deposit {
 		require(amount_ >= savingsBalance_, "Insufficient balance");
 		_updateSavingsBalance(account_, commitment_, amount_, request_);
 		markets._connectMarket(market_, amount_);
-		token.transfer(reserve.address, amount_);
+		token.transfer(reserveAddress, amount_);
 		// token.transfer(address(reserve), amount_);
 
 	}
@@ -157,7 +169,7 @@ contract Deposit {
 		
 		Yield storage yield = indYieldRecord[account_][market_][commitment_];
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
-		APY storage apy = comptroller.indAPYRecords[commitment_];
+		IComptroller.APY storage apy = comptroller.indAPYRecords[commitment_];
 
 		uint256 index = yield.oldLengthAccruedYield - 1;
 		uint256 blockNum = yield.oldTime;
@@ -192,7 +204,7 @@ contract Deposit {
 	// there is an add-on deposit, 
 	/// Update: 12th October. 2021
 	// trigger updateYield for newDeposit, add-onDeposit as well.
-		yield.accruedYield += deposit.amount * aggregatedYield;
+		yield.accruedYield += deposit.amount * aggregateYield;
 		yield.oldLengthAccruedYield = apy.time.length;
 		yield.oldTime = block.number;
 	}
@@ -206,7 +218,7 @@ contract Deposit {
 		DepositRecords storage deposit = indDepositRecord[account_][market_][commitment_];
 		SavingsAccount storage savingsAccount = savingsPassbook[account_];
 		Yield storage yield = indYieldRecord[account_][market_][commitment_];
-		APY storage apy = comptroller.indAPYRecords[commitment_];
+		IComptroller.APY storage apy = comptroller.indAPYRecords[commitment_];
 		uint256 id;
 
 		if (savingsAccount.deposits.length == 0) {
@@ -290,7 +302,7 @@ contract Deposit {
 	function _createDeposit(bytes32 market_,bytes32 commitment_,uint256 amount_) private	{
 		address marketAddress;
 		_preDepositProcess(msg.sender, market_, amount_);
-		token.transfer(address(reserve), amount_);
+		token.transfer(reserveAddress, amount_);
 		_updateYield(msg.sender, market_, commitment_);
 		_processDeposit(msg.sender, market_, commitment_, amount_);
 	}
@@ -360,6 +372,10 @@ contract Deposit {
 			deposit.amount -= amount_;
 			deposit.lastUpdate =  block.number;
 		}
+	}
+
+	function setReserveAddress(address reserveAddr_) public authDeposit {
+		reserveAddress = reserveAddr_;
 	}
 
 	modifier nonReentrant() {

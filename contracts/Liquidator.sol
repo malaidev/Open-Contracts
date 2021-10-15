@@ -10,9 +10,10 @@ contract Liquidator is Pausable {
   
     IAugustusSwapper public simpleSwap;
     ITokenList public tokenList;
-    constructor(ITokenList _tokenList) {
+
+    constructor(address superAdminAddr_, address tokenListAddr_) {
         adminLiquidator = msg.sender;
-        tokenList = _tokenList;
+        tokenList = ITokenList(tokenListAddr_);
         IAugustusSwapper _simpleSwap = IAugustusSwapper(0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57);
         simpleSwap = _simpleSwap;
     }
