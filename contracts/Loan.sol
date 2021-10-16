@@ -1,29 +1,35 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "./TokenList.sol";
-import "./Comptroller.sol";
-import "./Deposit.sol";
-import "./Reserve.sol";
-import "./OracleOpen.sol";
-import "./Liquidator.sol";
+import "./interfaces/ITokenList.sol";
+import "./interfaces/IComptroller.sol";
+import "./interfaces/IDeposit.sol";
+import "./interfaces/IReserve.sol";
+import "./interfaces/IOracleOpen.sol";
+import "./interfaces/ILiquidator.sol";
 import "./util/IBEP20.sol";
 
 contract Loan {
 	bytes32 adminLoan;
 	address adminLoanAddress;
+    address superAdminAddress;
+	ITokenList markets;
+	IComptroller comptroller;
+	IReserve reserve;
+	ILiquidator liquidator;
+	IOracleOpen oracle;
 
 	bool isReentrant = false;
 
-	TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-	Comptroller comptroller =
-		Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
-	Deposit deposit = Deposit(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
-	OracleOpen oracle = OracleOpen(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
-	Liquidator liquidator =
-		Liquidator(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
-	Reserve reserve =
-		Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));
+	// TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+	// Comptroller comptroller =
+	// 	Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
+	// Deposit deposit = Deposit(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
+	// OracleOpen oracle = OracleOpen(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
+	// Liquidator liquidator =
+	// 	Liquidator(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
+	// Reserve reserve =
+	// 	Reserve(payable(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B));
 
 	IBEP20 loanToken;
 	IBEP20 collateralToken;
@@ -150,8 +156,22 @@ contract Loan {
 	);
 
 	/// Constructor
-	constructor() {
+	constructor(
+		address superAdminAddr_,
+		address tokenListAddr_,
+		address comptrollerAddr_,
+		address reserveAddr_,
+		address liquidatorAddr_,
+		address oracleOpenAddr_
+	) 
+	{
 		adminLoanAddress = msg.sender;
+        superAdminAddress = superAdminAddr_;
+		markets = ITokenList(tokenListAddr_);
+		comptroller = IComptroller(comptrollerAddr_);
+		reserve = IReserve(reserveAddr_);
+		liquidator = ILiquidator(liquidatorAddr_);
+		oracle = IOracleOpen(oracleOpenAddr_);
 	}
 
 	// External view functions
@@ -497,13 +517,6 @@ contract Loan {
 					cYield.accruedYield -
 					deductibleInterest.accruedInterest;
 
-			/// Exploring conditions. repayAmount > loan.amount & vice-versa.
-			if (_repayAmount > loan.amount) {
-				uint256 _remnantAmount = _repayAmount - loan.amount;
-				collateral.amount +=
-					cYield.accruedYield -
-					deductibleInterest.accruedInterest;
-
 				loan.amount = 0;
 				loan.isSwapped = false;
 				loan.lastUpdate = block.timestamp;
@@ -537,14 +550,6 @@ contract Loan {
 						msg.sender,
 						loanState.currentAmount + _remnantAmount
 					);
-				}
-
-				delete cYield;
-				delete deductibleInterest;
-				delete loanAccount.accruedInterest[loan.id - 1];
-				delete loanAccount.accruedYield[loan.id - 1];
-
-				emit LoanRepaid(msg.sender, loan.id, loan.market, block.timestamp);
 				}
 
 				delete cYield;
@@ -885,14 +890,6 @@ contract Loan {
 			delete collateral;
 
 			delete loanAccount.loanState[num];
-
-			uint256 num = loan.id - 1;
-			/// delete loan Entries, loanRecord, loanstate, collateralrecords
-			delete loanState;
-			delete loan;
-			delete collateral;
-
-			delete loanAccount.loanState[num];
 			delete loanAccount.loans[num];
 			delete loanAccount.collaterals[num];
 
@@ -910,7 +907,7 @@ contract Loan {
 		require(markets.tokenSupportCheck[_market] != false, "Unsupported market");
 	}
 
-	function liquidation(address _account, uint id) external nonReentrant()	authLoan() {
+	function liquidation(address _account, uint id) external nonReentrant()	authLoan() returns (bool) {
 		
 		LoanAccount storage loanAccount = loanPassbook[_account];
 		

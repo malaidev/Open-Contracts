@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "./AccessRegistry.sol";
 import "./util/IBEP20.sol";
 import "./util/Address.sol";
 // import "./util/Pausable.sol";

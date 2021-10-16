@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "./ITokenList.sol";
-import "./IComptroller.sol";
-import "./IReserve.sol";
+// import "./ITokenList.sol";
+// import "./IComptroller.sol";
+// import "./IReserve.sol";
 
 interface IDeposit {
 	enum BALANCETYPE{DEPOSIT, YIELD, BOTH}
