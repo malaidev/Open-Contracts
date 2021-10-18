@@ -54,29 +54,28 @@ contract Reserve is Pausable {
     //     return loan.reserves(_market) + deposit.reserves(_market);
     // }
 
-    function avblMarketReserves(bytes32 _market) external returns (uint)    {
-        _avblMarketReserves(_market);
+    function avblMarketReserves(bytes32 _market) external view returns (uint)    {
+        return _avblMarketReserves(_market);
     }
-    function _avblMarketReserves(bytes32 _market) internal {
-        require(_marketReserves(_market) - _marketUtilisation(_market) >=0, "Mathematical error");
-        
+    function _avblMarketReserves(bytes32 _market) internal view returns (uint) {
+        require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "Mathematical error");
         return _marketReserves(_market) - _marketUtilisation(_market);
     }
 
-	function marketReserves(bytes32 _market) external returns(uint)	{
-		_marketReserves(_market);
+	function marketReserves(bytes32 _market) external view returns(uint)	{
+		return _marketReserves(_market);
 	}
 
-	function _marketReserves(bytes32 _market) internal  {
-		return deposit._avblReserves(_market)+loan._avblReserves(_market);
+	function _marketReserves(bytes32 _market) internal view returns (uint) {
+		return deposit.avblReserves(_market)+loan.avblReserves(_market);
 	}
 	
-	function marketUtilisation(bytes32 _market) external returns(uint)	{
-		_marketUtilisation(_market);
+	function marketUtilisation(bytes32 _market) external view returns(uint)	{
+		return _marketUtilisation(_market);
 	}
 
-	function _marketUtilisation(bytes32 _market) internal  {
-		return deposit._utilisedReserves(_market) + loan._utilisedReserves(_market);
+	function _marketUtilisation(bytes32 _market) internal view returns (uint) {
+		return deposit.utilisedReserves(_market) + loan.utilisedReserves(_market);
 	}
 
     function setLoanAddress(address loanAddr_) public authReserve {

@@ -1,37 +1,37 @@
 {
-  "contractName": "IReserve",
+  "contractName": "ILiquidator",
   "abi": [
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "token_",
-          "type": "address"
+          "internalType": "bytes32",
+          "name": "_fromToken",
+          "type": "bytes32"
         },
         {
-          "internalType": "address",
-          "name": "recipient_",
-          "type": "address"
+          "internalType": "bytes32",
+          "name": "_toToken",
+          "type": "bytes32"
         },
         {
           "internalType": "uint256",
-          "name": "value_",
+          "name": "_fromAmount",
           "type": "uint256"
         }
       ],
-      "name": "transferAnyBEP20",
+      "name": "swap",
       "outputs": [
         {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "receivedAmount",
+          "type": "uint256"
         }
       ],
-      "stateMutability": "nonpayable",
+      "stateMutability": "payable",
       "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"token_\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"recipient_\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"value_\",\"type\":\"uint256\"}],\"name\":\"transferAnyBEP20\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Interfaces/IReserve.sol\":\"IReserve\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Interfaces/IReserve.sol\":{\"keccak256\":\"0x05a3273b314e27eaf552a4b6516bc7f9558aea066c9d2b580f679be2ab5f74a4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://b602acd3fef28a92074bcb52307ec3d166cddf32c19c69ba9eda4d2e5fc748f0\",\"dweb:/ipfs/QmW8TgytSbioCKpsQU9sLGbmErRcGUijn6Z8nkfT83x3fM\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"_fromToken\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"_toToken\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"_fromAmount\",\"type\":\"uint256\"}],\"name\":\"swap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"receivedAmount\",\"type\":\"uint256\"}],\"stateMutability\":\"payable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/contracts/Interfaces/ILiquidator.sol\":\"ILiquidator\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/contracts/Interfaces/ILiquidator.sol\":{\"keccak256\":\"0xbb58bf6f4cc4f69d5681b2d87aea3d8a3089ab9ce688f13b0f024ece4ac09bb4\",\"license\":\"MIT\",\"urls\":[\"bzz-raw://cebf8d8523390ced1f36a820d61c5f565ab7b654fa5b95d6fa09c84629fa560a\",\"dweb:/ipfs/QmSR2CBwFUUNf6WjFqGuKNqdjhig2o36ovJTV6EiN2FbrW\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "immutableReferences": {},
@@ -39,21 +39,21 @@
   "deployedGeneratedSources": [],
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity >=0.8.9 <0.9.0;\r\n\r\n// import \"../util/IBEP20.sol\";\r\n\r\ninterface IReserve {\r\n    function transferAnyBEP20(address token_,address recipient_,uint256 value_) external returns(bool);\r\n}",
-  "sourcePath": "F:\\workspace\\Open-protocol\\contracts\\Interfaces\\IReserve.sol",
+  "source": "// SPDX-License-Identifier: MIT\r\npragma solidity >=0.8.9 <0.9.0;\r\n\r\n// import \"./IAugustusSwapper.sol\";\r\n// import \"./ITokenList.sol\";\r\n\r\ninterface ILiquidator {\r\n    function swap(bytes32 _fromToken, bytes32 _toToken, uint256 _fromAmount) external payable returns (uint256 receivedAmount);\r\n}",
+  "sourcePath": "F:\\workspace\\Open-protocol\\contracts\\Interfaces\\ILiquidator.sol",
   "ast": {
-    "absolutePath": "project:/contracts/Interfaces/IReserve.sol",
+    "absolutePath": "project:/contracts/Interfaces/ILiquidator.sol",
     "exportedSymbols": {
-      "IReserve": [
-        3901
+      "ILiquidator": [
+        3754
       ]
     },
-    "id": 3902,
+    "id": 3755,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3889,
+        "id": 3742,
         "literals": [
           "solidity",
           ">=",
@@ -64,101 +64,99 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:31:10"
+        "src": "33:31:7"
       },
       {
         "abstract": false,
         "baseContracts": [],
-        "canonicalName": "IReserve",
+        "canonicalName": "ILiquidator",
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 3901,
+        "id": 3754,
         "linearizedBaseContracts": [
-          3901
+          3754
         ],
-        "name": "IReserve",
-        "nameLocation": "113:8:10",
+        "name": "ILiquidator",
+        "nameLocation": "148:11:7",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "functionSelector": "164b2630",
-            "id": 3900,
+            "functionSelector": "759f626f",
+            "id": 3753,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
-            "name": "transferAnyBEP20",
-            "nameLocation": "138:16:10",
+            "name": "swap",
+            "nameLocation": "176:4:7",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3896,
+              "id": 3749,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3891,
+                  "id": 3744,
                   "mutability": "mutable",
-                  "name": "token_",
-                  "nameLocation": "163:6:10",
+                  "name": "_fromToken",
+                  "nameLocation": "189:10:7",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3900,
-                  "src": "155:14:10",
+                  "scope": 3753,
+                  "src": "181:18:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 3890,
-                    "name": "address",
+                    "id": 3743,
+                    "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "155:7:10",
-                    "stateMutability": "nonpayable",
+                    "src": "181:7:7",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "visibility": "internal"
                 },
                 {
                   "constant": false,
-                  "id": 3893,
+                  "id": 3746,
                   "mutability": "mutable",
-                  "name": "recipient_",
-                  "nameLocation": "178:10:10",
+                  "name": "_toToken",
+                  "nameLocation": "209:8:7",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3900,
-                  "src": "170:18:10",
+                  "scope": 3753,
+                  "src": "201:16:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 3892,
-                    "name": "address",
+                    "id": 3745,
+                    "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "170:7:10",
-                    "stateMutability": "nonpayable",
+                    "src": "201:7:7",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "visibility": "internal"
                 },
                 {
                   "constant": false,
-                  "id": 3895,
+                  "id": 3748,
                   "mutability": "mutable",
-                  "name": "value_",
-                  "nameLocation": "197:6:10",
+                  "name": "_fromAmount",
+                  "nameLocation": "227:11:7",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3900,
-                  "src": "189:14:10",
+                  "scope": 3753,
+                  "src": "219:19:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -166,10 +164,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3894,
+                    "id": 3747,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "189:7:10",
+                    "src": "219:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -178,69 +176,69 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "154:50:10"
+              "src": "180:59:7"
             },
             "returnParameters": {
-              "id": 3899,
+              "id": 3752,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3898,
+                  "id": 3751,
                   "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
+                  "name": "receivedAmount",
+                  "nameLocation": "274:14:7",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3900,
-                  "src": "222:4:10",
+                  "scope": 3753,
+                  "src": "266:22:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3897,
-                    "name": "bool",
+                    "id": 3750,
+                    "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "222:4:10",
+                    "src": "266:7:7",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
                     }
                   },
                   "visibility": "internal"
                 }
               ],
-              "src": "221:6:10"
+              "src": "265:24:7"
             },
-            "scope": 3901,
-            "src": "129:99:10",
-            "stateMutability": "nonpayable",
+            "scope": 3754,
+            "src": "167:123:7",
+            "stateMutability": "payable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 3902,
-        "src": "103:128:10",
+        "scope": 3755,
+        "src": "138:155:7",
         "usedErrors": []
       }
     ],
-    "src": "33:198:10"
+    "src": "33:260:7"
   },
   "legacyAST": {
-    "absolutePath": "project:/contracts/Interfaces/IReserve.sol",
+    "absolutePath": "project:/contracts/Interfaces/ILiquidator.sol",
     "exportedSymbols": {
-      "IReserve": [
-        3901
+      "ILiquidator": [
+        3754
       ]
     },
-    "id": 3902,
+    "id": 3755,
     "license": "MIT",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3889,
+        "id": 3742,
         "literals": [
           "solidity",
           ">=",
@@ -251,101 +249,99 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "33:31:10"
+        "src": "33:31:7"
       },
       {
         "abstract": false,
         "baseContracts": [],
-        "canonicalName": "IReserve",
+        "canonicalName": "ILiquidator",
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 3901,
+        "id": 3754,
         "linearizedBaseContracts": [
-          3901
+          3754
         ],
-        "name": "IReserve",
-        "nameLocation": "113:8:10",
+        "name": "ILiquidator",
+        "nameLocation": "148:11:7",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "functionSelector": "164b2630",
-            "id": 3900,
+            "functionSelector": "759f626f",
+            "id": 3753,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
-            "name": "transferAnyBEP20",
-            "nameLocation": "138:16:10",
+            "name": "swap",
+            "nameLocation": "176:4:7",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3896,
+              "id": 3749,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3891,
+                  "id": 3744,
                   "mutability": "mutable",
-                  "name": "token_",
-                  "nameLocation": "163:6:10",
+                  "name": "_fromToken",
+                  "nameLocation": "189:10:7",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3900,
-                  "src": "155:14:10",
+                  "scope": 3753,
+                  "src": "181:18:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 3890,
-                    "name": "address",
+                    "id": 3743,
+                    "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "155:7:10",
-                    "stateMutability": "nonpayable",
+                    "src": "181:7:7",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "visibility": "internal"
                 },
                 {
                   "constant": false,
-                  "id": 3893,
+                  "id": 3746,
                   "mutability": "mutable",
-                  "name": "recipient_",
-                  "nameLocation": "178:10:10",
+                  "name": "_toToken",
+                  "nameLocation": "209:8:7",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3900,
-                  "src": "170:18:10",
+                  "scope": 3753,
+                  "src": "201:16:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_address",
-                    "typeString": "address"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 3892,
-                    "name": "address",
+                    "id": 3745,
+                    "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "170:7:10",
-                    "stateMutability": "nonpayable",
+                    "src": "201:7:7",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_address",
-                      "typeString": "address"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "visibility": "internal"
                 },
                 {
                   "constant": false,
-                  "id": 3895,
+                  "id": 3748,
                   "mutability": "mutable",
-                  "name": "value_",
-                  "nameLocation": "197:6:10",
+                  "name": "_fromAmount",
+                  "nameLocation": "227:11:7",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3900,
-                  "src": "189:14:10",
+                  "scope": 3753,
+                  "src": "219:19:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -353,10 +349,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3894,
+                    "id": 3747,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "189:7:10",
+                    "src": "219:7:7",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -365,55 +361,55 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "154:50:10"
+              "src": "180:59:7"
             },
             "returnParameters": {
-              "id": 3899,
+              "id": 3752,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3898,
+                  "id": 3751,
                   "mutability": "mutable",
-                  "name": "",
-                  "nameLocation": "-1:-1:-1",
+                  "name": "receivedAmount",
+                  "nameLocation": "274:14:7",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3900,
-                  "src": "222:4:10",
+                  "scope": 3753,
+                  "src": "266:22:7",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_bool",
-                    "typeString": "bool"
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 3897,
-                    "name": "bool",
+                    "id": 3750,
+                    "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "222:4:10",
+                    "src": "266:7:7",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_bool",
-                      "typeString": "bool"
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
                     }
                   },
                   "visibility": "internal"
                 }
               ],
-              "src": "221:6:10"
+              "src": "265:24:7"
             },
-            "scope": 3901,
-            "src": "129:99:10",
-            "stateMutability": "nonpayable",
+            "scope": 3754,
+            "src": "167:123:7",
+            "stateMutability": "payable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 3902,
-        "src": "103:128:10",
+        "scope": 3755,
+        "src": "138:155:7",
         "usedErrors": []
       }
     ],
-    "src": "33:198:10"
+    "src": "33:260:7"
   },
   "compiler": {
     "name": "solc",
@@ -421,7 +417,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-10-18T04:43:18.662Z",
+  "updatedAt": "2021-10-18T04:43:18.657Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

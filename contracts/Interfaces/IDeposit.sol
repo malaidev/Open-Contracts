@@ -13,6 +13,7 @@ interface IDeposit {
     function createDeposit(bytes32 market_,bytes32 commitment_,uint256 amount_) external    returns (bool);
 	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external returns (bool);
 	function convertDeposit() external;
-	function hasYield(address account_, bytes32 market_, bytes32 commitment_) external view returns (bool);
-
+	function hasYield(bytes32 market_, bytes32 commitment_) external view returns (bool);
+	function avblReserves(bytes32 _market) external view returns (uint);
+	function utilisedReserves(bytes32 _market) external view returns (uint);
 }

@@ -18,5 +18,7 @@ interface ILoan {
     function switchLoanType() external;
     function repayLoan(CONSIDER repayMarket, CONSIDER swapMarket, bytes32 loanMarket_, bytes32 commitment_ ,  uint amount_) external returns (bool success);
     function liquidation(address _account, uint id) external returns (bool);
-   function collateralRelease(uint256 loanId, uint256 amount_) external;
+    function collateralRelease(uint256 loanId, uint256 amount_) external;
+	function avblReserves(bytes32 _market) external view returns (uint); //Not defined in Loand.sol yet.
+	function utilisedReserves(bytes32 _market) external view returns (uint);
 }
