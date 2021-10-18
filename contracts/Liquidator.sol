@@ -7,11 +7,13 @@ import "./interfaces/ITokenList.sol";
 
 contract Liquidator is Pausable {
     address adminLiquidator;
+    address superAdminAddress;
   
     IAugustusSwapper public simpleSwap;
     ITokenList public tokenList;
 
     constructor(address superAdminAddr_, address tokenListAddr_) {
+        superAdminAddress = superAdminAddr_;
         adminLiquidator = msg.sender;
         tokenList = ITokenList(tokenListAddr_);
         IAugustusSwapper _simpleSwap = IAugustusSwapper(0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57);
@@ -37,8 +39,8 @@ contract Liquidator is Pausable {
 
         require(_fromToken != _toToken, "_fromToken = _toToken");
 
-        address addrFromToken = tokenList.getMarket2TokenAddress(_fromToken);
-        address addrToToken = tokenList.getMarket2TokenAddress(_toToken);
+        address addrFromToken = tokenList.getMarketToken2Address(_fromToken);
+        address addrToToken = tokenList.getMarketToken2Address(_toToken);
         uint minAmount;
         address[] memory callees;
         uint256[] memory startIndexes;

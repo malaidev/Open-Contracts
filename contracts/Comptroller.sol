@@ -14,21 +14,32 @@ contract Comptroller is Pausable {
 	// uint public latestAPR;
 	// uint public latestAPY;
 	
-	bytes32[] commitment;
-	uint reserveFactor;
+	bytes32[] commitment; // NONE, TWOWEEKS, ONEMONTH, THREEMONTHS
+	
+	uint public reserveFactor;
+	uint public loanIssuanceFees;
+	uint public loanClosureFees;
+	uint public loanPreClosureFees;
+	uint public depositPreClosureFees;
+	uint public maxWithdrawalFactor;
+	uint public maxWithdrawalBlockLimit;
+	uint public depositWithdrawalFees;
+	uint public collateralReleaseFees;
+	uint public yieldConversionFees;
+	uint public marketSwapFees;
 
 /// @notice each APY or APR struct holds the recorded changes in interest data & the
 /// corresponding time for a particular commitment type.
 	struct APY  {
 		bytes32 commitment; 
 		uint[] time; // ledger of time when the APY changes were made.
-		uint[] apyChangeRecords; // ledger of APY changes.
+		uint[] apyChanges; // ledger of APY changes.
 	}
 
 	struct APR  {
 		bytes32 commitment; // validity
 		uint[] time; // ledger of time when the APR changes were made.
-		uint[] aprChangeRecords; // Per block.timestamp APR is tabulated in here.
+		uint[] aprChanges; // Per block.timestamp APR is tabulated in here.
 	}	
 	// Latest Individual apy/apr data
 	mapping(bytes32 => APY) indAPYRecords;
@@ -37,6 +48,17 @@ contract Comptroller is Pausable {
 
 	event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
 	event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
+	
+	event ReserveFactorUpdated(address indexed admin, uint oldReserveFactor, uint indexed newReserveFactor, uint indexed timestamp);
+	event LoanIssuanceFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
+	event LoanClosureFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
+	event LoanPreClosureFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
+	event DepositPreClosureFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
+	event DepositWithdrawalFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
+	event CollateralReleaseFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
+	event YieldConversionFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
+	event MarketSwapFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
+	event MaxWithdrawalUpdated(address indexed admin, uint indexed newFactor, uint indexed newBlockLimit, uint oldFactor, uint oldBlockLimit, uint timestamp);
 	
 	constructor(address superAdminAddr_) {
 		superAdminAddress = superAdminAddr_;
@@ -51,195 +73,304 @@ contract Comptroller is Pausable {
 		payable(adminComptrollerAddress).transfer(_msgValue());
 	}
 	
-	function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
+	function transferAnyBEP20(address token_,address recipient_,uint256 value_) external returns(bool) {
 		IBEP20(token_).transfer(recipient_, value_);
 		return true;
 	}
 	
-	function getAPR(bytes32 commitment_) external view returns (uint) {
-		return _getAPR(commitment_);
+	function getAPR(bytes32 _commitment) external view returns (uint) {
+		return _getAPR(_commitment);
 	}
-	function getAPR(bytes32 commitment_, uint index) external view returns (uint) {
-		return _getAPR(commitment_, index);
+	function getAPR(bytes32 _commitment, uint index) external view returns (uint) {
+		return _getAPR(_commitment, index);
 	}
 
 	// function getAPY() external view returns (uint) {
 	//   return apy;
 	// }
 
-	function getAPY(bytes32 commitment_) external view returns (uint) {
-		return _getAPY(commitment_);
+	function getAPY(bytes32 _commitment) external view returns (uint) {
+		return _getAPY(_commitment);
 	}
 
-	function getAPY(bytes32 commitment_, uint index_) external view returns (uint) {
-		return _getAPY(commitment_, index_);
+	function getAPY(bytes32 _commitment, uint _index) external view returns (uint) {
+		return _getAPY(_commitment, _index);
 	}
 
-	function getApytimeber(bytes32 commitment_, uint index_) external view returns (uint){
-		return _getApytimeber(commitment_, index_);
+	function getApytimeber(bytes32 _commitment, uint _index) external view returns (uint){
+		return _getApytimeber(_commitment, _index);
 	}
 
-	function getAprtimeber(bytes32 commitment_, uint index_) external view returns (uint){
-		return _getAprtimeber(commitment_, index_);
+	function getAprtimeber(bytes32 _commitment, uint _index) external view returns (uint){
+		return _getAprtimeber(_commitment, _index);
 	}
 
-	function getApyRecordCount(bytes32 commitment_) external view returns (uint) {
-		return indAPYRecords[commitment_].apyChangeRecords.length;
+	function getApyRecordCount(bytes32 _commitment) external view returns (uint) {
+		return indAPYRecords[_commitment].apyChanges.length;
 	}
 
-	function getAprRecordCount(bytes32 commitment_) external view returns (uint) {
-		return indAPRRecords[commitment_].aprChangeRecords.length;
+	function getAprRecordCount(bytes32 _commitment) external view returns (uint) {
+		return indAPRRecords[_commitment].aprChanges.length;
 	}
 
-	function _getAPY(bytes32 commitment_) internal view returns (uint) {
-		return indAPYRecords[commitment_].apyChangeRecords[indAPYRecords[commitment_].apyChangeRecords.length - 1];
+	function getApyLastTime(bytes32 commitment_) external view returns (uint) {
+		return _getApyLastTime(commitment_);
 	}
 
-	function _getAPY(bytes32 commitment_, uint index_) internal view returns (uint) {
-		return indAPYRecords[commitment_].apyChangeRecords[index_];
+	function _getApyLastTime(bytes32 commitment_) internal view returns (uint) {
+		return indAPYRecords[commitment_].time[indAPYRecords[commitment_].time.length - 1];
 	}
 
-	function _getAPR(bytes32 commitment_) internal view returns (uint){
-		return indAPRRecords[commitment_].aprChangeRecords[indAPRRecords[commitment_].aprChangeRecords.length - 1];
+	function getAprLastTime(bytes32 commitment_) external view returns (uint) {
+		return _getAprLastTime(commitment_);
 	}
 
-	function _getAPR(bytes32 commitment_, uint index_) internal view returns (uint) {
-		return indAPRRecords[commitment_].aprChangeRecords[index_];
+	function _getAprLastTime(bytes32 commitment_) internal view returns (uint) {
+		return indAPRRecords[commitment_].time[indAPRRecords[commitment_].time.length - 1];
 	}
 
-	function _getApytimeber(bytes32 commitment_, uint index_) internal view returns (uint) {
-		return indAPYRecords[commitment_].time[index_];
+	function getApyTimeLength(bytes32 commitment_) external view returns (uint) {
+		return _getApyTimeLength(commitment_);
 	}
 
-	function _getAprtimeber(bytes32 commitment_, uint index_) internal view returns (uint) {
-		return indAPRRecords[commitment_].time[index_];
+	function _getApyTimeLength(bytes32 commitment_) internal view returns (uint) {
+		return indAPYRecords[commitment_].time.length;
+	}
+
+	function getAprTimeLength(bytes32 commitment_) external view returns (uint) {
+		return _getAprTimeLength(commitment_);
+	}
+
+	function _getAprTimeLength(bytes32 commitment_) internal view returns (uint) {
+		return indAPRRecords[commitment_].time.length;
+	}
+
+	function getCommitment(uint index_) external view returns (bytes32) {
+		require(index_ < commitment.length, "Commitment Index out of range");
+		return _getCommitment(index_);
+	}
+
+	function _getCommitment(uint index_)internal view returns (bytes32) {
+		return commitment[index_];
+	}
+
+	function _getAPY(bytes32 _commitment) internal view returns (uint) {
+		return indAPYRecords[_commitment].apyChanges[indAPYRecords[_commitment].apyChanges.length - 1];
+	}
+
+	function _getAPY(bytes32 _commitment, uint _index) internal view returns (uint) {
+		return indAPYRecords[_commitment].apyChanges[_index];
+	}
+
+	function _getAPR(bytes32 _commitment) internal view returns (uint){
+		return indAPRRecords[_commitment].aprChanges[indAPRRecords[_commitment].aprChanges.length - 1];
+	}
+
+	function _getAPR(bytes32 _commitment, uint _index) internal view returns (uint) {
+		return indAPRRecords[_commitment].aprChanges[_index];
+	}
+
+	function _getApytimeber(bytes32 _commitment, uint _index) internal view returns (uint) {
+		return indAPYRecords[_commitment].time[_index];
+	}
+
+	function _getAprtimeber(bytes32 _commitment, uint _index) internal view returns (uint) {
+		return indAPRRecords[_commitment].time[_index];
 	}
 
 	function liquidationTrigger(uint loanID) external {}
 
 	// SETTERS
-	function updateAPY(bytes32 commitment_, uint apy_) external authComptroller() returns (bool) {
-		return _updateApy(commitment_, apy_);
+	function updateAPY(bytes32 _commitment, uint _apy) external authComptroller() returns (bool) {
+		return _updateApy(_commitment, _apy);
 	}
 
-	function updateAPR(bytes32 commitment_, uint apr_) external authComptroller() returns (bool ){
-		return _updateApr(commitment_, apr_);
+	function updateAPR(bytes32 _commitment, uint _apr) external authComptroller() returns (bool ){
+		return _updateApr(_commitment, _apr);
 	}
 
-	function _updateApy(bytes32 commitment_, uint apy_) internal returns (bool) {
-		APY storage apyUpdate = indAPYRecords[commitment_];
+	function _updateApy(bytes32 _commitment, uint _apy) internal returns (bool) {
+		APY storage apyUpdate = indAPYRecords[_commitment];
 
-		if(apyUpdate.time.length != apyUpdate.apyChangeRecords.length) return false;
+		if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
 
-		apyUpdate.commitment = commitment_;
-		apyUpdate.time.push(block.number);
-		apyUpdate.apyChangeRecords.push(apy_);
+		apyUpdate.commitment = _commitment;
+		apyUpdate.time.push(block.timestamp);
+		apyUpdate.apyChanges.push(_apy);
 		return true;
 	}
 	
-	function _updateApr(bytes32 commitment_, uint apr_) internal returns (bool) {
-		APR storage aprUpdate = indAPRRecords[commitment_];
+	function _updateApr(bytes32 _commitment, uint _apr) internal returns (bool) {
+		APR storage aprUpdate = indAPRRecords[_commitment];
 
-		if(aprUpdate.time.length != aprUpdate.aprChangeRecords.length) return false;
+		if(aprUpdate.time.length != aprUpdate.aprChanges.length) return false;
 
-		aprUpdate.commitment = commitment_;
-		aprUpdate.time.push(block.number);
-		aprUpdate.aprChangeRecords.push(apr_);
+		aprUpdate.commitment = _commitment;
+		aprUpdate.time.push(block.timestamp);
+		aprUpdate.aprChanges.push(_apr);
 		return true;
 	}
 
-	function _calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view {
+	// function _calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view {
 		
-		APR storage apr = indAPRRecords[_commitment];
+	// 	APR storage apr = indAPRRecords[_commitment];
 
-		uint256 index = oldLengthAccruedInterest - 1;
-		uint256 time = oldTime;
+	// 	uint256 index = oldLengthAccruedInterest - 1;
+	// 	uint256 time = oldTime;
 
-		// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
+	// 	// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
 
-		if (apr.time.length > oldLengthAccruedInterest)  {
+	// 	if (apr.time.length > oldLengthAccruedInterest)  {
 
-			if (apr.time[index] < time) {
-				uint256 newIndex = index + 1;
-				// Convert the aprChangeRecords to the lowest unit value.
-				aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChangeRecords[index])/100)*365/(100*1000);
+	// 		if (apr.time[index] < time) {
+	// 			uint256 newIndex = index + 1;
+	// 			// Convert the aprChanges to the lowest unit value.
+	// 			aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
 			
-				for (uint256 i = newIndex; i < apr.aprChangeRecords.length; i++) {
-					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateInterest += (timeDiff*apr.aprChangeRecords[newIndex] / 100)*365/(100*1000);
-				}
-			}
-			else if (apr.time[index] == time) {
-				for (uint256 i = index; i < apr.aprChangeRecords.length; i++) {
-					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateInterest += (timeDiff*apr.aprChangeRecords[index] / 100)*365/(100*1000);
-				}
-			}
-		} else if (apr.time.length == oldLengthAccruedInterest && block.timestamp > oldLengthAccruedInterest) {
-			if (apr.time[index] < time || apr.time[index] == time) {
-				aggregateInterest += (block.timestamp - time)*apr.aprChangeRecords[index]/100;
-				// Convert the aprChangeRecords to the lowest unit value.
-				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChangeRecords[index])/100)*365/(100*1000);
-			}
-		}
-		oldLengthAccruedInterest = apr.time.length;
-		oldTime = block.timestamp;
+	// 			for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
+	// 				uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+	// 				aggregateInterest += (timeDiff*apr.aprChanges[newIndex] / 100)*365/(100*1000);
+	// 			}
+	// 		}
+	// 		else if (apr.time[index] == time) {
+	// 			for (uint256 i = index; i < apr.aprChanges.length; i++) {
+	// 				uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+	// 				aggregateInterest += (timeDiff*apr.aprChanges[index] / 100)*365/(100*1000);
+	// 			}
+	// 		}
+	// 	} else if (apr.time.length == oldLengthAccruedInterest && block.timestamp > oldLengthAccruedInterest) {
+	// 		if (apr.time[index] < time || apr.time[index] == time) {
+	// 			aggregateInterest += (block.timestamp - time)*apr.aprChanges[index]/100;
+	// 			// Convert the aprChanges to the lowest unit value.
+	// 			// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
+	// 		}
+	// 	}
+	// 	oldLengthAccruedInterest = apr.time.length;
+	// 	oldTime = block.timestamp;
+	// }
+
+
+	// function _calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal  view {
+		
+	// 	APY storage apy = indAPYRecords[_commitment];
+
+	// 	uint256 index = oldLengthAccruedYield - 1;
+	// 	uint256 time = oldTime;
+
+	// 	// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
+
+	// 	if (apy.time.length > oldLengthAccruedYield)  {
+
+	// 		if (apy.time[index] < time) {
+	// 			uint256 newIndex = index + 1;
+	// 			// Convert the aprChanges to the lowest unit value.
+	// 			aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index])/100)*365/(100*1000);
+			
+	// 			for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
+	// 				uint256 timeDiff = apy.time[i + 1] - apy.time[i];
+	// 				aggregateYield += (timeDiff*apy.apyChanges[newIndex] / 100)*365/(100*1000);
+	// 			}
+	// 		}
+	// 		else if (apy.time[index] == time) {
+	// 			for (uint256 i = index; i < apy.apyChanges.length; i++) {
+	// 				uint256 timeDiff = apy.time[i + 1] - apy.time[i];
+	// 				aggregateYield += (timeDiff*apy.apyChanges[index] / 100)*365/(100*1000);
+	// 			}
+	// 		}
+	// 	} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
+	// 		if (apy.time[index] < time || apy.time[index] == time) {
+	// 			aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/100;
+	// 			// Convert the aprChanges to the lowest unit value.
+	// 			// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
+	// 		}
+	// 	}
+	// 	oldLengthAccruedYield = apy.time.length;
+	// 	oldTime = block.timestamp;
+	// }
+
+	function updateLoanIssuanceFees(uint fees) external authComptroller() returns(bool success){
+		uint oldFees = loanIssuanceFees;
+		loanIssuanceFees = fees;
+
+		emit LoanIssuanceFeesUpdated(msg.sender, oldFees, loanIssuanceFees, block.timestamp);
+		return success;
+	}
+	function updateLoanClosureFees(uint fees) external authComptroller() returns(bool success){
+		uint oldFees = loanClosureFees;
+		loanClosureFees = fees;
+
+		emit LoanClosureFeesUpdated(msg.sender, oldFees, loanClosureFees, block.timestamp);
+		return success;
 	}
 
+	function updateLoanPreClosureFees(uint fees) external authComptroller() returns(bool success){
+		uint oldFees = loanPreClosureFees;
+		loanPreClosureFees = fees;
 
-	function _calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal  view {
-		
-		APY storage apy = indAPYRecords[_commitment];
+		emit LoanPreClosureFeesUpdated(msg.sender, oldFees, loanPreClosureFees, block.timestamp);
+		return success;
+	}
+	function updateDepositPreclosureFees(uint fees) external authComptroller() returns(bool success){
+		uint oldFees = depositPreClosureFees;
+		depositPreClosureFees = fees;
 
-		uint256 index = oldLengthAccruedYield - 1;
-		uint256 time = oldTime;
-
-		// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
-
-		if (apy.time.length > oldLengthAccruedYield)  {
-
-			if (apy.time[index] < time) {
-				uint256 newIndex = index + 1;
-				// Convert the aprChangeRecords to the lowest unit value.
-				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChangeRecords[index])/100)*365/(100*1000);
-			
-				for (uint256 i = newIndex; i < apy.apyChangeRecords.length; i++) {
-					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-					aggregateYield += (timeDiff*apy.apyChangeRecords[newIndex] / 100)*365/(100*1000);
-				}
-			}
-			else if (apy.time[index] == time) {
-				for (uint256 i = index; i < apy.apyChangeRecords.length; i++) {
-					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-					aggregateYield += (timeDiff*apy.apyChangeRecords[index] / 100)*365/(100*1000);
-				}
-			}
-		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
-			if (apy.time[index] < time || apy.time[index] == time) {
-				aggregateYield += (block.timestamp - time)*apy.apyChangeRecords[index]/100;
-				// Convert the aprChangeRecords to the lowest unit value.
-				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChangeRecords[index])/100)*365/(100*1000);
-			}
-		}
-		oldLengthAccruedYield = apy.time.length;
-		oldTime = block.timestamp;
+		emit DepositPreClosureFeesUpdated(msg.sender, oldFees, depositPreClosureFees, block.timestamp);
+		return success;
 	}
 
-	function updateLoanIssuanceFees() external authComptroller() {}
-	function updateLoanClosureFees() external authComptroller() {}
-	function updateLoanpreClosureFees() external authComptroller() {}
-	function updateDepositPreclosureFees() external authComptroller() {}
-	function updateSwitchDepositTypeFee() external authComptroller() {}
+	function updateWithdrawalFees(uint fees) external authComptroller() returns(bool success){
+		uint oldFees = depositWithdrawalFees;
+		depositWithdrawalFees = fees;
 
-	function updateReserveFactor(uint _reserveFactor) external  authComptroller() {
+		emit DepositWithdrawalFeesUpdated(msg.sender, oldFees, depositWithdrawalFees, block.timestamp);
+		return success;
+	}
+
+	function updateCollateralReleaseFees(uint fees) external authComptroller() returns(bool success){
+		uint oldFees = collateralReleaseFees;
+		collateralReleaseFees = fees;
+
+		emit CollateralReleaseFeesUpdated(msg.sender, oldFees, collateralReleaseFees, block.timestamp);
+		return success;
+	}
+	
+	function updateYieldConversion(uint fees) external authComptroller() returns(bool success){
+		uint oldFees = yieldConversionFees;
+		yieldConversionFees = fees;
+
+		emit YieldConversionFeesUpdated(msg.sender, oldFees, yieldConversionFees, block.timestamp);
+		return success;
+	}
+	function updateMarketSwapFees(uint fees) external authComptroller() returns(bool success){
+		uint oldFees = marketSwapFees;
+		marketSwapFees = fees;
+
+		emit MarketSwapFeesUpdated(msg.sender, oldFees, marketSwapFees, block.timestamp);
+		return success;
+	}
+
+	function updateReserveFactor(uint _reserveFactor) external  authComptroller() returns(bool success){
 	 	// implementing the barebones version for testnet. 
 		//  if cdr >= reserveFactor, 1:3 possible, else 1:2 possible.
+		uint oldReserveFactor = reserveFactor;
 		 reserveFactor = _reserveFactor;
+		 
+		 emit ReserveFactorUpdated(msg.sender,oldReserveFactor, reserveFactor, block.timestamp);
+		 return success;
 	} 
 
+// this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
+	function updateMaxWithdrawal(uint factor, uint blockLimit) external authComptroller() returns(bool success){
+		
+		uint oldFactor = maxWithdrawalFactor; 
+		uint oldBlockLimit = blockLimit;
 
-	function updateMaxWithdrawal(uint factor, uint blockLimit) external  authComptroller() {} // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
+		maxWithdrawalFactor = factor;
+		maxWithdrawalBlockLimit = blockLimit;
 
+		emit MaxWithdrawalUpdated(msg.sender, maxWithdrawalFactor, maxWithdrawalBlockLimit, oldFactor, oldBlockLimit, block.timestamp);
+		return success;
+	} 
 
 	modifier authComptroller() {
 		require(msg.sender == adminComptrollerAddress,

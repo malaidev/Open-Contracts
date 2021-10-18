@@ -3,16 +3,14 @@ pragma solidity >=0.8.9 <0.9.0;
 
 import "./util/IBEP20.sol";
 import "./util/Address.sol";
-// import "./util/Pausable.sol";
+import "./util/Pausable.sol";
 
-contract TokenList /* is Pausable */{
+contract TokenList is Pausable {
 
   bytes32 adminTokenList;
   address adminTokenListAddress;
   address superAdminAddress;
 
-  bool isReentrant = false;
-  
   struct MarketData {
     bytes32 market;
     address tokenAddress;
@@ -135,12 +133,20 @@ contract TokenList /* is Pausable */{
     return bool(true);
   }
 
+  function connectMarket(bytes32 market_, IBEP20 token_) external view {
+    _connectMarket(market_, token_);
+  }
+
   function _connectMarket(bytes32 market_, /* uint256 amount_, */ IBEP20 token) internal view {
 		MarketData storage marketData = indMarketData[market_];
 		address marketAddress = marketData.tokenAddress;
 		token = IBEP20(marketAddress);
 		// amount_ *= marketData.decimals;
 	}
+
+  function quantifyAmount(bytes32 _market, uint _amount) external view {
+    _quantifyAmount(_market, _amount);
+  }
 
   function _quantifyAmount(bytes32 _market, uint _amount) internal view {
     MarketData storage marketData = indMarketData[_market];
@@ -246,11 +252,12 @@ contract TokenList /* is Pausable */{
     token2SupportCheck[market_] = true;
   }
 
-	modifier nonReentrant() {
-		require(isReentrant == false, "Re-entrant alert!");
-		isReentrant = true;
-		_;
-		isReentrant = false;
+  function pause() external authTokenList() nonReentrant() {
+       _pause();
+	}
+	
+	function unpause() external authTokenList() nonReentrant() {
+       _unpause();   
 	}
 
 	modifier authTokenList() {
