@@ -3,16 +3,14 @@ pragma solidity >=0.8.9 <0.9.0;
 
 import "./util/IBEP20.sol";
 import "./util/Address.sol";
-// import "./util/Pausable.sol";
+import "./util/Pausable.sol";
 
-contract TokenList /* is Pausable */{
+contract TokenList is Pausable {
 
   bytes32 adminTokenList;
   address adminTokenListAddress;
   address superAdminAddress;
 
-  bool isReentrant = false;
-  
   struct MarketData {
     bytes32 market;
     address tokenAddress;
@@ -254,11 +252,12 @@ contract TokenList /* is Pausable */{
     token2SupportCheck[market_] = true;
   }
 
-	modifier nonReentrant() {
-		require(isReentrant == false, "Re-entrant alert!");
-		isReentrant = true;
-		_;
-		isReentrant = false;
+  function pause() external authTokenList() nonReentrant() {
+       _pause();
+	}
+	
+	function unpause() external authTokenList() nonReentrant() {
+       _unpause();   
 	}
 
 	modifier authTokenList() {

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
+import "./util/Pausable.sol";
 import "./interfaces/ITokenList.sol";
 import "./util/IBEP20.sol";
 import "./interfaces/IComptroller.sol";
 
-contract Deposit {
+contract Deposit is Pausable{
 	
 	bytes32 adminDeposit;
 	address adminDepositAddress;
@@ -17,11 +18,8 @@ contract Deposit {
 
 	// address superAdminAddress;
 	// address reserveAddress;
-
 	// ITokenList markets;
 	// IComptroller comptroller;
-
-	bool isReentrant = false;
 
 	// TokenList markets = TokenList(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
 	// Comptroller comptroller = Comptroller(0x3E2884D9F6013Ac28b0323b81460f49FE8E5f401);
@@ -456,11 +454,12 @@ contract Deposit {
 		reserveAddress = reserveAddr_;
 	}
 
-	modifier nonReentrant() {
-		require(isReentrant == false, "Re-entrant alert!");
-		isReentrant = true;
-		_;
-		isReentrant = false;
+	function pause() external authDeposit() nonReentrant() {
+		_pause();
+	}
+	
+	function unpause() external authDeposit() nonReentrant() {
+		_unpause();   
 	}
 
 	modifier authDeposit() {
