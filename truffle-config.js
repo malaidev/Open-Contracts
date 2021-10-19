@@ -5,7 +5,8 @@ const Web3 = require("web3");
 const web3 = new Web3();
 const MetaMaskAccountIndex = 2;
 const privateKeyTest = '0xa51ce828724031ad92a4965e12b39c82a73a1db926719060c8511efb81fd05f7';ovider = require('@truffle/hdwallet-provider');
-
+const fs = require('fs');
+const mnemonic = fs.readFileSync(".secret").toString().trim();
 module.exports = {
   networks: {
     development: {
@@ -13,6 +14,14 @@ module.exports = {
       host: "127.0.0.1",
       network_id: "*",
       gas: 4710000,
+    },
+    testnet: {
+      provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      network_id: 97,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+      networkCheckTimeout: 10000
     },
     local: {
       host: "localhost",
