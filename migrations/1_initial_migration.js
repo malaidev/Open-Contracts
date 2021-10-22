@@ -78,7 +78,7 @@ module.exports = async function (deployer, network, accounts) {
   await deposit.setReserveAddress(reserve.address);
 
   if(!configs.OracleOpen) {
-    await deployer.deploy(OracleOpen, accounts[0], tokenList);
+    await deployer.deploy(OracleOpen, accounts[0]);
     var oracleOpen = await OracleOpen.deployed();
     dataParse['OracleOpen'] = oracleOpen.address;  
   }

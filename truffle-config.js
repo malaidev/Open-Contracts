@@ -13,7 +13,7 @@ module.exports = {
       port: process.env.PORT,
       host: "127.0.0.1",
       network_id: "*",
-      gas: 4710000,
+      gas: 4710000000,
     },
     testnet: {
       provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
@@ -27,7 +27,7 @@ module.exports = {
       host: "localhost",
       port: process.env.PORT,
       network_id: "*",
-      gas: 4710000,
+      gas: 4710000000,
      },
     main: {
       provider: function() {
@@ -81,5 +81,11 @@ module.exports = {
   api_keys: {
     etherscan: process.env.ETHERSCAN_API
   },
+  solc: {
+    optimizer: {
+        enabled: true,
+        runs: 200
+    }
+  }
   
 };

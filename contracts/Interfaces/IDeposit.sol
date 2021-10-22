@@ -10,10 +10,14 @@ interface IDeposit {
 	function hasAccount(address account_) external view returns (bool);
     function savingsBalance(bytes32 market_, bytes32 commitment_, BALANCETYPE request_) external;
 	function convertYield(bytes32 market_, bytes32 oldCommitment_, bytes32 newCommitment_) external;
-    function createDeposit(bytes32 market_,bytes32 commitment_,uint256 amount_) external    returns (bool);
+    function createDeposit(
+		bytes32 _market,
+		bytes32 _commitment,
+		uint256 _amount
+	) external returns (address);
 	function withdrawFunds(bytes32 market_, bytes32 commitment_, uint amount_, BALANCETYPE request_) external returns (bool);
 	function convertDeposit() external;
-	function hasYield(bytes32 market_, bytes32 commitment_) external view returns (bool);
-	function avblReserves(bytes32 _market) external view returns (uint);
-	function utilisedReserves(bytes32 _market) external view returns (uint);
+	function hasYield(address account_, bytes32 market_, bytes32 commitment_) external view returns (bool);
+	function avblReserves(bytes32 _market) external view returns(uint);
+	function utilisedReserves(bytes32 _market) external view returns(uint);
 }

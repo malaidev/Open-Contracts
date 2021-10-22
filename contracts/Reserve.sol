@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "./util/IBEP20.sol";
+import "./mockup/IMockBep20.sol";
 import "./util/Pausable.sol";
-import "./Interfaces/ILoan.sol";
-import "./Interfaces/IDeposit.sol";
+import "./interfaces/ILoan.sol";
+import "./interfaces/IDeposit.sol";
 
 contract Reserve is Pausable {
     IDeposit deposit;
@@ -12,7 +12,7 @@ contract Reserve is Pausable {
     // ILoan loan = ILoan(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
     // IDeposit deposit = IDeposit(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
 
-    IBEP20 token;
+    IMockBep20 token;
 
     bytes32 adminReserve;
     address adminReserveAddress;
@@ -42,7 +42,7 @@ contract Reserve is Pausable {
         address _recipient,
         uint256 _value) external nonReentrant  authReserve  returns(bool)   
     {
-        token = IBEP20(token_);
+        token = IMockBep20(token_);
         token.transfer(_recipient, _value);
         return true;
     }
@@ -78,7 +78,11 @@ contract Reserve is Pausable {
 		return deposit.utilisedReserves(_market) + loan.utilisedReserves(_market);
 	}
 
-    function setLoanAddress(address loanAddr_) public authReserve {
+    function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external {
+
+    }
+
+    function setLoanAddress(address loanAddr_) external authReserve {
         loan = ILoan(loanAddr_);
     }
 

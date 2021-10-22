@@ -4,6 +4,13 @@ const {deployContract, MockProvider, solidity} = require ('ethereum-waffle');
 
 use(solidity);
 
-describe("Loan Contract", () => {
+describe("Loan Contract", async () => {
 
+    before(async () => {
+
+    });
+    
+    it("Check deployement", async () => {
+
+    });
 });

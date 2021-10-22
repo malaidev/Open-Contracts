@@ -2,7 +2,7 @@
 pragma solidity >=0.8.9 <0.9.0;
 import "./util/Address.sol";
 import "./util/Pausable.sol";
-import "./util/IBEP20.sol";
+import "./mockup/IMockBep20.sol";
 
 contract Comptroller is Pausable {
 	using Address for address;
@@ -45,7 +45,6 @@ contract Comptroller is Pausable {
 	mapping(bytes32 => APY) indAPYRecords;
 	mapping(bytes32 => APR) indAPRRecords;
 
-
 	event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
 	event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
 	
@@ -74,27 +73,23 @@ contract Comptroller is Pausable {
 	}
 	
 	function transferAnyBEP20(address token_,address recipient_,uint256 value_) external returns(bool) {
-		IBEP20(token_).transfer(recipient_, value_);
+		IMockBep20(token_).transfer(recipient_, value_);
 		return true;
 	}
 	
 	function getAPR(bytes32 _commitment) external view returns (uint) {
 		return _getAPR(_commitment);
 	}
-	function getAPR(bytes32 _commitment, uint index) external view returns (uint) {
-		return _getAPR(_commitment, index);
+	function getAPRInd(bytes32 _commitment, uint index) external view returns (uint) {
+		return _getAPRInd(_commitment, index);
 	}
-
-	// function getAPY() external view returns (uint) {
-	//   return apy;
-	// }
 
 	function getAPY(bytes32 _commitment) external view returns (uint) {
 		return _getAPY(_commitment);
 	}
 
-	function getAPY(bytes32 _commitment, uint _index) external view returns (uint) {
-		return _getAPY(_commitment, _index);
+	function getAPYInd(bytes32 _commitment, uint _index) external view returns (uint) {
+		return _getAPYInd(_commitment, _index);
 	}
 
 	function getApytimeber(bytes32 _commitment, uint _index) external view returns (uint){
@@ -103,14 +98,6 @@ contract Comptroller is Pausable {
 
 	function getAprtimeber(bytes32 _commitment, uint _index) external view returns (uint){
 		return _getAprtimeber(_commitment, _index);
-	}
-
-	function getApyRecordCount(bytes32 _commitment) external view returns (uint) {
-		return indAPYRecords[_commitment].apyChanges.length;
-	}
-
-	function getAprRecordCount(bytes32 _commitment) external view returns (uint) {
-		return indAPRRecords[_commitment].aprChanges.length;
 	}
 
 	function getApyLastTime(bytes32 commitment_) external view returns (uint) {
@@ -154,11 +141,19 @@ contract Comptroller is Pausable {
 		return commitment[index_];
 	}
 
+	function setCommitment(bytes32 _commitment) external {
+		_setCommitment(_commitment);
+	}
+
+	function _setCommitment(bytes32 _commitment) internal {
+		commitment.push(_commitment);
+	}
+
 	function _getAPY(bytes32 _commitment) internal view returns (uint) {
 		return indAPYRecords[_commitment].apyChanges[indAPYRecords[_commitment].apyChanges.length - 1];
 	}
 
-	function _getAPY(bytes32 _commitment, uint _index) internal view returns (uint) {
+	function _getAPYInd(bytes32 _commitment, uint _index) internal view returns (uint) {
 		return indAPYRecords[_commitment].apyChanges[_index];
 	}
 
@@ -166,7 +161,7 @@ contract Comptroller is Pausable {
 		return indAPRRecords[_commitment].aprChanges[indAPRRecords[_commitment].aprChanges.length - 1];
 	}
 
-	function _getAPR(bytes32 _commitment, uint _index) internal view returns (uint) {
+	function _getAPRInd(bytes32 _commitment, uint _index) internal view returns (uint) {
 		return indAPRRecords[_commitment].aprChanges[_index];
 	}
 
@@ -211,82 +206,83 @@ contract Comptroller is Pausable {
 		return true;
 	}
 
-	// function _calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view {
+	function calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) external view {
 		
-	// 	APR storage apr = indAPRRecords[_commitment];
+		APR storage apr = indAPRRecords[_commitment];
 
-	// 	uint256 index = oldLengthAccruedInterest - 1;
-	// 	uint256 time = oldTime;
+		uint256 index = oldLengthAccruedInterest - 1;
+		uint256 time = oldTime;
 
-	// 	// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
+		// // 1. apr.time.length > oldLengthAccruedInterest => there is some change.
 
-	// 	if (apr.time.length > oldLengthAccruedInterest)  {
+		if (apr.time.length > oldLengthAccruedInterest)  {
 
-	// 		if (apr.time[index] < time) {
-	// 			uint256 newIndex = index + 1;
-	// 			// Convert the aprChanges to the lowest unit value.
-	// 			aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
+			if (apr.time[index] < time) {
+				uint256 newIndex = index + 1;
+				// Convert the aprChanges to the lowest unit value.
+				aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
 			
-	// 			for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
-	// 				uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-	// 				aggregateInterest += (timeDiff*apr.aprChanges[newIndex] / 100)*365/(100*1000);
-	// 			}
-	// 		}
-	// 		else if (apr.time[index] == time) {
-	// 			for (uint256 i = index; i < apr.aprChanges.length; i++) {
-	// 				uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-	// 				aggregateInterest += (timeDiff*apr.aprChanges[index] / 100)*365/(100*1000);
-	// 			}
-	// 		}
-	// 	} else if (apr.time.length == oldLengthAccruedInterest && block.timestamp > oldLengthAccruedInterest) {
-	// 		if (apr.time[index] < time || apr.time[index] == time) {
-	// 			aggregateInterest += (block.timestamp - time)*apr.aprChanges[index]/100;
-	// 			// Convert the aprChanges to the lowest unit value.
-	// 			// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
-	// 		}
-	// 	}
-	// 	oldLengthAccruedInterest = apr.time.length;
-	// 	oldTime = block.timestamp;
-	// }
+				for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
+					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+					aggregateInterest += (timeDiff*apr.aprChanges[newIndex] / 100)*365/(100*1000);
+				}
+			}
+			else if (apr.time[index] == time) {
+				for (uint256 i = index; i < apr.aprChanges.length; i++) {
+					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
+					aggregateInterest += (timeDiff*apr.aprChanges[index] / 100)*365/(100*1000);
+				}
+			}
+		} else if (apr.time.length == oldLengthAccruedInterest && block.timestamp > oldLengthAccruedInterest) {
+			if (apr.time[index] < time || apr.time[index] == time) {
+				aggregateInterest += (block.timestamp - time)*apr.aprChanges[index]/100;
+				// Convert the aprChanges to the lowest unit value.
+				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
+			}
+		}
+		oldLengthAccruedInterest = apr.time.length;
+		oldTime = block.timestamp;
+	}
 
-
-	// function _calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal  view {
+	function calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) external view {
 		
-	// 	APY storage apy = indAPYRecords[_commitment];
+		APY storage apy = indAPYRecords[_commitment];
 
-	// 	uint256 index = oldLengthAccruedYield - 1;
-	// 	uint256 time = oldTime;
+		require(oldLengthAccruedYield>0, "ERROR : oldLengthAccruedYield < 1");
+		
+		uint256 index = oldLengthAccruedYield - 1;
+		uint256 time = oldTime;
 
-	// 	// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
+		// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
 
-	// 	if (apy.time.length > oldLengthAccruedYield)  {
+		if (apy.time.length > oldLengthAccruedYield)  {
 
-	// 		if (apy.time[index] < time) {
-	// 			uint256 newIndex = index + 1;
-	// 			// Convert the aprChanges to the lowest unit value.
-	// 			aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index])/100)*365/(100*1000);
+			if (apy.time[index] < time) {
+				uint256 newIndex = index + 1;
+				// Convert the aprChanges to the lowest unit value.
+				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index])/100)*365/(100*1000);
 			
-	// 			for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
-	// 				uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-	// 				aggregateYield += (timeDiff*apy.apyChanges[newIndex] / 100)*365/(100*1000);
-	// 			}
-	// 		}
-	// 		else if (apy.time[index] == time) {
-	// 			for (uint256 i = index; i < apy.apyChanges.length; i++) {
-	// 				uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-	// 				aggregateYield += (timeDiff*apy.apyChanges[index] / 100)*365/(100*1000);
-	// 			}
-	// 		}
-	// 	} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
-	// 		if (apy.time[index] < time || apy.time[index] == time) {
-	// 			aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/100;
-	// 			// Convert the aprChanges to the lowest unit value.
-	// 			// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
-	// 		}
-	// 	}
-	// 	oldLengthAccruedYield = apy.time.length;
-	// 	oldTime = block.timestamp;
-	// }
+				for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
+					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
+					aggregateYield += (timeDiff*apy.apyChanges[newIndex] / 100)*365/(100*1000);
+				}
+			}
+			else if (apy.time[index] == time) {
+				for (uint256 i = index; i < apy.apyChanges.length; i++) {
+					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
+					aggregateYield += (timeDiff*apy.apyChanges[index] / 100)*365/(100*1000);
+				}
+			}
+		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
+			if (apy.time[index] < time || apy.time[index] == time) {
+				aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/100;
+				// Convert the aprChanges to the lowest unit value.
+				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
+			}
+		}
+		oldLengthAccruedYield = apy.time.length;
+		oldTime = block.timestamp;
+	}
 
 	function updateLoanIssuanceFees(uint fees) external authComptroller() returns(bool success){
 		uint oldFees = loanIssuanceFees;
@@ -370,7 +366,11 @@ contract Comptroller is Pausable {
 
 		emit MaxWithdrawalUpdated(msg.sender, maxWithdrawalFactor, maxWithdrawalBlockLimit, oldFactor, oldBlockLimit, block.timestamp);
 		return success;
-	} 
+	}
+
+	function getReserveFactor() external view returns (uint256) {
+		return reserveFactor;
+	}
 
 	modifier authComptroller() {
 		require(msg.sender == adminComptrollerAddress,
@@ -388,32 +388,3 @@ contract Comptroller is Pausable {
 	}
 
 }
-
-
-
-// struct ApyLedger()
-// struct APRLedger()
-// permissibleCDR()
-// reserveFactor() - ReserveFactor is an integer from 1 to 100. Here 1 means 1%.
-// 100 means 100%. Reserve factor determines the minimum reserves that need
-// maintaining. Minimum reserves against the total deposits.
-
-// permissionlessWithdrawal(uint factor, uint blockLimit) - This function like reserve factor takes an input
-// from 1 to 100. If 1, it means, upto 1% of total available reserves can be
-// released within a defined block limit. Eg: factor = 10, blockLimit = 4800.
-// This means, 10% of reserves can be withdrawn during a 4800 bsc block window.
-// This check is implemented to mitigate excess loss of funds during exploits.
-
-// updateApy()
-// updateAPR()
-// updatePreclosureCharges()
-// updateLoanIssuanceFees()
-// updateLoanClosureFees()
-// updateConvertYieldFees()
-
-
-
-// fallback() / receive()
-// transferAnyERC20()
-// pause
-// auth(superAdmin || adminComptroller)

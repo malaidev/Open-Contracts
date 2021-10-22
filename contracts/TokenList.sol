@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "./util/IBEP20.sol";
+import "./mockup/IMockBep20.sol";
 import "./util/Address.sol";
 import "./util/Pausable.sol";
 
@@ -16,6 +16,7 @@ contract TokenList is Pausable {
     address tokenAddress;
     uint256 decimals;
     uint256 chainId;
+    uint minAmount;
   }
 
   bytes32[] markets;
@@ -31,25 +32,25 @@ contract TokenList is Pausable {
 
 //   MarketData internal rmMarketData;
 
-  event TokenSupportAdded(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
-  event TokenSupportUpdated(bytes32 indexed market_,uint256 decimals_,address indexed tokenAddress_,uint256 indexed _timestamp);
-  event TokenSupportRemoved(bytes32 indexed market_, uint256 indexed _timestamp);
+  event MarketSupportAdded(bytes32 indexed _market,uint256 _decimals,address indexed MarketAddress_,uint256 indexed _timestamp);
+  event MarketSupportUpdated(bytes32 indexed _market,uint256 _decimals,address indexed MarketAddress_,uint256 indexed _timestamp);
+  event MarketSupportRemoved(bytes32 indexed _market, uint256 indexed _timestamp);
   
-  event Token2Added(
-    bytes32 indexed market_,
-    uint256 decimals_,
+  event Market2Added(
+    bytes32 indexed _market,
+    uint256 _decimals,
+    address indexed MarketAddress_,
+    uint256 indexed _timestamp
+  );
+  
+  event Market2Updated(
+    bytes32 indexed _market,
+    uint256 _decimals,
     address indexed tokenAddress_,
     uint256 indexed _timestamp
   );
   
-  event Token2Updated(
-    bytes32 indexed market_,
-    uint256 decimals_,
-    address indexed tokenAddress_,
-    uint256 indexed _timestamp
-  );
-  
-  event Token2Removed(bytes32 indexed market_, uint256 indexed _timestamp);
+  event Market2Removed(bytes32 indexed _market, uint256 indexed _timestamp);
 
   constructor(address superAdminAddr_) {
     superAdminAddress = superAdminAddr_;
@@ -64,192 +65,194 @@ contract TokenList is Pausable {
   }
   
   function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
-    IBEP20(token_).transfer(recipient_, value_);
+    IMockBep20(token_).transfer(recipient_, value_);
     return true;
   }
-  function isMarketSupported(bytes32  market_) external view returns (bool)	{
-		_isMarketSupported(market_);
+  function isMarketSupported(bytes32  _market) external view returns (bool)	{
+		_isMarketSupported(_market);
 		return true;
 	}
 
-	function _isMarketSupported(bytes32  market_) internal view {
-		require(tokenSupportCheck[market_] == true, "Hey, Token is not supported");
+	function _isMarketSupported(bytes32  _market) internal view {
+		require(tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
 	}
 
-  function getMarketTokenAddress(bytes32 market_) external view returns (address) {
-    return indMarketData[market_].tokenAddress;
+  function getMarketAddress(bytes32 _market) external view returns (address) {
+    return indMarketData[_market].tokenAddress;
   }
 
-  function getMarketDecimal(bytes32 market_) external view returns (uint) {
-    return indMarketData[market_].decimals;
+  function getMarketDecimal(bytes32 _market) external view returns (uint) {
+    return indMarketData[_market].decimals;
   }
   
   // ADD A NEW TOKEN SUPPORT
-  function addTokenSupport(bytes32 market_,uint256 decimals_,address tokenAddress_) external authTokenList() returns (bool) {
-    _addTokenSupport(market_, decimals_, tokenAddress_);
+  function addMarketSupport(bytes32 _market,uint256 _decimals,address tokenAddress_, uint _amount) external authTokenList() returns (bool) {
+    _addMarketSupport(_market, _decimals, tokenAddress_, _amount);
 
-    emit TokenSupportAdded(market_,decimals_,tokenAddress_,block.timestamp);
+    emit MarketSupportAdded(_market,_decimals,tokenAddress_,block.timestamp);
     return bool(true);
   }
-  function _addTokenSupport( bytes32 market_,uint256 decimals_,address tokenAddress_) internal {
-    MarketData storage marketData = indMarketData[market_];
+  function _addMarketSupport( bytes32 _market,uint256 _decimals,address tokenAddress_, uint _amount) internal {
+    MarketData storage marketData = indMarketData[_market];
     
-    marketData.market = market_;
+    marketData.market = _market;
     marketData.tokenAddress = tokenAddress_;
-    marketData.decimals = decimals_;
+    marketData.minAmount = _amount*_decimals;
+    marketData.decimals = _decimals;
     
-    markets.push(market_);
-    tokenSupportCheck[market_] = true;
-    marketIndex[market_] = markets.length-1;
+    markets.push(_market);
+    tokenSupportCheck[_market] = true;
+    marketIndex[_market] = markets.length-1;
   }
 
-  function removeTokenSupport(bytes32 market_) external authTokenList() returns(bool) {
-    _removeTokenSupport(market_);
-    emit TokenSupportRemoved(market_, block.timestamp);
+  function minAmountCheck(bytes32 _market, uint _amount) external view {
+    
+    MarketData memory marketData = indMarketData[_market];
+    require(marketData.minAmount <= _amount, "ERROR: Less than minimum deposit");
+  }
+
+  function removeMarketSupport(bytes32 _market) external authTokenList() returns(bool) {
+    _removeMarketSupport(_market);
+    emit MarketSupportRemoved(_market, block.timestamp);
     return bool(true);
   }
 
-  function _removeTokenSupport(bytes32 market_) internal {
+  function _removeMarketSupport(bytes32 _market) internal {
 
-
-    tokenSupportCheck[market_] = false;
-    delete indMarketData[market_];
+    tokenSupportCheck[_market] = false;
+    delete indMarketData[_market];
     
-    if (marketIndex[market_] >= markets.length) return;
+    if (marketIndex[_market] >= markets.length) return;
 
     bytes32 lastmarket = markets[markets.length - 1];
 
-    if (marketIndex[lastmarket] != marketIndex[market_]) {
-      marketIndex[lastmarket] = marketIndex[market_];
-      markets[marketIndex[market_]] = lastmarket;
+    if (marketIndex[lastmarket] != marketIndex[_market]) {
+      marketIndex[lastmarket] = marketIndex[_market];
+      markets[marketIndex[_market]] = lastmarket;
     }
     markets.pop();
-    delete marketIndex[market_];
+    delete marketIndex[_market];
   }
   
-  function updateTokenSupport(bytes32 market_, uint256 decimals_,address tokenAddress_) external authTokenList()  returns(bool){
-    _updateTokenSupport(market_, decimals_, tokenAddress_);
-    emit TokenSupportUpdated(market_,decimals_,tokenAddress_,block.timestamp);
+  function updateMarketSupport(bytes32 _market, uint256 _decimals,address tokenAddress_) external authTokenList()  returns(bool){
+    _updateMarketSupport(_market, _decimals, tokenAddress_);
+    emit MarketSupportUpdated(_market,_decimals,tokenAddress_,block.timestamp);
     return bool(true);
   }
 
-  function connectMarket(bytes32 market_, IBEP20 token_) external view {
-    _connectMarket(market_, token_);
-  }
+  function connectMarket(bytes32 _market) external view returns (address addr){
+		
+    MarketData memory marketData = indMarketData[_market];
 
-  function _connectMarket(bytes32 market_, /* uint256 amount_, */ IBEP20 token) internal view {
-		MarketData storage marketData = indMarketData[market_];
 		address marketAddress = marketData.tokenAddress;
-		token = IBEP20(marketAddress);
+		addr = marketAddress;
 		// amount_ *= marketData.decimals;
 	}
 
-  function quantifyAmount(bytes32 _market, uint _amount) external view {
-    _quantifyAmount(_market, _amount);
-  }
-
-  function _quantifyAmount(bytes32 _market, uint _amount) internal view {
-    MarketData storage marketData = indMarketData[_market];
+  function quantifyAmount(bytes32 _market, uint _amount) external view  {
+    
+    MarketData memory marketData = indMarketData[_market];
     _amount *= marketData.decimals;
+    
   }
 
-  function _updateTokenSupport(
-    bytes32 market_,
-    uint256 decimals_,
+  function _updateMarketSupport(
+    bytes32 _market,
+    uint256 _decimals,
     address tokenAddress_
   ) internal
   {
-    MarketData storage marketData = indMarketData[market_];
+    MarketData storage marketData = indMarketData[_market];
 
-    marketData.market = market_;
+    marketData.market = _market;
     marketData.tokenAddress = tokenAddress_;
-    marketData.decimals = decimals_;
+    marketData.decimals = _decimals;
 
-    tokenSupportCheck[market_] = true;
+    tokenSupportCheck[_market] = true;
   }
 
   //SecondaryToken
-  function isToken2Supported(bytes32  market_) external view returns (bool)	{
-		_isToken2Supported(market_);
+  function isMarket2Supported(bytes32  _market) external view returns (bool)	{
+		_isMarket2Supported(_market);
 		return true;
 	}
 
-	function _isToken2Supported(bytes32  market_) internal view {
-		require(token2SupportCheck[market_] == true, "Secondary Token is not supported");
+	function _isMarket2Supported(bytes32  _market) internal view {
+		require(token2SupportCheck[_market] == true, "Secondary Token is not supported");
 	}
 
-  function getMarketToken2Address(bytes32 market_) external view returns (address) {
-    return indMarket2Data[market_].tokenAddress;
+  function getMarket2Address(bytes32 _market) external view returns (address) {
+    return indMarket2Data[_market].tokenAddress;
   }
 
-  function getMarket2Decimal(bytes32 market_) external view returns (uint) {
-    return indMarket2Data[market_].decimals;
+  function getMarket2Decimal(bytes32 _market) external view returns (uint) {
+    return indMarket2Data[_market].decimals;
   }
   
   // ADD A NEW TOKEN SUPPORT
-  function addToken2Support(bytes32 market_,uint256 decimals_,address tokenAddress_) 
+  function addMarket2Support(bytes32 _market,uint256 _decimals,address tokenAddress_) 
     external authTokenList returns (bool) 
   {
-    _addToken2Support(market_, decimals_, tokenAddress_);
+    _addMarket2Support(_market, _decimals, tokenAddress_);
 
-    emit Token2Added(market_,decimals_,tokenAddress_,block.timestamp);
+    emit Market2Added(_market,_decimals,tokenAddress_,block.timestamp);
     return bool(true);
   }
 
-  function _addToken2Support( bytes32 market_,uint256 decimals_,address tokenAddress_) internal {
-    MarketData storage marketData = indMarket2Data[market_];
+  function _addMarket2Support( bytes32 _market,uint256 _decimals,address tokenAddress_) internal {
+    MarketData storage marketData = indMarket2Data[_market];
     
-    marketData.market = market_;
+    marketData.market = _market;
     marketData.tokenAddress = tokenAddress_;
-    marketData.decimals = decimals_;
+    marketData.decimals = _decimals;
     
-    markets2.push(market_);
-    token2SupportCheck[market_] = true;
-    market2Index[market_] = markets2.length-1;
+    markets2.push(_market);
+    token2SupportCheck[_market] = true;
+    market2Index[_market] = markets2.length-1;
   }
 
-  function removeToken2Support(bytes32 market_) external authTokenList returns(bool) {
-    _removeToken2Support(market_);
-    emit Token2Removed(market_, block.timestamp);
+  function removeMarket2Support(bytes32 _market) external authTokenList returns(bool) {
+    _removeMarket2Support(_market);
+    emit Market2Removed(_market, block.timestamp);
     return bool(true);
   }
 
-  function _removeToken2Support(bytes32 market_) internal {
-    token2SupportCheck[market_] = false;
-    delete indMarket2Data[market_];
+  function _removeMarket2Support(bytes32 _market) internal {
+    token2SupportCheck[_market] = false;
+    delete indMarket2Data[_market];
 
-    if (market2Index[market_] >= markets2.length) return;
+    if (market2Index[_market] >= markets2.length) return;
 
     bytes32 lastmarket = markets2[markets2.length - 1];
 
-    if (market2Index[lastmarket] != market2Index[market_]) {
-      market2Index[lastmarket] = market2Index[market_];
-      markets2[market2Index[market_]] = lastmarket;
+    if (market2Index[lastmarket] != market2Index[_market]) {
+      market2Index[lastmarket] = market2Index[_market];
+      markets2[market2Index[_market]] = lastmarket;
     }
     markets2.pop();
-    delete market2Index[market_];
+    delete market2Index[_market];
   }
   
-  function updateToken2Support(bytes32 market_, uint256 decimals_,address tokenAddress_) 
+  function updateMarket2Support(bytes32 _market, uint256 _decimals,address tokenAddress_) 
     external authTokenList returns(bool)
   {
-    _updateToken2Support(market_, decimals_, tokenAddress_);
-    emit Token2Updated(market_,decimals_,tokenAddress_,block.timestamp);
+    _updateMarket2Support(_market, _decimals, tokenAddress_);
+    emit Market2Updated(_market,_decimals,tokenAddress_,block.timestamp);
     return bool(true);
   }
 
-  function _updateToken2Support(
-    bytes32 market_,
-    uint256 decimals_,
+  function _updateMarket2Support(
+    bytes32 _market,
+    uint256 _decimals,
     address tokenAddress_
   ) internal {
-    MarketData storage marketData = indMarket2Data[market_];
+    MarketData storage marketData = indMarket2Data[_market];
 
-    marketData.market = market_;
+    marketData.market = _market;
     marketData.tokenAddress = tokenAddress_;
-    marketData.decimals = decimals_;
+    marketData.decimals = _decimals;
 
-    token2SupportCheck[market_] = true;
+    token2SupportCheck[_market] = true;
   }
 
   function pause() external authTokenList() nonReentrant() {
