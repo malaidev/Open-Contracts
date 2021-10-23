@@ -89,7 +89,7 @@ module.exports = async function (deployer, network, accounts) {
   console.log("OracleOpen deployed at: ", dataParse['OracleOpen']);
 
   if(!configs.Loan) {
-    await deployer.deploy(Loan/*, accounts[0], tokenList, comptroller, reserve, liquidator, oracleOpen*/);
+    await deployer.deploy(Loan, accounts[0], tokenList, comptroller, reserve, liquidator, oracleOpen);
     var loan = await Loan.deployed();
     dataParse['Loan'] = loan.address;  
   }

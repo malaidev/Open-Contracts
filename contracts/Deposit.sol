@@ -3,7 +3,8 @@ pragma solidity >=0.8.9 <0.9.0;
 
 import "./util/Pausable.sol";
 import "./interfaces/ITokenList.sol";
-import "./mockup/IMockBep20.sol";
+// import "./mockup/IMockBep20.sol";
+import "./util/IBEP20.sol";
 import "./interfaces/IComptroller.sol";
 
 
@@ -17,7 +18,7 @@ contract Deposit is Pausable{
 	ITokenList markets;
 	IComptroller comptroller;
 
-	IMockBep20 public 	token;
+	IBEP20 public token;
 
 	struct SavingsAccount {
         uint accOpenTime;
@@ -74,6 +75,19 @@ contract Deposit is Pausable{
 		comptroller = IComptroller(_comptrollerAddr);
 	}
 
+	receive() external payable {
+		 payable(adminDepositAddress).transfer(_msgValue());
+	}
+	
+	fallback() external payable {
+		payable(adminDepositAddress).transfer(_msgValue());
+	}
+	
+	function transferAnyBEP20(address token_,address recipient_,uint256 value_) external authDeposit returns(bool) {
+		IBEP20(token_).transfer(recipient_, value_);
+		return true;
+	}
+
 	function hasAccount(address _account) external view returns (bool)	{
 		_hasAccount(_account);
 		return true;
@@ -83,7 +97,7 @@ contract Deposit is Pausable{
 		return _accountBalance(msg.sender, _market, _commitment, SAVINGSTYPE.BOTH);
 	}
 
-	function convertYield(bytes32 _market, bytes32 _commitment) external nonReentrant() returns (bool success){
+	function convertYield(bytes32 _market, bytes32 _commitment) external nonReentrant() returns (bool success) {
 		
 		uint _amount;
 		_convertYield(msg.sender, _market,_commitment, _amount);
@@ -92,7 +106,7 @@ contract Deposit is Pausable{
 		return success;
 	}
 
-	function hasYield(bytes32 _market, bytes32 _commitment) external view returns (bool)	{
+	function hasYield(bytes32 _market, bytes32 _commitment) external view returns (bool) {
 		YieldLedger storage yield = indYieldRecord[msg.sender][_market][_commitment];
 		
 		_hasYield(yield);
@@ -100,7 +114,7 @@ contract Deposit is Pausable{
 	}
 
 
-	function avblReserves(bytes32 _market) external view returns(uint){
+	function avblReserves(bytes32 _market) external view returns (uint) {
 		return marketReserves[_market];
 	}
 
@@ -108,13 +122,9 @@ contract Deposit is Pausable{
 	// 	return marketReserves[_market];
 	// }
 
-	function utilisedReserves(bytes32 _market) external view returns(uint)	{
-		return _utilisedReserves(_market);
-	}
-	function _utilisedReserves(bytes32 _market) internal view returns(uint)	{
+	function utilisedReserves(bytes32 _market) external view returns(uint) {
 		return marketUtilisation[_market];
 	}
-
 
 	function _updateReserves(bytes32 _market, uint _amount, uint _num) private
 	{
@@ -134,15 +144,15 @@ contract Deposit is Pausable{
 		}
 	}
 
-	function hasDeposit(bytes32 _market, bytes32 _commitment) external view {
+	function hasDeposit(bytes32 _market, bytes32 _commitment) external view{
 		_hasDeposit(msg.sender,_market, _commitment);
 	}
+
 	function _hasDeposit(address _account, bytes32 _market, bytes32 _commitment) internal view returns(bool) {
 		require (indDepositRecord[_account][_market][_commitment].id != 0, "ERROR: No deposit");
 		return true;
 	}
 
-	
 	function createDeposit(
 		bytes32 _market,
 		bytes32 _commitment,
@@ -154,16 +164,13 @@ contract Deposit is Pausable{
 		emit NewDeposit(msg.sender, _market, _commitment, _amount);
 	}
 
-
-	function withdrawDeposit (bytes32 _market, bytes32 _commitment, uint _amount, SAVINGSTYPE _request) external nonReentrant() returns (bool success){
+	function withdrawDeposit (bytes32 _market, bytes32 _commitment, uint _amount, SAVINGSTYPE _request) external nonReentrant() returns (bool success) {
 
 		_withdrawDeposit (msg.sender, _market, _commitment, _amount, _request);
-
 		emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
 		return success;
 		
 	}
-
 
 	function _withdrawDeposit (address _account, bytes32 _market, bytes32 _commitment, uint _amount, SAVINGSTYPE _request) internal{
 		
@@ -183,14 +190,12 @@ contract Deposit is Pausable{
 		}
 		/// Transfer funds to the user's wallet.
 		address retAddr = markets.connectMarket(_market);
-		token = IMockBep20(retAddr);
+		token = IBEP20(retAddr);
 		token.transfer(reserveAddress, _amount);
 
 		_updateReserves(_market, _amount, 1);
 
 	}
-
-	// function convertDeposit() external nonReentrant() {}
 
 	function _preDepositProcess(
 		bytes32 _market,
@@ -201,7 +206,7 @@ contract Deposit is Pausable{
 		markets.isMarketSupported(_market);
 		
 		address retAddr = markets.connectMarket(_market);
-		token = IMockBep20(retAddr);
+		token = IBEP20(retAddr);
 		markets.quantifyAmount(_market, _amount);
 		markets.minAmountCheck(_market, _amount);
 	}
@@ -291,6 +296,7 @@ contract Deposit is Pausable{
 		savingsAccount.deposits.push(deposit);
 		savingsAccount.yield.push(yield);
 	}
+
 	function _processDeposit(
 		address _account,
 		bytes32 _market,
@@ -325,7 +331,7 @@ contract Deposit is Pausable{
 		require(yield.id !=0, "ERROR: No Yield");
 	}
 
-	function addToDeposit(bytes32 _market, bytes32 _commitment, uint _amount) external nonReentrant() returns(bool success){
+	function addToDeposit(bytes32 _market, bytes32 _commitment, uint _amount) external nonReentrant() returns(bool success) {
 
 		if (!_hasDeposit(msg.sender, _market, _commitment))	{
 			_createNewDeposit(_market, _commitment, _amount);

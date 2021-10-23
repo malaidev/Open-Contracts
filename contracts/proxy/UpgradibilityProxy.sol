@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 import "./Proxy.sol";
-import "../mockup/IMockBep20.sol";
+// import "../mockup/IMockBep20.sol";
+import "../util/IBEP20.sol";
 import "../util/Pausable.sol";
 
 contract UpgradibilityProxy is Proxy, Pausable {
@@ -84,8 +85,8 @@ contract UpgradibilityProxy is Proxy, Pausable {
     //     payable(adminProxyAddress).transfer(_msgValue());
     // }
 
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
-        IMockBep20(token_).transfer(recipient_, value_);
+    function transferAnyBEP20(address token_,address recipient_,uint256 value_) external returns(bool) {
+        IBEP20(token_).transfer(recipient_, value_);
         return true;
     }
 

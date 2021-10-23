@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 import "./util/Pausable.sol";
-import "./mockup/IMockBep20.sol";
+// import "./mockup/IMockBep20.sol";
+import "./util/IBEP20.sol";
 import "./interfaces/IAugustusSwapper.sol";
 import "./interfaces/ITokenList.sol";
 
@@ -28,14 +29,14 @@ contract Liquidator is Pausable {
         payable(adminLiquidator).transfer(_msgValue());
     }
     
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) 
-        external returns(bool) 
+    function transferAnyBEP20(address _token, address _recipient, uint256 _value) 
+        external authLiquidator returns(bool) 
     {
-        IMockBep20(token_).transfer(recipient_, value_);
+        IBEP20(_token).transfer(_recipient, _value);
         return true;
     }
     
-    function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 mode) external payable returns (uint256 receivedAmount) {
+    function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 mode) external returns (uint256 receivedAmount) {
 
         require(_fromMarket != _toMarket, "FromToken can't be the same as ToToken.");
 
@@ -48,8 +49,8 @@ contract Liquidator is Pausable {
             addrFromMarket = tokenList.getMarket2Address(_fromMarket);
             addrToMarket = tokenList.getMarketAddress(_toMarket);
         } else if(mode == 2) {
-            addrFromMarket = tokenList.getMarket2Address(_toMarket);
-            addrToMarket = tokenList.getMarket2Address(_fromMarket);
+            addrFromMarket = tokenList.getMarketAddress(_toMarket);
+            addrToMarket = tokenList.getMarketAddress(_fromMarket);
         }
 
         uint minAmount;

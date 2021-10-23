@@ -10,4 +10,6 @@ interface IReserve {
     function marketUtilisation(bytes32 _market) external view returns(uint);
     function setLoanAddress(address loanAddr_) external;
     function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external;
+    function pause() external;
+    function unpause() external;
 }

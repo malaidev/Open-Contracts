@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "./mockup/IMockBep20.sol";
+// import "./mockup/IMockBep20.sol";
+import "./util/IBEP20.sol";
 import "./util/Address.sol";
 import "./util/Pausable.sol";
 
@@ -64,10 +65,11 @@ contract TokenList is Pausable {
     payable(adminTokenListAddress).transfer(msg.value);
   }
   
-  function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
-    IMockBep20(token_).transfer(recipient_, value_);
+  function transferAnyBEP20(address token_,address recipient_,uint256 value_) external authTokenList returns(bool) {
+    IBEP20(token_).transfer(recipient_, value_);
     return true;
   }
+
   function isMarketSupported(bytes32  _market) external view returns (bool)	{
 		_isMarketSupported(_market);
 		return true;
@@ -92,6 +94,7 @@ contract TokenList is Pausable {
     emit MarketSupportAdded(_market,_decimals,tokenAddress_,block.timestamp);
     return bool(true);
   }
+  
   function _addMarketSupport( bytes32 _market,uint256 _decimals,address tokenAddress_, uint _amount) internal {
     MarketData storage marketData = indMarketData[_market];
     

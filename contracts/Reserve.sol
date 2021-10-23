@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "./mockup/IMockBep20.sol";
+// import "./mockup/IMockBep20.sol";
+import "./util/IBEP20.sol";
 import "./util/Pausable.sol";
 import "./interfaces/ILoan.sol";
 import "./interfaces/IDeposit.sol";
@@ -12,7 +13,7 @@ contract Reserve is Pausable {
     // ILoan loan = ILoan(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
     // IDeposit deposit = IDeposit(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
 
-    IMockBep20 token;
+    IBEP20 token;
 
     bytes32 adminReserve;
     address adminReserveAddress;
@@ -31,18 +32,13 @@ contract Reserve is Pausable {
     fallback() external payable {
         payable(adminReserveAddress).transfer(_msgValue());
     }
-    
-    // function transferAnyERC20(address token_,address _recipient,uint256 _value) external returns(bool) {
-    //     IBEP20(token_).transfer(_recipient, _value);
-    //     return true;
-    // }
 
     function transferAnyBEP20(
         address token_,
         address _recipient,
-        uint256 _value) external nonReentrant  authReserve  returns(bool)   
+        uint256 _value) external nonReentrant returns(bool)   
     {
-        token = IMockBep20(token_);
+        token = IBEP20(token_);
         token.transfer(_recipient, _value);
         return true;
     }
@@ -54,9 +50,10 @@ contract Reserve is Pausable {
     //     return loan.reserves(_market) + deposit.reserves(_market);
     // }
 
-    function avblMarketReserves(bytes32 _market) external view returns (uint)    {
+    function avblMarketReserves(bytes32 _market) external view returns (uint) {
         return _avblMarketReserves(_market);
     }
+
     function _avblMarketReserves(bytes32 _market) internal view returns (uint) {
         require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "Mathematical error");
         return _marketReserves(_market) - _marketUtilisation(_market);

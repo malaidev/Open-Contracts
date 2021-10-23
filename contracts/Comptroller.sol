@@ -2,7 +2,8 @@
 pragma solidity >=0.8.9 <0.9.0;
 import "./util/Address.sol";
 import "./util/Pausable.sol";
-import "./mockup/IMockBep20.sol";
+// import "./mockup/IMockBep20.sol";
+import "./util/IBEP20.sol";
 
 contract Comptroller is Pausable {
 	using Address for address;
@@ -72,105 +73,57 @@ contract Comptroller is Pausable {
 		payable(adminComptrollerAddress).transfer(_msgValue());
 	}
 	
-	function transferAnyBEP20(address token_,address recipient_,uint256 value_) external returns(bool) {
-		IMockBep20(token_).transfer(recipient_, value_);
+	function transferAnyBEP20(address token_,address recipient_,uint256 value_) external authComptroller returns(bool) {
+		IBEP20(token_).transfer(recipient_, value_);
 		return true;
 	}
 	
 	function getAPR(bytes32 _commitment) external view returns (uint) {
-		return _getAPR(_commitment);
+		return indAPRRecords[_commitment].aprChanges[indAPRRecords[_commitment].aprChanges.length - 1];
 	}
-	function getAPRInd(bytes32 _commitment, uint index) external view returns (uint) {
-		return _getAPRInd(_commitment, index);
+	function getAPRInd(bytes32 _commitment, uint _index) external view returns (uint) {
+		return indAPRRecords[_commitment].aprChanges[_index];
 	}
 
 	function getAPY(bytes32 _commitment) external view returns (uint) {
-		return _getAPY(_commitment);
+		return indAPYRecords[_commitment].apyChanges[indAPYRecords[_commitment].apyChanges.length - 1];
 	}
 
 	function getAPYInd(bytes32 _commitment, uint _index) external view returns (uint) {
-		return _getAPYInd(_commitment, _index);
+		return indAPYRecords[_commitment].apyChanges[_index];
 	}
 
-	function getApytimeber(bytes32 _commitment, uint _index) external view returns (uint){
-		return _getApytimeber(_commitment, _index);
+	function getApytimeber(bytes32 _commitment, uint _index) external view returns (uint) {
+		return indAPYRecords[_commitment].time[_index];
 	}
 
-	function getAprtimeber(bytes32 _commitment, uint _index) external view returns (uint){
-		return _getAprtimeber(_commitment, _index);
+	function getAprtimeber(bytes32 _commitment, uint _index) external view returns (uint) {
+		return indAPRRecords[_commitment].time[_index];
 	}
 
 	function getApyLastTime(bytes32 commitment_) external view returns (uint) {
-		return _getApyLastTime(commitment_);
-	}
-
-	function _getApyLastTime(bytes32 commitment_) internal view returns (uint) {
 		return indAPYRecords[commitment_].time[indAPYRecords[commitment_].time.length - 1];
 	}
 
 	function getAprLastTime(bytes32 commitment_) external view returns (uint) {
-		return _getAprLastTime(commitment_);
-	}
-
-	function _getAprLastTime(bytes32 commitment_) internal view returns (uint) {
 		return indAPRRecords[commitment_].time[indAPRRecords[commitment_].time.length - 1];
 	}
 
 	function getApyTimeLength(bytes32 commitment_) external view returns (uint) {
-		return _getApyTimeLength(commitment_);
-	}
-
-	function _getApyTimeLength(bytes32 commitment_) internal view returns (uint) {
 		return indAPYRecords[commitment_].time.length;
 	}
 
 	function getAprTimeLength(bytes32 commitment_) external view returns (uint) {
-		return _getAprTimeLength(commitment_);
-	}
-
-	function _getAprTimeLength(bytes32 commitment_) internal view returns (uint) {
 		return indAPRRecords[commitment_].time.length;
 	}
 
 	function getCommitment(uint index_) external view returns (bytes32) {
 		require(index_ < commitment.length, "Commitment Index out of range");
-		return _getCommitment(index_);
-	}
-
-	function _getCommitment(uint index_)internal view returns (bytes32) {
 		return commitment[index_];
 	}
 
 	function setCommitment(bytes32 _commitment) external {
-		_setCommitment(_commitment);
-	}
-
-	function _setCommitment(bytes32 _commitment) internal {
 		commitment.push(_commitment);
-	}
-
-	function _getAPY(bytes32 _commitment) internal view returns (uint) {
-		return indAPYRecords[_commitment].apyChanges[indAPYRecords[_commitment].apyChanges.length - 1];
-	}
-
-	function _getAPYInd(bytes32 _commitment, uint _index) internal view returns (uint) {
-		return indAPYRecords[_commitment].apyChanges[_index];
-	}
-
-	function _getAPR(bytes32 _commitment) internal view returns (uint){
-		return indAPRRecords[_commitment].aprChanges[indAPRRecords[_commitment].aprChanges.length - 1];
-	}
-
-	function _getAPRInd(bytes32 _commitment, uint _index) internal view returns (uint) {
-		return indAPRRecords[_commitment].aprChanges[_index];
-	}
-
-	function _getApytimeber(bytes32 _commitment, uint _index) internal view returns (uint) {
-		return indAPYRecords[_commitment].time[_index];
-	}
-
-	function _getAprtimeber(bytes32 _commitment, uint _index) internal view returns (uint) {
-		return indAPRRecords[_commitment].time[_index];
 	}
 
 	function liquidationTrigger(uint loanID) external {}
@@ -180,7 +133,7 @@ contract Comptroller is Pausable {
 		return _updateApy(_commitment, _apy);
 	}
 
-	function updateAPR(bytes32 _commitment, uint _apr) external authComptroller() returns (bool ){
+	function updateAPR(bytes32 _commitment, uint _apr) external authComptroller() returns (bool ) {
 		return _updateApr(_commitment, _apr);
 	}
 
@@ -284,14 +237,15 @@ contract Comptroller is Pausable {
 		oldTime = block.timestamp;
 	}
 
-	function updateLoanIssuanceFees(uint fees) external authComptroller() returns(bool success){
+	function updateLoanIssuanceFees(uint fees) external authComptroller() returns(bool success) {
 		uint oldFees = loanIssuanceFees;
 		loanIssuanceFees = fees;
 
 		emit LoanIssuanceFeesUpdated(msg.sender, oldFees, loanIssuanceFees, block.timestamp);
 		return success;
 	}
-	function updateLoanClosureFees(uint fees) external authComptroller() returns(bool success){
+
+	function updateLoanClosureFees(uint fees) external authComptroller() returns(bool success) {
 		uint oldFees = loanClosureFees;
 		loanClosureFees = fees;
 
@@ -299,14 +253,15 @@ contract Comptroller is Pausable {
 		return success;
 	}
 
-	function updateLoanPreClosureFees(uint fees) external authComptroller() returns(bool success){
+	function updateLoanPreClosureFees(uint fees) external authComptroller() returns(bool success) {
 		uint oldFees = loanPreClosureFees;
 		loanPreClosureFees = fees;
 
 		emit LoanPreClosureFeesUpdated(msg.sender, oldFees, loanPreClosureFees, block.timestamp);
 		return success;
 	}
-	function updateDepositPreclosureFees(uint fees) external authComptroller() returns(bool success){
+
+	function updateDepositPreclosureFees(uint fees) external authComptroller() returns(bool success) {
 		uint oldFees = depositPreClosureFees;
 		depositPreClosureFees = fees;
 
@@ -314,7 +269,7 @@ contract Comptroller is Pausable {
 		return success;
 	}
 
-	function updateWithdrawalFees(uint fees) external authComptroller() returns(bool success){
+	function updateWithdrawalFees(uint fees) external authComptroller() returns(bool success) {
 		uint oldFees = depositWithdrawalFees;
 		depositWithdrawalFees = fees;
 
@@ -322,7 +277,7 @@ contract Comptroller is Pausable {
 		return success;
 	}
 
-	function updateCollateralReleaseFees(uint fees) external authComptroller() returns(bool success){
+	function updateCollateralReleaseFees(uint fees) external authComptroller() returns(bool success) {
 		uint oldFees = collateralReleaseFees;
 		collateralReleaseFees = fees;
 
@@ -330,14 +285,15 @@ contract Comptroller is Pausable {
 		return success;
 	}
 	
-	function updateYieldConversion(uint fees) external authComptroller() returns(bool success){
+	function updateYieldConversion(uint fees) external authComptroller() returns(bool success) {
 		uint oldFees = yieldConversionFees;
 		yieldConversionFees = fees;
 
 		emit YieldConversionFeesUpdated(msg.sender, oldFees, yieldConversionFees, block.timestamp);
 		return success;
 	}
-	function updateMarketSwapFees(uint fees) external authComptroller() returns(bool success){
+
+	function updateMarketSwapFees(uint fees) external authComptroller() returns(bool success) {
 		uint oldFees = marketSwapFees;
 		marketSwapFees = fees;
 
@@ -345,7 +301,7 @@ contract Comptroller is Pausable {
 		return success;
 	}
 
-	function updateReserveFactor(uint _reserveFactor) external  authComptroller() returns(bool success){
+	function updateReserveFactor(uint _reserveFactor) external authComptroller() returns (bool success) {
 	 	// implementing the barebones version for testnet. 
 		//  if cdr >= reserveFactor, 1:3 possible, else 1:2 possible.
 		uint oldReserveFactor = reserveFactor;
@@ -356,7 +312,7 @@ contract Comptroller is Pausable {
 	} 
 
 // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
-	function updateMaxWithdrawal(uint factor, uint blockLimit) external authComptroller() returns(bool success){
+	function updateMaxWithdrawal(uint factor, uint blockLimit) external authComptroller() returns(bool success) {
 		
 		uint oldFactor = maxWithdrawalFactor; 
 		uint oldBlockLimit = blockLimit;
@@ -386,5 +342,4 @@ contract Comptroller is Pausable {
 	function unpause() external authComptroller() nonReentrant() {
 			 _unpause();   
 	}
-
 }

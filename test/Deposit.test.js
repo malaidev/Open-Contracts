@@ -58,6 +58,7 @@ describe("Deposit Contract", () => {
         console.log("Comptroller is deployed at: ", comptroller.address);
         console.log("Deposit is deployed at: ", deposit.address);
         console.log("Reserve is deployed at: ", reserve.address);
+        expect(deposit.address).to.not.equal("0x" + "0".repeat(40));
     });
 
     it("Check if have bep20 token", async () => {

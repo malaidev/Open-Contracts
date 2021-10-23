@@ -21,10 +21,9 @@ describe("AccessRegistry", async () => {
     const OracleOpen  = require("../build/contracts/OracleOpen.json");
     const Reserve = require("../build/contracts/Reserve.json");
     const Liquidator = require("../build/contracts/Liquidator.json");
-    
     const Loan = require("../build/contracts/Loan.json");
-
     const AccessRegistry = require('../build/contracts/AccessRegistry.json');
+
     const role1 = "0x94557374737472696e6700000000000000000000000000000000000000000000";
     const role2 = "0x78629858A2529819179178979ABD797997979AD97987979AC7979797979797DF";
     const roleAdmin1 = "0x94557374737472696e6700120000000000000000000000000000000000000000";
@@ -36,12 +35,19 @@ describe("AccessRegistry", async () => {
         comptroller = await deployContract(wallet, Comptroller, [wallet.address]);
         deposit = await deployContract(wallet, Deposit, [wallet.address, tokenList.address, comptroller.address]);
         oracle = await deployContract(wallet, OracleOpen, [wallet.address]);
-        liquidator = await deployContract(wallet, Liquidator, [account1.address, tokenList.address]);
+        liquidator = await deployContract(wallet, Liquidator, [wallet.address, tokenList.address]);
         reserve = await deployContract(wallet, Reserve, [wallet.address, deposit.address]);
-        await deposit.setReserveAddress(reserve.address);
-        loan = await deployContract(wallet, Loan);
-        await reserve.setLoanAddress(loan.address);
-        await oracle.setLoanAddress(loan.address);
+        await deposit.connect(wallet).setReserveAddress(reserve.address, {gasLimit: 2500000});
+        loan = await deployContract(wallet, Loan, [
+            wallet.address,
+            tokenList.address,
+            comptroller.address,
+            reserve.address,
+            liquidator.address,
+            oracle.address
+        ]);
+        await reserve.connect(wallet).setLoanAddress(loan.address, {gasLimit: 250000});
+        await oracle.connect(wallet).setLoanAddress(loan.address, {gasLimit: 250000});
 
         accessRegistry = await deployContract(wallet, AccessRegistry, [wallet.address,tokenList.address, comptroller.address, reserve.address, deposit.address, oracle.address, loan.address, liquidator.address]);
     });

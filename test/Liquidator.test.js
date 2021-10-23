@@ -24,8 +24,8 @@ describe("Liquidator Contract", async () => {
         amount: 300
     }
     before(async () => {
-        tokenList = await deployContract(wallet, TokenList, [account1.address]);
-        liquidator = await deployContract(wallet, Liquidator, [account1.address, tokenList.address]);
+        tokenList = await deployContract(wallet, TokenList, [wallet.address]);
+        liquidator = await deployContract(wallet, Liquidator, [wallet.address, tokenList.address]);
         console.log("Liquidator deployed at ", liquidator.address);
     });
     
