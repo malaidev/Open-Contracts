@@ -5,20 +5,29 @@ const Web3 = require("web3");
 const web3 = new Web3();
 const MetaMaskAccountIndex = 2;
 const privateKeyTest = '0xa51ce828724031ad92a4965e12b39c82a73a1db926719060c8511efb81fd05f7';ovider = require('@truffle/hdwallet-provider');
-
+const fs = require('fs');
+const mnemonic = fs.readFileSync(".secret").toString().trim();
 module.exports = {
   networks: {
     development: {
       port: process.env.PORT,
       host: "127.0.0.1",
       network_id: "*",
-      gas: 4710000,
+      gas: 4710000000,
+    },
+    testnet: {
+      provider: () => new HDWalletProvider(mnemonic, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+      network_id: 97,
+      confirmations: 10,
+      timeoutBlocks: 200,
+      skipDryRun: true,
+      networkCheckTimeout: 10000
     },
     local: {
       host: "localhost",
       port: process.env.PORT,
       network_id: "*",
-      gas: 4710000,
+      gas: 4710000000,
      },
     main: {
       provider: function() {
@@ -63,7 +72,7 @@ module.exports = {
   },
   compilers: {
     solc: {
-      version: ">=0.8.7 <0.9.0",
+      version: ">=0.8.9 <0.9.0",
     }
   },
   plugins: [
@@ -72,5 +81,11 @@ module.exports = {
   api_keys: {
     etherscan: process.env.ETHERSCAN_API
   },
+  solc: {
+    optimizer: {
+        enabled: true,
+        runs: 200
+    }
+  }
   
 };

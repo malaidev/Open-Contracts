@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
+pragma solidity >=0.8.9 <0.9.0;
 import "./util/Pausable.sol";
+// import "./mockup/IMockBep20.sol";
 import "./util/IBEP20.sol";
 import "./interfaces/IAugustusSwapper.sol";
 import "./interfaces/ITokenList.sol";
 
 contract Liquidator is Pausable {
     address adminLiquidator;
+    address superAdminAddress;
   
     IAugustusSwapper public simpleSwap;
     ITokenList public tokenList;
-    constructor(ITokenList _tokenList) {
+
+    constructor(address superAdminAddr_, address tokenListAddr_) {
+        superAdminAddress = superAdminAddr_;
         adminLiquidator = msg.sender;
-        tokenList = _tokenList;
+        tokenList = ITokenList(tokenListAddr_);
         IAugustusSwapper _simpleSwap = IAugustusSwapper(0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57);
         simpleSwap = _simpleSwap;
     }
@@ -25,28 +29,39 @@ contract Liquidator is Pausable {
         payable(adminLiquidator).transfer(_msgValue());
     }
     
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) 
-        external returns(bool) 
+    function transferAnyBEP20(address _token, address _recipient, uint256 _value) 
+        external authLiquidator returns(bool) 
     {
-        IBEP20(token_).transfer(recipient_, value_);
+        IBEP20(_token).transfer(_recipient, _value);
         return true;
     }
     
-    function swap(bytes32 _fromToken, bytes32 _toToken, uint256 _fromAmount) external payable returns (uint256 receivedAmount) {
+    function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 mode) external returns (uint256 receivedAmount) {
 
-        require(_fromToken != _toToken, "_fromToken = _toToken");
+        require(_fromMarket != _toMarket, "FromToken can't be the same as ToToken.");
 
-        address addrFromToken = tokenList.getMarket2TokenAddress(_fromToken);
-        address addrToToken = tokenList.getMarket2TokenAddress(_toToken);
+        address addrFromMarket;
+        address addrToMarket;
+        if(mode == 0){
+            addrFromMarket = tokenList.getMarketAddress(_fromMarket);
+            addrToMarket = tokenList.getMarket2Address(_fromMarket);
+        } else if(mode == 1) {
+            addrFromMarket = tokenList.getMarket2Address(_fromMarket);
+            addrToMarket = tokenList.getMarketAddress(_toMarket);
+        } else if(mode == 2) {
+            addrFromMarket = tokenList.getMarketAddress(_toMarket);
+            addrToMarket = tokenList.getMarketAddress(_fromMarket);
+        }
+
         uint minAmount;
         address[] memory callees;
         uint256[] memory startIndexes;
         uint256[] memory values;
         bytes memory exchangeData;
         address payable beneficiary;
-        uint256 _receiveAmount =  simpleSwap.simpleSwap(
-            addrFromToken,
-            addrToToken,
+        receivedAmount =  simpleSwap.simpleSwap(
+            addrFromMarket,
+            addrToMarket,
             _fromAmount,
             minAmount,
             minAmount,
@@ -58,7 +73,6 @@ contract Liquidator is Pausable {
             string(""),
             false
         );
-        return _receiveAmount;
     }
 
     function pause() external authLiquidator() nonReentrant() {

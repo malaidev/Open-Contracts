@@ -1,50 +1,21 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
+pragma solidity >=0.8.9 <0.9.0;
 import "./util/Pausable.sol";
+// import "./mockup/IMockBep20.sol";
 import "./util/IBEP20.sol";
-import "./interfaces/ITokenList.sol";
+
+import "./interfaces/AggregatorV3Interface.sol";
 import "./interfaces/ILoan.sol";
+
 contract OracleOpen is Pausable {
 
     bytes32 adminOpenOracle;
     address adminOpenOracleAddress;
     address superAdminAddress;
-    ITokenList tokenList;
     ILoan loan;
 
-    uint minConsensus = 2;
-
-    struct PriceData{
-        uint timestamp;
-        uint price;
-        bytes32 market;
-        uint arrivedPrices;
-        mapping(uint => uint) response;
-        mapping(address => uint) nest;
-    }
-
-    event OffChainRequest (
-        string url,
-        bytes32 market,
-        uint price
-    );
-
-    event UpdatedRequest (
-        bytes32 market,
-        uint price
-    );
-
-    mapping(bytes32 => PriceData) latestPrice;
-
-    constructor(
-        address superAdminAddr_, 
-        address tokenListAddr_,
-        address loanAddr_
-    )
-    {
+    constructor(address superAdminAddr_) {
         superAdminAddress = superAdminAddr_;
-        tokenList = ITokenList(tokenListAddr_);
-        loan = ILoan(loanAddr_);
         adminOpenOracleAddress = msg.sender;
     }
 
@@ -56,81 +27,30 @@ contract OracleOpen is Pausable {
         payable(adminOpenOracleAddress).transfer(_msgValue());
     }
     
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) 
-        external returns(bool) 
+    function transferAnyBEP20(address token_,address recipient_,uint256 value_) 
+        external onlyAdmin returns(bool) 
     {
         IBEP20(token_).transfer(recipient_, value_);
         return true;
     }
 
-    function getLatestPrice(bytes32 _market) external view returns (uint256) {
-        return latestPrice[_market].price;
-    }
-    
-    function getLatestTimestamp(bytes32 _market) external view returns (uint256) {
-        return latestPrice[_market].timestamp;
-    }
-    
-    function newPriceRequest (
-        string memory _url,
-        bytes32 _market,
-        uint _price
-    ) external {
-        PriceData storage r = latestPrice[_market];
-        r.timestamp = block.timestamp;
-        r.market = _market;
-        r.price = _price;
-
-        emit OffChainRequest (_url, _market, _price);
-    }
-
-    function updatedChainRequest (
-        bytes32 _market,
-        uint _price
-    ) external {
-        PriceData storage trackRequest = latestPrice[_market];
-
-        //Check if the token is supported. In TokenList Contract.
-        require(tokenList.isTokenSupported(trackRequest.market), "Token is not supported.");
-
-        if(trackRequest.nest[msg.sender] == 1){
-            trackRequest.nest[msg.sender] = 2;
-            
-            uint tmpI = trackRequest.arrivedPrices;
-            trackRequest.response[tmpI] = _price;
-            trackRequest.arrivedPrices = tmpI + 1;
-            
-            uint currentConsensusCount = 1;
-            
-            for(uint i = 0; i < tmpI; i++){
-                uint a = trackRequest.response[i];
-                uint b = _price;
-
-                if(a == b){
-                    currentConsensusCount++;
-                    if(currentConsensusCount >= minConsensus){
-                        trackRequest.price = _price;
-                        
-                        //Add token to TokenList Contract.
-                        tokenList.addTokenSupport(trackRequest.market, decimals_, tokenAddress_);
-
-                        emit UpdatedRequest (_market, _price);
-                    }
-                }
-            }
-        }
+    function getLatestPrice(address _addrMarket) public view returns (uint) {
+        (
+            uint80 roundID, 
+            int price,
+            uint startedAt,
+            uint timeStamp,
+            uint80 answeredInRound
+        ) = AggregatorV3Interface(_addrMarket).latestRoundData();
+        return uint256(price);
     }
 
     function liquidationTrigger(
         address account, 
-        bytes32 market,
-        bytes32 commitment,
         uint loanId
     ) public
     {
-        //Call liquidate() in Loan contract.
-        // uint price = latestPrice[market].price;
-        loan.liquidateLoan(account, market, commitment, loanId);
+        loan.liquidation(account, loanId);
     }
 
     function pause() external onlyAdmin() nonReentrant() {
@@ -141,6 +61,10 @@ contract OracleOpen is Pausable {
        _unpause();   
 	}
 
+    function setLoanAddress(address _loanAddress) public onlyAdmin {
+        loan = ILoan(_loanAddress);
+    }
+
     modifier onlyAdmin() {
         require(msg.sender == adminOpenOracleAddress || 
             msg.sender == superAdminAddress,
@@ -148,6 +72,4 @@ contract OracleOpen is Pausable {
         );
         _;
     }
-
-
 }

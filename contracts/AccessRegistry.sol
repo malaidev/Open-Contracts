@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
+pragma solidity >=0.8.9 <0.9.0;
 
 import "./util/Address.sol";
 import "./util/Pausable.sol";
+// import "./mockup/IMockBep20.sol";
 import "./util/IBEP20.sol";
 
 contract AccessRegistry is Pausable {
@@ -60,6 +61,7 @@ contract AccessRegistry is Pausable {
     ) 
     {
         adminAddress = account_;
+        adminAccess = keccak256("AccessRegistry.adminAccess");
         _addAdminRole(adminAccess, adminAddress);
         _addAdminRole(keccak256("tokenList"), tokenListAddr_);
         _addAdminRole(keccak256("comptroller"), comptrollerAddr_);
@@ -78,7 +80,7 @@ contract AccessRegistry is Pausable {
         payable(adminAddress).transfer(_msgValue());
     }
     
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
+    function transferAnyBEP20(address token_,address recipient_,uint256 value_) external onlyAdmin(adminAccess, adminAddress) returns(bool) {
         IBEP20(token_).transfer(recipient_, value_);
         return true;
     }
