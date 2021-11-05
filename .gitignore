@@ -8,3 +8,6 @@ typechain
 cache
 artifacts
 yarn-error.log
+
+contracts/Loan.sol
+contracts/Loan1.sol
