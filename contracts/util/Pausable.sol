@@ -10,29 +10,17 @@ abstract contract Pausable is Context {
     bool private isPaused;
     event PauseState(address indexed _pauser, bool isPaused);
 
-
     constructor() {
         isPaused = false;
     }
 
-    function paused() public view virtual returns (bool) {
-        return isPaused;
-    }
-    
-    function pauseState() public view returns (string memory) {
-       if (isPaused == true) {
-           return "Contract is paused. Token transfers are temporarily disabled.";
-       }
-       return "Contract is not paused";
-   }
-
     modifier whenNotPaused() {
-        require(!paused(), "Paused status");
+        require(!_paused(), "Paused status");
         _;
     }
 
     modifier whenPaused() {
-        require(paused(), "Not paused status");
+        require(_paused(), "Not paused status");
         _;
     }
 
@@ -44,6 +32,10 @@ abstract contract Pausable is Context {
     function _unpause() internal virtual whenPaused {
         isPaused = false;
         emit PauseState(_msgSender(), false);
+    }
+
+    function _paused() internal virtual view returns(bool) {
+        return isPaused;
     }
 
     function _checkPauseState() internal view {

@@ -1,45 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-// import "./mockup/IMockBep20.sol";
-import "./util/IBEP20.sol";
 import "./util/Pausable.sol";
-import "./interfaces/ILoan.sol";
-import "./interfaces/IDeposit.sol";
+import "./libraries/LibDiamond.sol";
 
-contract Reserve is Pausable {
-    IDeposit deposit;
-    ILoan loan;
-    // ILoan loan = ILoan(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
-    // IDeposit deposit = IDeposit(0xeAc61D9e3224B20104e7F0BAD6a6DB7CaF76659B);
+contract Reserve is Pausable, IReserve {
 
-    IBEP20 token;
-
-    bytes32 adminReserve;
-    address adminReserveAddress;
-    address superAdminAddress;
-
-    constructor(address superAdminAddr_, address depositAddr_) {
-        superAdminAddress = superAdminAddr_;
-        adminReserveAddress = msg.sender;
-        deposit = IDeposit(depositAddr_);
+    constructor() {
+    	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        // ds.adminReserveAddress = msg.sender;
+        // ds.reserve = IReserve(msg.sender);
     }
     
     receive() external payable {
-        payable(adminReserveAddress).transfer(_msgValue());
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        payable(ds.contractOwner).transfer(_msgValue());
     }
     
     fallback() external payable {
-        payable(adminReserveAddress).transfer(_msgValue());
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        payable(ds.contractOwner).transfer(_msgValue());
     }
 
     function transferAnyBEP20(
-        address token_,
+        address _token,
         address _recipient,
         uint256 _value) external nonReentrant returns(bool)   
     {
-        token = IBEP20(token_);
-        token.transfer(_recipient, _value);
+    	LibDiamond._transferAnyBEP20(_token, _recipient, _value);
         return true;
     }
 
@@ -51,52 +39,43 @@ contract Reserve is Pausable {
     // }
 
     function avblMarketReserves(bytes32 _market) external view returns (uint) {
-        return _avblMarketReserves(_market);
+        return LibDiamond._avblMarketReserves(_market);
     }
 
-    function _avblMarketReserves(bytes32 _market) internal view returns (uint) {
-        require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "Mathematical error");
-        return _marketReserves(_market) - _marketUtilisation(_market);
+    function marketReserves(bytes32 _market) external view returns(uint)	{
+        return LibDiamond._marketReserves(_market);
     }
 
-	function marketReserves(bytes32 _market) external view returns(uint)	{
-		return _marketReserves(_market);
-	}
-
-	function _marketReserves(bytes32 _market) internal view returns (uint) {
-		return deposit.avblReserves(_market)+loan.avblReserves(_market);
-	}
 	
 	function marketUtilisation(bytes32 _market) external view returns(uint)	{
-		return _marketUtilisation(_market);
+		return LibDiamond._marketUtilisation(_market);
 	}
 
-	function _marketUtilisation(bytes32 _market) internal view returns (uint) {
-		return deposit.utilisedReserves(_market) + loan.utilisedReserves(_market);
-	}
+	
 
     function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external {
-
-    }
-
-    function setLoanAddress(address loanAddr_) external authReserve {
-        loan = ILoan(loanAddr_);
+        LibDiamond._collateralTransfer(_account, _market, _commitment);
     }
 
     modifier authReserve()  {
-        require(msg.sender == adminReserveAddress || 
-            msg.sender == superAdminAddress, 
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+
+        require(msg.sender == ds.contractOwner, 
             "Only Reverse admin can call this function"
         );
         _;
     }
 
-    function pause() external authReserve() nonReentrant() {
+    function pauseReserve() external authReserve() nonReentrant() {
        _pause();
 	}
 	
-	function unpause() external authReserve() nonReentrant() {
+	function unpauseReserve() external authReserve() nonReentrant() {
        _unpause();   
 	}
+
+    function isPausedReserve() external view virtual returns (bool) {
+        return _paused();
+    }
 
 }

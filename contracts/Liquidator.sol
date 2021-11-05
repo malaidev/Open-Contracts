@@ -2,90 +2,49 @@
 pragma solidity >=0.8.9 <0.9.0;
 import "./util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
-import "./util/IBEP20.sol";
-import "./interfaces/IAugustusSwapper.sol";
-import "./interfaces/ITokenList.sol";
+import "./libraries/LibDiamond.sol";
 
-contract Liquidator is Pausable {
-    address adminLiquidator;
-    address superAdminAddress;
+contract Liquidator is Pausable, ILiquidator {
   
-    IAugustusSwapper public simpleSwap;
-    ITokenList public tokenList;
+    constructor() {
+    	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        // ds.adminLiquidatorAddress = msg.sender;
+        // ds.liquidator = ILiquidator(msg.sender);
+        // ds.simpleSwap = IAugustusSwapper(0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57);
+    }
+    
+    // receive() external payable {
+    // 	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+    //     payable(ds.contractOwner).transfer(_msgValue());
+    // }
 
-    constructor(address superAdminAddr_, address tokenListAddr_) {
-        superAdminAddress = superAdminAddr_;
-        adminLiquidator = msg.sender;
-        tokenList = ITokenList(tokenListAddr_);
-        IAugustusSwapper _simpleSwap = IAugustusSwapper(0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57);
-        simpleSwap = _simpleSwap;
-    }
+    // fallback() external payable {
+    // 	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+    //     payable(ds.adminLiquidatorAddress).transfer(_msgValue());
+    // }
     
-    receive() external payable {
-        payable(adminLiquidator).transfer(_msgValue());
-    }
-    
-    fallback() external payable {
-        payable(adminLiquidator).transfer(_msgValue());
-    }
-    
-    function transferAnyBEP20(address _token, address _recipient, uint256 _value) 
-        external authLiquidator returns(bool) 
-    {
-        IBEP20(_token).transfer(_recipient, _value);
-        return true;
-    }
-    
-    function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 mode) external returns (uint256 receivedAmount) {
+    function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) external returns (uint256 receivedAmount) {
 
         require(_fromMarket != _toMarket, "FromToken can't be the same as ToToken.");
-
-        address addrFromMarket;
-        address addrToMarket;
-        if(mode == 0){
-            addrFromMarket = tokenList.getMarketAddress(_fromMarket);
-            addrToMarket = tokenList.getMarket2Address(_fromMarket);
-        } else if(mode == 1) {
-            addrFromMarket = tokenList.getMarket2Address(_fromMarket);
-            addrToMarket = tokenList.getMarketAddress(_toMarket);
-        } else if(mode == 2) {
-            addrFromMarket = tokenList.getMarketAddress(_toMarket);
-            addrToMarket = tokenList.getMarketAddress(_fromMarket);
-        }
-
-        uint minAmount;
-        address[] memory callees;
-        uint256[] memory startIndexes;
-        uint256[] memory values;
-        bytes memory exchangeData;
-        address payable beneficiary;
-        receivedAmount =  simpleSwap.simpleSwap(
-            addrFromMarket,
-            addrToMarket,
-            _fromAmount,
-            minAmount,
-            minAmount,
-            callees,
-            exchangeData,
-            startIndexes,
-            values,
-            beneficiary,
-            string(""),
-            false
-        );
+        receivedAmount = LibDiamond._swap(_fromMarket, _toMarket, _fromAmount, _mode);
     }
 
-    function pause() external authLiquidator() nonReentrant() {
+    function pauseLiquidator() external authLiquidator() nonReentrant() {
        _pause();
 	}
 	
-	function unpause() external authLiquidator() nonReentrant() {
+	function unpauseLiquidator() external authLiquidator() nonReentrant() {
        _unpause();   
 	}
 
+    function isPausedLiquidator() external view virtual returns (bool) {
+        return _paused();
+    }
+
 	modifier authLiquidator() {
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 		require(
-			msg.sender == adminLiquidator,
+			msg.sender == ds.contractOwner,
 			"Only Liquidator admin can call this function"
 		);
 		_;
