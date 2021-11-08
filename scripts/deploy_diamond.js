@@ -46,7 +46,6 @@ async function deployDiamond() {
             functionSelectors: getSelectors(facet)
         })
     }
-    
 
     // upgrade diamond with facets
     console.log('')

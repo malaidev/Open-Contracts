@@ -33,8 +33,9 @@ describe("===== TokenList Test =====", function () {
     before(async function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
-        diamondAddress = await deployDiamond()
-        // await deployOpenFacets(diamondAddress)
+        // diamondAddress = await deployDiamond()
+        const diamond = await ethers.getContractAt('OpenDiamond', "0xEF1a30678f7d205d310bADBA8dfA4B122B0Fb24b")
+        diamondAddress = diamond.address
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 

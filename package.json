@@ -20,6 +20,7 @@
     "@nomiclabs/hardhat-etherscan": "^2.1.7",
     "dotenv": "^10.0.0",
     "hardhat": "^2.6.7",
-    "hardhat-contract-sizer": "^2.1.1"
+    "hardhat-contract-sizer": "^2.1.1",
+    "web3": "^1.6.0"
   }
 }

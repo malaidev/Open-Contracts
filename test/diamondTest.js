@@ -86,7 +86,6 @@ describe("DiamondTest", function () {
     const comit_ONEMONTH = "0x54567858A2529819179178879ABD797997979AD97987979AC7979797979797DF";
     const comit_THREEMONTHS = "0x78639858A2529819179178879ABD797997979AD97987979AC7979797979797DF";
 
-
     before(async function () {
         diamondAddress = await deployDiamond()
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
@@ -186,8 +185,11 @@ describe("DiamondTest", function () {
     })
 
     it('function call to Comptroller', async () => {
+      const accounts = await ethers.getSigners()
+      const contractOwner = await accounts[0]
       const comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
-
+      await comptroller.connect(contractOwner).updateAPY(comit_NONE, 2, {gasLimit: 250000});
+        expect(await comptroller.getAPY(comit_NONE)).to.be.equal(2);
     })
 
     it('Liquidator functions', async () => {
