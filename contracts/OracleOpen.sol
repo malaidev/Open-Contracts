@@ -4,6 +4,7 @@ import "./util/Pausable.sol";
 import "./libraries/LibDiamond.sol";
 import "hardhat/console.sol";
 
+
 contract OracleOpen is Pausable, IOracleOpen {
 
     constructor() {
@@ -12,8 +13,8 @@ contract OracleOpen is Pausable, IOracleOpen {
         // ds.oracle = IOracleOpen(msg.sender);
     }
 
-    function getLatestPrice(address _addrMarket) external view returns (uint) {    
-        return LibDiamond._getLatestPrice(_addrMarket);
+    function getLatestPrice(bytes32 _market) external view returns (uint) {    
+        return LibDiamond._getLatestPrice(_market);
     }
 
     function liquidationTrigger(

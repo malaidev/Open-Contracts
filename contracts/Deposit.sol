@@ -5,6 +5,7 @@ import "./util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "./libraries/LibDiamond.sol";
 
+
 contract Deposit is Pausable, IDeposit{
 	
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
@@ -84,7 +85,7 @@ contract Deposit is Pausable, IDeposit{
 		uint256 _amount
 	) external nonReentrant(){
 		
-		LibDiamond._createNewDeposit(_market,_commitment, _amount);
+		LibDiamond._createNewDeposit(_market,_commitment, _amount, msg.sender);
 
 		emit NewDeposit(msg.sender, _market, _commitment, _amount);
 	}
@@ -96,21 +97,21 @@ contract Deposit is Pausable, IDeposit{
 		SAVINGSTYPE _request
 	) external nonReentrant() returns (bool success) 
 	{
-		LibDiamond._withdrawDeposit (msg.sender, _market, _commitment, _amount, _request);
+		LibDiamond._withdrawDeposit(msg.sender, _market, _commitment, _amount, _request);
 		emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
 		success = true;	
 	}
 
 	function addToDeposit(bytes32 _market, bytes32 _commitment, uint _amount) external nonReentrant() returns(bool success) {
 		if (!LibDiamond._hasDeposit(msg.sender, _market, _commitment))	{
-			LibDiamond._createNewDeposit(_market, _commitment, _amount);
-		}
+			LibDiamond._createNewDeposit(_market, _commitment, _amount, msg.sender);
+		} 
 		
 		LibDiamond._processDeposit(msg.sender, _market, _commitment, _amount);
 		LibDiamond._updateReservesDeposit(_market, _amount, 0);
 
 		emit DepositAdded(msg.sender, _market, _commitment, _amount);
-		return success;
+		success = true;
 	}
 
 	function pauseDeposit() external authDeposit() nonReentrant() {

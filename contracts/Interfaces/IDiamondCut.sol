@@ -7,6 +7,7 @@ interface IDiamondCut {
         address facetAddress;
         FacetCutAction action;
         bytes4[] functionSelectors;
+        uint8 facetId;
     }
     function diamondCut(
         FacetCut[] calldata _diamondCut,

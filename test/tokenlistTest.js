@@ -10,7 +10,8 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/deploy_diamond.js')
+const {deployDiamond}= require('../scripts/1_deploy_diamond.js')
+const {deployFacets} = require("../scripts/2_deploy_facets.js")
 
 describe("===== TokenList Test =====", function () {
     let diamondAddress
@@ -18,7 +19,7 @@ describe("===== TokenList Test =====", function () {
     let diamondLoupeFacet
     let tokenList
     let bep20
-    let accounts
+    let accounts    
     let contractOwner
     const addresses = []
 
@@ -33,9 +34,10 @@ describe("===== TokenList Test =====", function () {
     before(async function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
-        // diamondAddress = await deployDiamond()
-        const diamond = await ethers.getContractAt('OpenDiamond', "0xEF1a30678f7d205d310bADBA8dfA4B122B0Fb24b")
-        diamondAddress = diamond.address
+        diamondAddress = await deployDiamond()
+        await deployFacets(diamondAddress)
+        // const diamond = await ethers.getContractAt('OpenDiamond', "0xEF1a30678f7d205d310bADBA8dfA4B122B0Fb24b")
+        // diamondAddress = diamond.address
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 
@@ -44,6 +46,10 @@ describe("===== TokenList Test =====", function () {
         const Mock = await ethers.getContractFactory('MockBep20')
         bep20 = await Mock.deploy()
         await bep20.deployed()
+    })
+
+    it("check deployed", async () => {
+        expect(await tokenList.address).to.not.equal("0x" + "0".repeat(40))
     })
 
     it('should have three facets -- call to facetAddresses function', async () => {
@@ -67,6 +73,7 @@ describe("===== TokenList Test =====", function () {
     })
 
     it("Add token to tokenList", async () => {
+        console.log("tokenList = ", tokenList.address);
         await expect(tokenList.connect(contractOwner).addMarketSupport(
             symbol4, 
             18, 
@@ -76,12 +83,16 @@ describe("===== TokenList Test =====", function () {
         )).to.emit(tokenList, "MarketSupportAdded")
         expect(await tokenList.isMarketSupported(symbol4)).to.be.equal(true);
 
-        await expect(tokenList.connect(accounts[1]).addMarketSupport(
-            symbol2, 18, bep20.address, 1, {gasLimit: 240000}
-        )).to.be.revertedWith("Only an admin can call this function");
+        console.log("symbol4 = ", symbol4);
+        console.log("bep = ", bep20.address);
+
+        // await expect(tokenList.connect(accounts[1]).addMarketSupport(
+        //     symbol2, 18, bep20.address, 1, {gasLimit: 240000}
+        // )).to.be.revertedWith("Only an admin can call this function");
     })
 
     it("getMarketAddress", async() => {
+        console.log("getmarketaddress = ", await tokenList.getMarketAddress(symbol4));
         expect(await tokenList.getMarketAddress(symbol4)).to.be.equal(bep20.address)
     })
 
@@ -105,11 +116,6 @@ describe("===== TokenList Test =====", function () {
 
         await tokenList.minAmountCheck(symbol4, 20);
         await expect(tokenList.minAmountCheck(symbol4, 17)).to.be.revertedWith("ERROR: Less than minimum deposit")
-    })
-
-    it("quantifyAmount", async () => {
-        let amount = await tokenList.quantifyAmount(symbol4, 20)
-        expect(amount).to.equal(20 * 18)
     })
 
     it("updateMarketSupport", async () => {

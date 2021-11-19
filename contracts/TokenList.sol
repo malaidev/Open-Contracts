@@ -69,7 +69,7 @@ contract TokenList is Pausable, ITokenList {
   }
 
   function quantifyAmount(bytes32 _market, uint _amount) external view returns (uint amount) {
-    return LibDiamond._quantifyAmount(_market, _amount);
+    // return LibDiamond._quantifyAmount(_market, _amount);
   }
 
   //SecondaryToken

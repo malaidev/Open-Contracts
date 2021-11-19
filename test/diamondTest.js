@@ -11,12 +11,14 @@ const {
 const { assert } = require('chai')
 async function deployDiamond() {
     const accounts = await ethers.getSigners()
-    const contractOwner = accounts[0]
+    const contractOwner = await accounts[0]
+    console.log(`contractOwner ${contractOwner.address}`)
 
     // deploy DiamondCutFacet
     const DiamondCutFacet = await ethers.getContractFactory('DiamondCutFacet')
     const diamondCutFacet = await DiamondCutFacet.deploy()
     await diamondCutFacet.deployed()
+
     console.log('DiamondCutFacet deployed:', diamondCutFacet.address)
 
     // deploy Diamond
@@ -37,7 +39,7 @@ async function deployDiamond() {
     console.log('')
     console.log('Deploying facets')
     const FacetNames = [
-        'DiamondLoupeFacet',
+        'DiamondLoupeFacet'
     ]
     const cut = []
     for (const FacetName of FacetNames) {
@@ -46,15 +48,15 @@ async function deployDiamond() {
         await facet.deployed()
         console.log(`${FacetName} deployed: ${facet.address}`)
         cut.push({
-        facetAddress: facet.address,
-        action: FacetCutAction.Add,
-        functionSelectors: getSelectors(facet)
+            facetAddress: facet.address,
+            action: FacetCutAction.Add,
+            functionSelectors: getSelectors(facet)
         })
     }
 
     // upgrade diamond with facets
     console.log('')
-    console.log('Diamond Cut:', cut)
+    // console.log('Diamond Cut:', cut)
     const diamondCut = await ethers.getContractAt('IDiamondCut', diamond.address)
     let tx
     let receipt
@@ -66,10 +68,11 @@ async function deployDiamond() {
     if (!receipt.status) {
         throw Error(`Diamond upgrade failed: ${tx.hash}`)
     }
+
     console.log('Completed diamond cut')
+    
     return diamond.address
 }
-
 describe("DiamondTest", function () {
     let diamondAddress
     let diamondCutFacet

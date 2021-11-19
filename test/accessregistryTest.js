@@ -10,7 +10,8 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/deploy_diamond.js')
+const {deployDiamond}= require('../scripts/1_deploy_diamond.js')
+const {deployFacets} = require("../scripts/2_deploy_facets.js")
 
 describe("===== AccessRegistry Test =====", function () {
     let diamondAddress
@@ -46,6 +47,7 @@ describe("===== AccessRegistry Test =====", function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
+        await deployFacets(diamondAddress)
         // await deployOpenFacets(diamondAddress)
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -93,7 +95,7 @@ describe("===== AccessRegistry Test =====", function () {
     })
 
     it("Check if the contract is deployed", async () => {
-        expect(await tokenList.addrss).to.not.equal("0x" + "0".repeat(40))
+        expect(await tokenList.adderss).to.not.equal("0x" + "0".repeat(40))
         expect(await accessRegistry.address).to.not.equal("0x" + "0".repeat(40))
         console.log("AccessRegistry is deployed at: ", accessRegistry.address)
     })

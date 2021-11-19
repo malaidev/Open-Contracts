@@ -3,7 +3,8 @@ pragma solidity >=0.8.9 <0.9.0;
 
 import { LibDiamond } from "./libraries/LibDiamond.sol";
 import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
-import "hardhat/console.sol";
+
+
 contract OpenDiamond {
 
     constructor(address _contractOwner, address _diamondCutFacet) payable {        
@@ -15,7 +16,8 @@ contract OpenDiamond {
         cut[0] = IDiamondCut.FacetCut({
             facetAddress: _diamondCutFacet, 
             action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: functionSelectors
+            functionSelectors: functionSelectors,
+            facetId: 0
         });
         LibDiamond.diamondCut(cut, address(0), "");
     }
@@ -47,6 +49,10 @@ contract OpenDiamond {
                     return(0, returndatasize())
                 }
         }
+    }
+
+    function addFacetAddress(address _facetAddress) external {
+        LibDiamond.addFacetAddress(_facetAddress);
     }
 
     receive() external payable {}

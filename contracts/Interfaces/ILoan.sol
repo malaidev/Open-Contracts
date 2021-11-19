@@ -9,8 +9,6 @@ interface ILoan {
     function withdrawCollateral(bytes32 _market, bytes32 _commitment) external returns (bool success);
     function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view;
     function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external  returns (bool success);
-    function permissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) external returns (bool success);
-    function liquidation(address _account, uint256 id) external returns (bool success);
     function pauseLoan() external;
     function unpauseLoan() external;
     function isPausedLoan() external view returns (bool);
