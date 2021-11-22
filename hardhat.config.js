@@ -50,6 +50,7 @@ module.exports = {
     },
     harmony: {
       url: 'https://api.s0.b.hmny.io',
+      timeout: 2000000,
       accounts: [process.env.HARMONY_PRIVATE_KEY],
       gas: 2100000, 
       gasPrice: 8000000000
@@ -66,5 +67,6 @@ module.exports = {
   },
   mocha: {
     timeout: 2000000
-  }
+  },
+  
 };

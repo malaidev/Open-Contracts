@@ -57,6 +57,10 @@ contract Loan is Pausable, ILoan {
 		return LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
 	}
 
+	function testFunc() external {
+		LibDiamond._testFunc();
+	}
+
 	function pauseLoan() external authLoan() nonReentrant() {
 		_pause();
 	}

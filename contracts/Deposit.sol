@@ -55,7 +55,7 @@ contract Deposit is Pausable, IDeposit{
 		LibDiamond._hasYield(yield);
 		return true;
 	}
-
+ 
 	function avblReservesDeposit(bytes32 _market) external view returns (uint) {
 		return LibDiamond._avblReservesDeposit(_market);
 	}

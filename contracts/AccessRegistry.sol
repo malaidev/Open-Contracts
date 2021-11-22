@@ -4,31 +4,7 @@ import "./util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "./libraries/LibDiamond.sol";
 contract AccessRegistry is Pausable, IAccessRegistry {
-
-    event AdminRoleDataGranted(
-        bytes32 indexed role,
-        address indexed account,
-        address indexed sender
-    );
-
-    event AdminRoleDataRevoked(
-        bytes32 indexed role,
-        address indexed account,
-        address indexed sender
-    );
-
-    event RoleGranted(
-        bytes32 indexed role,
-        address indexed account,
-        address indexed sender
-    );
-
-    event RoleRevoked(
-        bytes32 indexed role,
-        address indexed account,
-        address indexed sender
-    );
-
+    
     constructor() {
     	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
         // ds.superAdmin = keccak256("AccessRegistry.admin");

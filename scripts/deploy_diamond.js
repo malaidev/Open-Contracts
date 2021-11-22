@@ -27,7 +27,6 @@ async function deployDiamond() {
     await diamondInit.deployed()
     console.log('DiamondInit deployed:', diamondInit.address)
 
-
     // deploy facets
     console.log('')
     console.log('Deploying facets')
@@ -43,7 +42,8 @@ async function deployDiamond() {
         cut.push({
             facetAddress: facet.address,
             action: FacetCutAction.Add,
-            functionSelectors: getSelectors(facet)
+            functionSelectors: getSelectors(facet),
+            facetId: 1
         })
     }
 
@@ -61,33 +61,29 @@ async function deployDiamond() {
     if (!receipt.status) {
         throw Error(`Diamond upgrade failed: ${tx.hash}`)
     }
-    
-    await deployOpenFacets(diamond)
+
     console.log('Completed diamond cut')
+
+    await deployOpenFacets(diamond.address)
     
     return diamond.address
 }
 
-async function deployOpenFacets(diamond) {
+async function deployOpenFacets(diamondAddress) {
     const accounts = await ethers.getSigners()
-    const contractOwner = await accounts[0]
+    const contractOwner = accounts[0]
     console.log(" ==== Begin deployOpenFacets === ");
-    diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamond.address)
-    diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamond.address)
+    // const diamondAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+    diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
+    diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 
+    console.log("Begin deploying facets");
     const OpenNames = [
-        'TokenList',
-        'Comptroller',
-        'Liquidator',
-        'Reserve',
-        'OracleOpen',
         'Loan',
         'Loan1',
-        'Deposit',
-        'AccessRegistry'
     ]
     const opencut = []
-
+    let facetId = 10;
     for (const FacetName of OpenNames) {
         const Facet = await ethers.getContractFactory(FacetName)
         const facet = await Facet.deploy()
@@ -96,9 +92,13 @@ async function deployOpenFacets(diamond) {
         opencut.push({
             facetAddress: facet.address,
             action: FacetCutAction.Add,
-            functionSelectors: getSelectors(facet)
+            functionSelectors: getSelectors(facet),
+            facetId :facetId
         })
+        facetId ++;
     }
+
+    console.log("Begin diamondcut facets");
 
     tx = await diamondCutFacet.diamondCut(
         opencut, ethers.constants.AddressZero, '0x', { gasLimit: 8000000 }

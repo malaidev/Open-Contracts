@@ -4,15 +4,16 @@ pragma solidity >=0.8.9 <0.9.0;
 import "./util/Pausable.sol";
 import "./libraries/LibDiamond.sol";
 
+
 contract Loan1 is Pausable, ILoan1 {
-		event AddCollateral(
+
+	event NewLoan(
 		address indexed _account,
-		uint256 indexed id,
-		uint256 amount,
+		bytes32 indexed market,
+		uint256 indexed amount,
+		bytes32 loanCommitment,
 		uint256 timestamp
 	);
-
-	event CollCount(uint count);
 
     /// Constructor
 	constructor() {
@@ -40,7 +41,7 @@ contract Loan1 is Pausable, ILoan1 {
 	bytes32 _collateralMarket,
 	uint256 _collateralAmount
 	) external nonReentrant() {
-		uint nCount =  LibDiamond._loanRequest(
+		uint timeStamp = LibDiamond._loanRequest(
 			_market,
 			_commitment,
 			_loanAmount,
@@ -48,18 +49,18 @@ contract Loan1 is Pausable, ILoan1 {
 			_collateralAmount,
 			msg.sender
 		);
-		emit CollCount(nCount);
+
+		emit NewLoan(_msgSender(), _market, _loanAmount, _commitment, timeStamp);
 	}
 
-    function addCollateral(
+    function addCollateral(      
 		bytes32 _market,
 		bytes32 _commitment,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) external {
-		uint count = LibDiamond._addCollateral(_market, _commitment, _collateralMarket, _collateralAmount, msg.sender);
+		LibDiamond._addCollateral(_market, _commitment, _collateralMarket, _collateralAmount, msg.sender);
 		// emit AddCollateral(msg.sender, id, amount, stamp);
-		emit CollCount(count);
 	}
 
 	function liquidation(address _account, uint256 _id) external nonReentrant()	authLoan1() returns (bool success) {

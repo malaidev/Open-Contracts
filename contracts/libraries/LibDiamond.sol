@@ -25,7 +25,6 @@ library LibDiamond {
     using Address for address;
 
     bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.hashstack.diamond.storage");
-
 	uint8 constant TOKENLIST_ID = 10;
 	uint8 constant COMPTROLLER_ID = 11;
 	uint8 constant LIQUIDATOR_ID = 12;
@@ -278,6 +277,7 @@ library LibDiamond {
 	
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
+	event TestEvent(uint val);
 
 // =========== Deposit events ===========
 
@@ -314,6 +314,13 @@ library LibDiamond {
 		address indexed _account,
 		uint256 indexed amount,
 		bytes32 indexed market,
+		uint256 timestamp
+	);
+
+	event AddCollateral(
+		address indexed _account,
+		uint256 indexed id,
+		uint256 amount,
 		uint256 timestamp
 	);
 
@@ -1064,7 +1071,7 @@ library LibDiamond {
 		bytes32 _commitment,
 		bytes32 _market,
 		uint256 _swappedAmount
-    ) internal authContract(LOAN_ID) returns (bool success) 
+    ) internal authContract(LOAN_ID) returns (bool success)
     {
         return _swapToLoanProcess(_account, _swapMarket, _commitment, _market, _swappedAmount);
     }
@@ -1125,7 +1132,7 @@ library LibDiamond {
 		_hasAccount(_account);
 		_isMarketSupported(_market);
 
-		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
+		require((collateral.timelockValidity + collateral.activationTime) <= block.timestamp, "ERROR: Timelock in progress");
 
 		_collateralTransfer(_account, loan.market, loan.commitment);
 
@@ -1527,7 +1534,7 @@ library LibDiamond {
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount,
 		address _sender
-    ) internal authContract(LOAN1_ID) returns (uint count) {
+    ) internal authContract(LOAN1_ID) {
         DiamondStorage storage ds = diamondStorage(); 
         LoanAccount storage loanAccount = ds.loanPassbook[_sender];
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
@@ -1548,9 +1555,7 @@ library LibDiamond {
 
 		if (collateral.isCollateralisedDeposit) _accruedYield(loanAccount, collateral, cYield);
 
-		// emit AddCollateral(_sender, loan.id, _collateralAmount, block.timestamp);
-		
-		count = loanAccount.collaterals.length;
+		emit AddCollateral(_sender, loan.id, _collateralAmount, block.timestamp);
     }
 
 	function _addCollateralAmount(
@@ -2065,6 +2070,10 @@ library LibDiamond {
         }
         require(contractSize > 0, _errorMessage);
     }
+
+	function _testFunc() internal {
+		emit TestEvent(333);
+	}
 
 	modifier authContract(uint _facetId) {
 		require(_facetId == LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId || 
