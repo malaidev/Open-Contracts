@@ -425,8 +425,6 @@ library LibDiamond {
 	function _minAmountCheck(bytes32 _market, uint _amount) internal view {
 		DiamondStorage storage ds = diamondStorage(); 
 		MarketData memory marketData = ds.indMarketData[_market];
-		console.log("marketData.minAmount is ", marketData.minAmount);
-		console.log("_amount is ", _amount);		
 		require(marketData.minAmount <= _amount, "ERROR: Less than minimum deposit");
 	}
 
@@ -675,7 +673,7 @@ library LibDiamond {
 		return ds.reserveFactor;
 	}
 // =========== Liquidator Functions ===========
-    function _swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal authContract(LIQUIDATOR_ID) returns (uint256 receivedAmount) {
+    function _swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256 receivedAmount) {
         address addrFromMarket;
         address addrToMarket;
         if(_mode == 0){
@@ -694,7 +692,6 @@ library LibDiamond {
         uint256[] memory values;
         bytes memory exchangeData;
         address payable beneficiary;
-		// receivedAmount = _fromAmount;
         receivedAmount =  IAugustusSwapper(0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57).simpleSwap(
             addrFromMarket,
             addrToMarket,
@@ -1293,7 +1290,7 @@ library LibDiamond {
 		CollateralRecords storage collateral,
 		DeductibleInterest storage deductibleInterest,
 		CollateralYield storage cYield
-	) internal authContract(LOAN_ID) {
+	) private {
         DiamondStorage storage ds = diamondStorage(); 
 		
 		bytes32 _commitment = loan.commitment;
@@ -1389,7 +1386,7 @@ library LibDiamond {
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
-	) internal authContract(LOAN_ID) {
+	) private {
         DiamondStorage storage ds = diamondStorage();
 		// uint256 id;
 
@@ -1407,7 +1404,6 @@ library LibDiamond {
 		// }
 
 		
-
 		// Updating loanRecords
 		loan.id = loanAccount.loans.length + 1;
 		loan.market = _market;
@@ -1415,7 +1411,7 @@ library LibDiamond {
 		loan.amount = _loanAmount;
 		loan.isSwapped = false;
 		loan.lastUpdate = block.timestamp;
-
+		
 		// Updating deductibleInterest
 		deductibleInterest.id = loanAccount.loans.length + 1;
 		deductibleInterest.market = _collateralMarket;
@@ -1479,10 +1475,10 @@ library LibDiamond {
 	function _preAddCollateralProcess(
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount,
-		LoanAccount memory loanAccount,
-		LoanRecords memory loan,
-		LoanState memory loanState,
-		CollateralRecords memory collateral
+		LoanAccount storage loanAccount,
+		LoanRecords storage loan,
+		LoanState storage loanState,
+		CollateralRecords storage collateral
 	) internal view {
 		require(loanAccount.accOpenTime != 0, "ERROR: No Loan account");
 		require(loan.id != 0, "ERROR: No loan");
@@ -1493,7 +1489,9 @@ library LibDiamond {
 		_minAmountCheck(_collateralMarket, _collateralAmount);
 	}
 
-	function _ensureLoanAccount(address _account, LoanAccount storage loanAccount) private {
+	function _ensureLoanAccount(address _account) private {
+        DiamondStorage storage ds = diamondStorage();
+		LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		if (loanAccount.accOpenTime == 0) {
 			loanAccount.accOpenTime = block.timestamp;
 			loanAccount.account = _account;
@@ -1563,9 +1561,9 @@ library LibDiamond {
 		CollateralRecords storage collateral,
 		uint256 _collateralAmount,
 		uint256 num
-	) internal authContract(LOAN_ID) {
+	) private {
 		collateral.amount += _collateralAmount;
-		loanAccount.collaterals[num].amount = collateral.amount;
+		loanAccount.collaterals[num].amount = _collateralAmount;
 	}
 
     function _swapLoan(
@@ -1621,7 +1619,7 @@ library LibDiamond {
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount,
 		address _sender
-    ) internal authContract(LOAN1_ID) returns (uint loanCount) {
+    ) internal authContract(LOAN1_ID) {
         DiamondStorage storage ds = diamondStorage(); 
         _preLoanRequestProcess(_market,_loanAmount,_collateralMarket,_collateralAmount);
 
@@ -1632,11 +1630,10 @@ library LibDiamond {
 		ds.collateralToken.approveFrom(_sender, address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(_sender, ds.contractOwner, _collateralAmount);
 		_updateReservesLoan(_collateralMarket,_collateralAmount, 0);
-		_ensureLoanAccount(_sender, loanAccount);
+		_ensureLoanAccount(_sender);
 
 		_processNewLoan(_sender,_market,_commitment,_loanAmount,_collateralMarket,_collateralAmount);
 
-		loanCount = loanAccount.collaterals.length;
 		emit NewLoan(_sender, _market, _loanAmount, _commitment, block.timestamp);
     }
 
@@ -2076,6 +2073,8 @@ library LibDiamond {
 	}
 
 	modifier authContract(uint _facetId) {
+		// console.log("_facetId is ", _facetId);
+		// console.log("diamond fId is", LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId);
 		require(_facetId == LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId || 
 				LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId == 0, "Not permitted");
 		_;

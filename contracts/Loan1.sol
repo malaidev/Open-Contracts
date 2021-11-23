@@ -7,14 +7,6 @@ import "./libraries/LibDiamond.sol";
 
 contract Loan1 is Pausable, ILoan1 {
 
-	event NewLoan(
-		address indexed _account,
-		bytes32 indexed market,
-		uint256 indexed amount,
-		bytes32 loanCommitment,
-		uint256 timestamp
-	);
-
     /// Constructor
 	constructor() {
     	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
@@ -41,7 +33,7 @@ contract Loan1 is Pausable, ILoan1 {
 	bytes32 _collateralMarket,
 	uint256 _collateralAmount
 	) external nonReentrant() {
-		uint timeStamp = LibDiamond._loanRequest(
+		LibDiamond._loanRequest(
 			_market,
 			_commitment,
 			_loanAmount,
@@ -49,8 +41,6 @@ contract Loan1 is Pausable, ILoan1 {
 			_collateralAmount,
 			msg.sender
 		);
-
-		emit NewLoan(_msgSender(), _market, _loanAmount, _commitment, timeStamp);
 	}
 
     function addCollateral(      
@@ -60,7 +50,6 @@ contract Loan1 is Pausable, ILoan1 {
 		uint256 _collateralAmount
 	) external {
 		LibDiamond._addCollateral(_market, _commitment, _collateralMarket, _collateralAmount, msg.sender);
-		// emit AddCollateral(msg.sender, id, amount, stamp);
 	}
 
 	function liquidation(address _account, uint256 _id) external nonReentrant()	authLoan1() returns (bool success) {

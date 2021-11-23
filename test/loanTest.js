@@ -11,8 +11,7 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/1_deploy_diamond.js')
-const {deployFacets} = require("../scripts/2_deploy_facets.js")
+const {deployDiamond}= require('../scripts/deploy_diamond.js')
 
 describe("===== Loan Test =====", function () {
     let diamondAddress
@@ -22,6 +21,7 @@ describe("===== Loan Test =====", function () {
     let comptroller
     let deposit
     let loan
+    let library;
     let loan1
     let bepUsdt
     let accounts
@@ -39,10 +39,10 @@ describe("===== Loan Test =====", function () {
         contractOwner = accounts[0]
         // diamondAddress = '0x1f2523fCb78c739Ed60460f9Bc9845a622771710'
         diamondAddress = await deployDiamond()
-        await deployFacets(diamondAddress)
 
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
+        library = await ethers.getContractAt('LibDiamond', diamondAddress)
 
         tokenList = await ethers.getContractAt('TokenList', diamondAddress)
         comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
@@ -84,13 +84,14 @@ describe("===== Loan Test =====", function () {
     })
 
 
-    // it("Token Mint to Deposit", async () => {
-    //     // console.log("Before deposit balance is ", await bepUsdt.balanceOf(deposit.address));
-    //     expect(await bepUsdt.balanceOf(deposit.address)).to.be.equal(0);
-    //     await expect(bepUsdt.transfer(deposit.address, 1000000000000000)).to.emit(bepUsdt, 'Transfer');
-    //     expect(await bepUsdt.balanceOf(deposit.address)).to.equal(1000000000000000);
-    //     // await bepUsdt.transfer(contractOwner.address, 10000000000000);
-    // })
+    it("Token Mint to Deposit", async () => {
+        console.log("owner balance is ", await bepUsdt.balanceOf(contractOwner.address));
+        console.log("Account1 balance is ", await bepUsdt.balanceOf(accounts[1].address));
+        // expect(await bepUsdt.balanceOf(deposit.address)).to.be.equal(0);
+        await expect(bepUsdt.transfer(accounts[1].address, 1000000000000000)).to.emit(bepUsdt, 'Transfer');
+        // expect(await bepUsdt.balanceOf(deposit.address)).to.equal(1000000000000000);
+        // await bepUsdt.transfer(contractOwner.address, 10000000000000);
+    })
 
     it("Check is market support", async () => {
         expect (await tokenList.isMarketSupported(symbolUsdt)).to.equal(true)
@@ -99,30 +100,33 @@ describe("===== Loan Test =====", function () {
     it("Check createDeposit", async () => {
         const depositAmount = 200;
 
-        await expect(deposit.connect(contractOwner).createDeposit(symbolUsdt, comit_TWOWEEKS, depositAmount, {gasLimit: 5000000}))
+        await expect(deposit.connect(contractOwner).createDeposit(symbolUsdt, comit_ONEMONTH, depositAmount, {gasLimit: 5000000}))
         .to.emit(deposit, "NewDeposit")
 
         const reserve = await deposit.avblReservesDeposit(symbolUsdt);
         console.log("Reserve amount is ", reserve)
 
-        await expect(deposit.connect(contractOwner).createDeposit(symbolUsdt, comit_TWOWEEKS, depositAmount, {gasLimit: 5000000}))
+        await expect(deposit.connect(contractOwner).createDeposit(symbolUsdt, comit_ONEMONTH, depositAmount, {gasLimit: 5000000}))
         .to.emit(deposit, "NewDeposit")
     })
 
     it("Check borrow", async () => {
-        await expect(loan1.loanRequest(symbolUsdt, comit_ONEMONTH, 53, symbolUsdt, 18))
-            .to.emit(loan1, "CollCount");
+        // await expect(deposit.connect(accounts[1]).createDeposit(symbolUsdt, comit_TWOWEEKS, 200, {gasLimit: 5000000}))
+        // .to.emit(deposit, "NewDeposit")
+
+        await expect(loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 100, symbolUsdt, 50))
+            .to.emit(library, "NewLoan");
         // await expect(loan1.loanRequest(symbolUsdt, comit_NONE, 53, symbolUsdt, 18))
         //     .to.emit(loan1, "CollCount");
     })
 
     it("Check addCollateral", async () => {
-        await expect(loan1.addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 20))
-            .to.emit(loan1, "CollCount")
+        await expect(loan1.connect(accounts[1]).addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 20))
+            .to.emit(library, "AddCollateral")
     })
 
     it("Check repayLoan", async () => {
-        await (loan.repayLoan(symbolUsdt, comit_ONEMONTH, 0));
+        await (loan.connect(accounts[1]).repayLoan(symbolUsdt, comit_ONEMONTH, 30));
 
     })
 })

@@ -21,20 +21,20 @@ contract Comptroller is Pausable, IComptroller {
 	event MarketSwapFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
 	event MaxWithdrawalUpdated(address indexed admin, uint indexed newFactor, uint indexed newBlockLimit, uint oldFactor, uint oldBlockLimit, uint timestamp);
 
-	// constructor() {
+	constructor() {
     // 	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 	// 	ds.comptroller = IComptroller(msg.sender);
-	// }
+	}
 	
 	// receive() external payable {
     // 	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 	// 	 payable(ds.adminComptrollerAddress).transfer(_msgValue());
 	// }
 	
-	// fallback() external payable {
-    // 	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-	// 	payable(ds.adminComptrollerAddress).transfer(_msgValue());
-	// }
+	fallback() external payable {
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+		payable(ds.contractOwner).transfer(_msgValue());
+	}
 	
 	function getAPR(bytes32 _commitment) external view returns (uint) {
     	return LibDiamond._getAPR(_commitment);
