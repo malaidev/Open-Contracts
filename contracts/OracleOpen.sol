@@ -1,153 +1,43 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
+pragma solidity 0.8.1;
 import "./util/Pausable.sol";
-import "./util/IBEP20.sol";
-import "./interfaces/ITokenList.sol";
-import "./interfaces/ILoan.sol";
-contract OracleOpen is Pausable {
+import "./libraries/LibDiamond.sol";
 
-    bytes32 adminOpenOracle;
-    address adminOpenOracleAddress;
-    address superAdminAddress;
-    ITokenList tokenList;
-    ILoan loan;
 
-    uint minConsensus = 2;
+contract OracleOpen is Pausable, IOracleOpen {
 
-    struct PriceData{
-        uint timestamp;
-        uint price;
-        bytes32 market;
-        uint arrivedPrices;
-        mapping(uint => uint) response;
-        mapping(address => uint) nest;
+    constructor() {
+    	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        // ds.adminOpenOracleAddress = msg.sender;
+        // ds.oracle = IOracleOpen(msg.sender);
     }
 
-    event OffChainRequest (
-        string url,
-        bytes32 market,
-        uint price
-    );
-
-    event UpdatedRequest (
-        bytes32 market,
-        uint price
-    );
-
-    mapping(bytes32 => PriceData) latestPrice;
-
-    constructor(
-        address superAdminAddr_, 
-        address tokenListAddr_,
-        address loanAddr_
-    )
-    {
-        superAdminAddress = superAdminAddr_;
-        tokenList = ITokenList(tokenListAddr_);
-        loan = ILoan(loanAddr_);
-        adminOpenOracleAddress = msg.sender;
+    function getLatestPrice(bytes32 _market) external view override returns (uint) {    
+        return LibDiamond._getLatestPrice(_market);
     }
 
-    receive() external payable {
-        payable(adminOpenOracleAddress).transfer(_msgValue());
-    }
-    
-    fallback() external payable {
-        payable(adminOpenOracleAddress).transfer(_msgValue());
-    }
-    
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) 
-        external returns(bool) 
-    {
-        IBEP20(token_).transfer(recipient_, value_);
+    function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {
+        LibDiamond._liquidation(account, loanId);
         return true;
     }
 
-    function getLatestPrice(bytes32 _market) external view returns (uint256) {
-        return latestPrice[_market].price;
-    }
-    
-    function getLatestTimestamp(bytes32 _market) external view returns (uint256) {
-        return latestPrice[_market].timestamp;
-    }
-    
-    function newPriceRequest (
-        string memory _url,
-        bytes32 _market,
-        uint _price
-    ) external {
-        PriceData storage r = latestPrice[_market];
-        r.timestamp = block.timestamp;
-        r.market = _market;
-        r.price = _price;
-
-        emit OffChainRequest (_url, _market, _price);
-    }
-
-    function updatedChainRequest (
-        bytes32 _market,
-        uint _price
-    ) external {
-        PriceData storage trackRequest = latestPrice[_market];
-
-        //Check if the token is supported. In TokenList Contract.
-        require(tokenList.isTokenSupported(trackRequest.market), "Token is not supported.");
-
-        if(trackRequest.nest[msg.sender] == 1){
-            trackRequest.nest[msg.sender] = 2;
-            
-            uint tmpI = trackRequest.arrivedPrices;
-            trackRequest.response[tmpI] = _price;
-            trackRequest.arrivedPrices = tmpI + 1;
-            
-            uint currentConsensusCount = 1;
-            
-            for(uint i = 0; i < tmpI; i++){
-                uint a = trackRequest.response[i];
-                uint b = _price;
-
-                if(a == b){
-                    currentConsensusCount++;
-                    if(currentConsensusCount >= minConsensus){
-                        trackRequest.price = _price;
-                        
-                        //Add token to TokenList Contract.
-                        tokenList.addTokenSupport(trackRequest.market, decimals_, tokenAddress_);
-
-                        emit UpdatedRequest (_market, _price);
-                    }
-                }
-            }
-        }
-    }
-
-    function liquidationTrigger(
-        address account, 
-        bytes32 market,
-        bytes32 commitment,
-        uint loanId
-    ) public
-    {
-        //Call liquidate() in Loan contract.
-        // uint price = latestPrice[market].price;
-        loan.liquidateLoan(account, market, commitment, loanId);
-    }
-
-    function pause() external onlyAdmin() nonReentrant() {
+    function pauseOracle() external override onlyAdmin() nonReentrant() {
        _pause();
 	}
 	
-	function unpause() external onlyAdmin() nonReentrant() {
+	function unpauseOracle() external override onlyAdmin() nonReentrant() {
        _unpause();   
 	}
 
+    function isPausedOracle() external view override virtual returns (bool) {
+        return _paused();
+    }
+
     modifier onlyAdmin() {
-        require(msg.sender == adminOpenOracleAddress || 
-            msg.sender == superAdminAddress,
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        require(msg.sender == ds.contractOwner, 
             "Only Oracle admin can call this function"
         );
         _;
     }
-
-
 }

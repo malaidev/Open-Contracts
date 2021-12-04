@@ -1,62 +1,80 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
+pragma solidity 0.8.1;
 
-import "./util/IBEP20.sol";
 import "./util/Pausable.sol";
+import "./libraries/LibDiamond.sol";
 
-contract Reserve is Pausable {
-    
-    IBEP20 token;
 
-    bytes32 adminReserve;
-    address adminReserveAddress;
-    address superAdminAddress;
+contract Reserve is Pausable, IReserve {
 
-    constructor(address superAdminAddr_) {
-        superAdminAddress = superAdminAddr_;
-        adminReserveAddress = msg.sender;
+    constructor() {
+    	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        // ds.adminReserveAddress = msg.sender;
+        // ds.reserve = IReserve(msg.sender);
     }
     
     receive() external payable {
-        payable(adminReserveAddress).transfer(_msgValue());
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        payable(ds.contractOwner).transfer(_msgValue());
     }
     
     fallback() external payable {
-        payable(adminReserveAddress).transfer(_msgValue());
-    }
-    
-    function transferAnyERC20(address token_,address recipient_,uint256 value_) external returns(bool) {
-        IBEP20(token_).transfer(recipient_, value_);
-        return true;
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+        payable(ds.contractOwner).transfer(_msgValue());
     }
 
     function transferAnyBEP20(
-        address token_,
-        address recipient_,
-        uint256 value_) external nonReentrant  authReserve  returns(bool)   
+        address _token,
+        address _recipient,
+        uint256 _value) external override nonReentrant returns(bool)   
     {
-        token = IBEP20(token_);
-        token.transfer(recipient_, value_);
+    	LibDiamond._transferAnyBEP20(_token, msg.sender, _recipient, _value);
+        return true;
+    }
+
+    // function marketReserves(bytes32 _market) external view returns(uint) {
+    //     _avblReserves(_market);
+    // }
+    // function _avblReserves(bytes32 _market) internal view returns(uint) {
+    //     return loan.reserves(_market) + deposit.reserves(_market);
+    // }
+
+    function avblMarketReserves(bytes32 _market) external view override returns (uint) {
+        return LibDiamond._avblMarketReserves(_market);
+    }
+
+    function marketReserves(bytes32 _market) external view override returns(uint)	{
+        return LibDiamond._marketReserves(_market);
+    }
+	
+	function marketUtilisation(bytes32 _market) external view override returns(uint)	{
+		return LibDiamond._marketUtilisation(_market);
+	}
+
+    function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override returns (bool){
+        LibDiamond._collateralTransfer(_account, _market, _commitment);
         return true;
     }
 
     modifier authReserve()  {
-        require(msg.sender == adminReserveAddress || 
-            msg.sender == superAdminAddress, 
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+
+        require(msg.sender == ds.contractOwner, 
             "Only Reverse admin can call this function"
         );
         _;
     }
 
-    function pause() external authReserve() nonReentrant() {
+    function pauseReserve() external override authReserve() nonReentrant() {
        _pause();
 	}
 	
-	function unpause() external authReserve() nonReentrant() {
+	function unpauseReserve() external override authReserve() nonReentrant() {
        _unpause();   
 	}
 
-}
+    function isPausedReserve() external view virtual override returns (bool) {
+        return _paused();
+    }
 
-//  reserver contract holds all the funds. While the comptroller is the auditor
-//  general.
+}

@@ -1,20 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.7 <0.9.0;
-
-import "../util/IBEP20.sol";
-import "./ITokenList.sol";
-import "./ILoan.sol";
-
+pragma solidity 0.8.1;
 interface IOracleOpen {
-    function getLatestPrice(bytes32 _market) external view returns (uint256);
-    function getLatestTimestamp(bytes32 _market) external view returns (uint256);
-    function newPriceRequest (
-        string memory _url,
-        bytes32 _market,
-        uint _price
-    ) external;
-    function updatedChainRequest (
-        bytes32 _market,
-        uint _price
-    ) external
+    function getLatestPrice(bytes32 _market) external returns (uint);
+    function liquidationTrigger(address account, uint loanId) external returns (bool);
+    function pauseOracle() external;
+    function unpauseOracle() external;
+    function isPausedOracle() external view returns (bool);
 }
