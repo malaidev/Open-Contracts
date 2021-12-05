@@ -5,5 +5,6 @@
 
 ### About Open
 
-DeFi lending today requires a borrower to provide collateral in excess of 42% to that of the actual loan. This diminishes the usecase of decentralised lending. Open protocol's proposed solution facilitates loan upto 3 times the collateral. Hashstack's Open protocol is the only practical application of under-collateralised lending in DeFi.
+DeFi lending today requires a borrower to provide collateral in excess of 42% to that of the actual loan. This diminishes the usecase of decentralised lending. 
+Hashstack's proposed solution, Open protocol facilitates loan upto 3 times the collateral. **A 4.5x efficiency** over the present solutions. Open protocol is the only practical application of under-collateralised lending in DeFi.
 
