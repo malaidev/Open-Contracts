@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.9;
+pragma solidity 0.8.1;
 pragma experimental ABIEncoderV2;
 
 import "../util/Address.sol";
@@ -17,9 +17,7 @@ import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IAugustusSwapper.sol";
 
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
-
 import "hardhat/console.sol";
-
 
 library LibDiamond {
     using Address for address;
@@ -27,13 +25,13 @@ library LibDiamond {
     bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.hashstack.diamond.storage");
 	uint8 constant TOKENLIST_ID = 10;
 	uint8 constant COMPTROLLER_ID = 11;
-	uint8 constant LIQUIDATOR_ID = 12;
+	// uint8 constant LIQUIDATOR_ID = 12;
 	uint8 constant RESERVE_ID = 13;
-	uint8 constant ORACLEOPEN_ID = 14;
+	// uint8 constant ORACLEOPEN_ID = 14;
 	uint8 constant LOAN_ID = 15;
 	uint8 constant LOAN1_ID = 16;
 	uint8 constant DEPOSIT_ID = 17; 
-	uint8 constant ACCESSREGISTRY_ID = 18; 
+	uint8 constant ACCESSREGISTRY_ID = 18;
 
     struct FacetAddressAndSelectorPosition {
         address facetAddress;
@@ -130,6 +128,7 @@ library LibDiamond {
 		bool isTimelockActivated; // timelock duration
 		uint256 activationTime; // blocknumber when yield withdrawal request was placed.
 	}
+
 	struct CollateralYield {
 		uint256 id;
 		bytes32 market;
@@ -138,7 +137,8 @@ library LibDiamond {
 		uint256 oldTime; // last recorded block num
 		uint256 accruedYield; // accruedYield in
 	}
-	// DeductibleInterest{} stores the amount_ of interest deducted.
+
+	// DeductibleInterest stores the amount_ of interest deducted.
 	struct DeductibleInterest {
 		uint256 id; // Id of the loan the interest is being deducted for.
 		bytes32 market; // market_ this yield is calculated for
@@ -166,22 +166,9 @@ library LibDiamond {
         mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner;
-
 		address[] facetAddresses;
 		// address reserveAddress;
-
-    // =========== interface variables ===========
-        // ITokenList tokenList;
-        // IAugustusSwapper simpleSwap;
-        // IComptroller comptroller;
-        // ILiquidator liquidator;
-        // IDeposit deposit;
-        // ILoan loan;
-		// ILoan1 loan1;
-        // IReserve reserve;
-        // IOracleOpen oracle;
         IBEP20 token;
-        // IAccessRegistry accessRegistry;
 
     // ===========  admin addresses ===========
         bytes32 superAdmin;
@@ -226,20 +213,18 @@ library LibDiamond {
     // =========== Deposit state variables ===========
         // bytes32 adminDeposit;
         // address adminDepositAddress;
-        // address reserveAddress;
 
         mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
         mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address =>_market => _commitment => depositRecord
         mapping(address => mapping(bytes32 => mapping(bytes32 => YieldLedger))) indYieldRecord; // address =>_market => _commitment => depositRecord
 
-        ///  Balance monitoring  - Deposits
+        //  Balance monitoring  - Deposits
         mapping(bytes32 => uint) marketReservesDeposit; // mapping(market => marketBalance)
         mapping(bytes32 => uint) marketUtilisationDeposit; // mapping(market => marketBalance)
 
     // =========== OracleOpen state variables ==============
         // bytes32 adminOpenOracle;
         // address adminOpenOracleAddress;
-		// AggregatorV3Interface priceFeed;
 		mapping(bytes32 => address) pairAddresses;
 
     // =========== Loan state variables ============
@@ -253,7 +238,7 @@ library LibDiamond {
 
         ILoan.STATE state;
 
-        /// STRUCT Mapping
+        // STRUCT Mapping
         mapping(address => LoanAccount) loanPassbook;
         mapping(address => mapping(bytes32 => mapping(bytes32 => LoanRecords))) indLoanRecords;
         mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralRecords))) indCollateralRecords;
@@ -261,7 +246,7 @@ library LibDiamond {
         mapping(address => mapping(bytes32 => mapping(bytes32 => CollateralYield))) indAccruedAPY;
         mapping(address => mapping(bytes32 => mapping(bytes32 => LoanState))) indLoanState;
 
-        ///  Balance monitoring  - Loan
+        //  Balance monitoring  - Loan
         mapping(bytes32 => uint) marketReservesLoan; // mapping(market => marketBalance)
         mapping(bytes32 => uint) marketUtilisationLoan; // mapping(market => marketBalance)
 
@@ -277,10 +262,32 @@ library LibDiamond {
 	
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-	event TestEvent(uint val);
+// =========== TokenList events ==============
+	event MarketSupportAdded(bytes32 indexed _market,uint256 _decimals,address indexed MarketAddress_,uint256 indexed _timestamp);
+	event MarketSupportUpdated(bytes32 indexed _market,uint256 _decimals,address indexed MarketAddress_,uint256 indexed _timestamp);
+	event MarketSupportRemoved(bytes32 indexed _market, uint256 indexed _timestamp);
+	event Market2Added(
+		bytes32 indexed _market,
+		uint256 _decimals,
+		address indexed MarketAddress_,
+		uint256 indexed _timestamp
+	);
+  	event Market2Updated(
+		bytes32 indexed _market,
+      	uint256 _decimals,
+      	address indexed tokenAddress_,
+      	uint256 indexed _timestamp
+  	);
+  	event Market2Removed(bytes32 indexed _market, uint256 indexed _timestamp);
+
+// =========== Comptroller events ================
 
 // =========== Deposit events ===========
-
+	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
+	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
+	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
+	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
+	
 // =========== Loan events ===============
 	/// EVENTS
 	event NewLoan(
@@ -332,6 +339,8 @@ library LibDiamond {
 		uint256 time
 	);
 
+// =========== Liquidator events ===============
+
 // =========== AccessRegistry events ===============
     event AdminRoleDataGranted(
         bytes32 indexed role,
@@ -375,6 +384,7 @@ library LibDiamond {
         ds.pMarkets.push(_market);
         ds.tokenSupportCheck[_market] = true;
         ds.marketIndex[_market] = ds.pMarkets.length-1;
+	    emit MarketSupportAdded(_market,_decimals,tokenAddress_,block.timestamp);
     }
 
     function _removeMarketSupport(bytes32 _market) internal authContract(TOKENLIST_ID) {
@@ -393,6 +403,8 @@ library LibDiamond {
         }
         ds.pMarkets.pop();
         delete ds.marketIndex[_market];
+
+    	emit MarketSupportRemoved(_market, block.timestamp);
     }
 
     function _updateMarketSupport(
@@ -410,6 +422,7 @@ library LibDiamond {
         marketData.decimals = _decimals;
 
         ds.tokenSupportCheck[_market] = true;
+	    emit MarketSupportUpdated(_market,_decimals,tokenAddress_,block.timestamp);
     }
 
 	function _getMarketAddress(bytes32 _market) internal view returns (address) {
@@ -454,6 +467,7 @@ library LibDiamond {
         ds.sMarkets.push(_market);
         ds.token2SupportCheck[_market] = true;
         ds.market2Index[_market] = ds.sMarkets.length-1;
+	    emit Market2Added(_market,_decimals,tokenAddress_,block.timestamp);
     }
 
     function _removeMarket2Support(bytes32 _market) internal authContract(TOKENLIST_ID) {
@@ -471,6 +485,7 @@ library LibDiamond {
         }
         ds.sMarkets.pop();
         delete ds.market2Index[_market];
+	    emit Market2Removed(_market, block.timestamp);
     }
 
     function _updateMarket2Support(
@@ -486,6 +501,7 @@ library LibDiamond {
         marketData.decimals = _decimals;
 
         ds.token2SupportCheck[_market] = true;
+	    emit Market2Updated(_market,_decimals,tokenAddress_,block.timestamp);
     }
 
 	function _getMarket2Decimal(bytes32 _market) internal view returns (uint) {
@@ -497,8 +513,8 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage(); 
         MarketData memory marketData = ds.indMarketData[_market];
 		addr = marketData.tokenAddress;
-		// amount_ *= marketData.decimals;
     }
+	
 // =========== Comptroller Functions ===========
 
 	function _getAPR(bytes32 _commitment) internal view returns (uint) {
@@ -561,7 +577,7 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage(); 
 		APY storage apyUpdate = ds.indAPYRecords[_commitment];
 
-		if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
+		// if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
 
 		apyUpdate.commitment = _commitment;
 		apyUpdate.time.push(block.timestamp);
@@ -590,6 +606,10 @@ library LibDiamond {
 		LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 		
 		LibDiamond.APR storage apr = ds.indAPRRecords[_commitment];
+
+		console.log("calcAPR oldLengthAcc is ", oldLengthAccruedInterest);
+
+		require(oldLengthAccruedInterest > 0, "oldLengthAccruedInterest is 0");
 
 		uint256 index = oldLengthAccruedInterest - 1;
 		uint256 time = oldTime;
@@ -676,9 +696,14 @@ library LibDiamond {
     function _swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256 receivedAmount) {
         address addrFromMarket;
         address addrToMarket;
+		console.log("MarketAddresses");
+		console.log(_getMarketAddress(0x555344542e740000000000000000000000000000000000000000000000000000));
+		console.log(_getMarketAddress(0x555344432e740000000000000000000000000000000000000000000000000000));
+		console.log(_getMarketAddress(0x4254432e74000000000000000000000000000000000000000000000000000000));
+
         if(_mode == 0){
             addrFromMarket = _getMarketAddress(_fromMarket);
-            addrToMarket = _getMarket2Address(_fromMarket);
+            addrToMarket = _getMarket2Address(_toMarket);
         } else if(_mode == 1) {
             addrFromMarket = _getMarket2Address(_fromMarket);
             addrToMarket = _getMarketAddress(_toMarket);
@@ -686,26 +711,20 @@ library LibDiamond {
             addrFromMarket = _getMarketAddress(_toMarket);
             addrToMarket = _getMarketAddress(_fromMarket);
         }
-
-        address[] memory callees;
-        uint256[] memory startIndexes;
-        uint256[] memory values;
-        bytes memory exchangeData;
-        address payable beneficiary;
-        receivedAmount =  IAugustusSwapper(0xDEF171Fe48CF0115B1d80b88dc8eAB59176FEe57).simpleSwap(
-            addrFromMarket,
-            addrToMarket,
-            _fromAmount,
-            0,
-            0,
-            callees,
-            exchangeData,
-            startIndexes,
-            values,
-            beneficiary,
-            string(""),
-            false
-        );
+		address[] memory callee = new address[](2);
+		callee[0] = addrFromMarket;
+		callee[1] = addrToMarket;
+		console.log("_swap mode is ", _mode);
+		console.log("fromAmount is ", _fromAmount);
+		console.log("calle is ", callee[0]);
+		console.log(callee[1]);
+		IBEP20(addrFromMarket).approve(0xDb28dc14E5Eb60559844F6f900d23Dce35FcaE33, _fromAmount);
+		receivedAmount = IAugustusSwapper(0x3D0Fc2b7A17d61915bcCA984B9eAA087C5486d18).swapOnUniswap(
+			_fromAmount, 1,
+			callee,
+			1
+		);
+		return receivedAmount;
     }
 
 // =========== Deposit Functions ===========
@@ -758,7 +777,7 @@ library LibDiamond {
 		ds.token.transferFrom(ds.contractOwner, _account, _amount);
 
 		_updateReservesDeposit(_market, _amount, 1);
-
+		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);
 	}
 
     function _accruedYield(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
@@ -1007,6 +1026,18 @@ library LibDiamond {
 		savingsAccount.deposits.push(deposit);
 		savingsAccount.yield.push(yield);
 		_updateReservesDeposit(_market, _amount, 0);
+		emit NewDeposit(_sender, _market, _commitment, _amount);
+	}
+
+	function _addToDeposit(address _sender, bytes32 _market, bytes32 _commitment, uint _amount) internal authContract(DEPOSIT_ID) {
+		if (!_hasDeposit(_sender, _market, _commitment))	{
+			_createNewDeposit(_market, _commitment, _amount, _sender);
+		} 
+		
+		_processDeposit(_sender, _market, _commitment, _amount);
+		_updateReservesDeposit(_market, _amount, 0);
+
+		emit DepositAdded(_sender, _market, _commitment, _amount);
 	}
 
     function _ensureSavingsAccount(address _account, SavingsAccount storage savingsAccount) private {
@@ -1041,6 +1072,7 @@ library LibDiamond {
 		savingsAccount.deposits[deposit.id -1].amount += _amount;
 		savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
 		savingsAccount.yield[deposit.id-1].accruedYield = 0;
+		emit YieldDeposited(_account, _market, _commitment, _amount);
 	}
 
 // =========== Loan Functions ===========
@@ -1120,7 +1152,7 @@ library LibDiamond {
         success = true;
 	}
 
-    function _withdrawCollateral(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) returns (bool success) {
+    function _withdrawCollateral(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
         DiamondStorage storage ds = diamondStorage(); 
         LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
@@ -1143,7 +1175,6 @@ library LibDiamond {
         _updateReservesLoan(collateral.market, collateral.amount, 1);
 
 		emit CollateralReleased(_account, collateral.amount, collateral.market, block.timestamp);
-		success = true;
 	}
 
 	function _collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) internal view {
@@ -1232,6 +1263,10 @@ library LibDiamond {
 		uint256 deductibleUSDValue;
 		uint256 oldLengthAccruedInterest;
 		uint256 oldTime;
+
+		console.log("loanRequest", (_account));
+		console.log("loanRequest", toHex(_loanMarket));
+		console.log("loanRequest", toHex(_commitment));
 
 		(oldLengthAccruedInterest, oldTime) = _calcAPR(
 			ds.indLoanRecords[_account][_loanMarket][_commitment].commitment, 
@@ -1397,6 +1432,9 @@ library LibDiamond {
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_market][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
 
+		console.log("loanRequest", (_account));
+		console.log("loanRequest", toHex(_market));
+		console.log("loanRequest", toHex(_commitment));
 		// if (loanAccount.loans.length == 0) {
 		// 	id = 1;
 		// } else if (loanAccount.loans.length != 0) {
@@ -1425,7 +1463,7 @@ library LibDiamond {
 		loanState.currentMarket = _market;
 		loanState.currentAmount = _loanAmount;
 		loanState.state = ILoan.STATE.ACTIVE;
-					
+
 		collateral.id= loanAccount.loans.length + 1;
 		collateral.market= _collateralMarket;
 		collateral.commitment= _commitment;
@@ -1433,6 +1471,7 @@ library LibDiamond {
 
 		loanAccount.loans.push(loan);
 		loanAccount.loanState.push(loanState);
+		deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
 
 		if (_commitment == _getCommitment(0)) {
 			
@@ -1442,7 +1481,7 @@ library LibDiamond {
 			collateral.activationTime = 0;
 
 			// pays 18% APR
-			deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
+			// deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
 
 			loanAccount.collaterals.push(collateral);
 			loanAccount.accruedAPR.push(deductibleInterest);
@@ -1456,12 +1495,14 @@ library LibDiamond {
 			collateral.activationTime = 0;
 
 			// 15% APR
-			deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
+			// deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
 			
 			cYield.id = loanAccount.loans.length + 1;
 			cYield.market = _collateralMarket;
 			cYield.commitment = _getCommitment(1);
 			cYield.oldLengthAccruedYield = _getApyTimeLength(_commitment);
+			console.log("getAprTimeLength is ", deductibleInterest.oldLengthAccruedInterest );
+			console.log("getApyTimeLength is ", cYield.oldLengthAccruedYield );
 			cYield.oldTime = block.timestamp;
 			cYield.accruedYield =0;
 
@@ -1571,7 +1612,7 @@ library LibDiamond {
         bytes32 _market,
 		bytes32 _commitment,
 		bytes32 _swapMarket
-    ) internal authContract(LOAN_ID) returns (bool success) {
+    ) internal authContract(LOAN_ID) {
         DiamondStorage storage ds = diamondStorage(); 
         _hasLoanAccount(_sender);
 		
@@ -1608,9 +1649,10 @@ library LibDiamond {
 		_accruedInterest(_sender, _market, _commitment);
 		if (collateral.isCollateralisedDeposit) _accruedYield(loanAccount, collateral, cYield);
 
-		emit MarketSwapped(_sender,loan.id,_market,_swapMarket,block.timestamp);
-		return success;
+		emit MarketSwapped(_sender,loan.id,_market,_swapMarket, block.timestamp);
     }
+
+	
 
     function _loanRequest(
         bytes32 _market,
@@ -1623,7 +1665,7 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage(); 
         _preLoanRequestProcess(_market,_loanAmount,_collateralMarket,_collateralAmount);
 
-		LoanAccount storage loanAccount = ds.loanPassbook[_sender];
+		// LoanAccount storage loanAccount = ds.loanPassbook[_sender];
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 
 		require(loan.id == 0, "ERROR: Active loan");
@@ -1637,7 +1679,7 @@ library LibDiamond {
 		emit NewLoan(_sender, _market, _loanAmount, _commitment, block.timestamp);
     }
 
-    function _repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount, address _sender) internal authContract(LOAN_ID) returns (bool success) {
+    function _repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount, address _sender) internal authContract(LOAN_ID) {
         // DiamondStorage storage ds = diamondStorage(); 
         _hasLoanAccount(_sender);
 		// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
@@ -1770,7 +1812,6 @@ library LibDiamond {
 		}
 		
 		_updateUtilisationLoan(diamondStorage().indLoanRecords[_sender][_market][_commitment].market, diamondStorage().indLoanRecords[_sender][_market][_commitment].amount, 1);
-		success = true;
     }
 
     function _hasLoanAccount(address _account) internal view returns (bool) {
@@ -1796,13 +1837,13 @@ library LibDiamond {
 		success = true;
     }
 
-    function _liquidation(address _account, uint256 _id) internal authContract(LOAN1_ID) returns (bool success) {
+    function _liquidation(address _account, uint256 _id) internal authContract(LOAN1_ID){
         DiamondStorage storage ds = diamondStorage(); 
         bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
 		bytes32 _market = ds.loanPassbook[_account].loans[_id-1].market;
 
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
+		// LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_market][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
@@ -1845,8 +1886,9 @@ library LibDiamond {
 		emit LoanRepaid(_account, _id, loan.market, block.timestamp);
 		emit Liquidation(_account,_market, _commitment, loan.amount, block.timestamp);
 		
-		return success;
     }
+
+
 
 // =========== Reserve Functions =====================
 	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(RESERVE_ID) {
@@ -1880,12 +1922,15 @@ library LibDiamond {
 		return _utilisedReservesDeposit(_market) + _utilisedReservesLoan(_market);
 	}
 
-
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-        DiamondStorage storage ds = diamondStorage();
-		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-        return uint256(price);
+		// For test
+		if(_market == 0x4254432e74000000000000000000000000000000000000000000000000000000)
+			return 57635;
+		return 1;
+        // DiamondStorage storage ds = diamondStorage();
+		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+        // return uint256(price);
 	}
 
 // =========== AccessRegistry Functions =================
@@ -1939,9 +1984,9 @@ library LibDiamond {
 		_addAdminRole(keccak256("AccessRegistry.admin"), _newOwner);
         emit OwnershipTransferred(previousOwner, _newOwner);
 
-		ds.pairAddresses[0x555344542e740000000000000000000000000000000000000000000000000000] = 0x9A37E1abFC430B9f5E204CA9294809c1AF37F697; // USDT
-		ds.pairAddresses[0x555344432e740000000000000000000000000000000000000000000000000000] = 0x6F2bD4158F771E120d3692C45Eb482C16f067dec; // USDC
-		ds.pairAddresses[0x4254432e74000000000000000000000000000000000000000000000000000000] = 0xEF637736B220a58C661bfF4b71e03ca898DCC0Bd; // USDC
+		// ds.pairAddresses[0x555344542e740000000000000000000000000000000000000000000000000000] = 0x9A37E1abFC430B9f5E204CA9294809c1AF37F697; // USDT.t ~ decimal 8, not 18
+		// ds.pairAddresses[0x555344432e740000000000000000000000000000000000000000000000000000] = 0x6F2bD4158F771E120d3692C45Eb482C16f067dec; // USDC.t ~ decimal 8, not 18
+		// ds.pairAddresses[0x4254432e74000000000000000000000000000000000000000000000000000000] = 0xEF637736B220a58C661bfF4b71e03ca898DCC0Bd; // BTC.t
 
     }
 
@@ -2060,6 +2105,26 @@ library LibDiamond {
         }
     }
 
+	function toHex16 (bytes16 data) internal pure returns (bytes32 result) {
+		result = bytes32 (data) & 0xFFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000000 |
+			(bytes32 (data) & 0x0000000000000000FFFFFFFFFFFFFFFF00000000000000000000000000000000) >> 64;
+		result = result & 0xFFFFFFFF000000000000000000000000FFFFFFFF000000000000000000000000 |
+			(result & 0x00000000FFFFFFFF000000000000000000000000FFFFFFFF0000000000000000) >> 32;
+		result = result & 0xFFFF000000000000FFFF000000000000FFFF000000000000FFFF000000000000 |
+			(result & 0x0000FFFF000000000000FFFF000000000000FFFF000000000000FFFF00000000) >> 16;
+		result = result & 0xFF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000 |
+			(result & 0x00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000) >> 8;
+		result = (result & 0xF000F000F000F000F000F000F000F000F000F000F000F000F000F000F000F000) >> 4 |
+			(result & 0x0F000F000F000F000F000F000F000F000F000F000F000F000F000F000F000F00) >> 8;
+		result = bytes32 (0x3030303030303030303030303030303030303030303030303030303030303030 +
+			uint256 (result) +
+			(uint256 (result) + 0x0606060606060606060606060606060606060606060606060606060606060606 >> 4 &
+			0x0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F) * 7);
+	}
+
+	function toHex (bytes32 data) public pure returns (string memory) {
+		return string (abi.encodePacked ("0x", toHex16 (bytes16 (data)), toHex16 (bytes16 (data << 128))));
+	}
     function enforceHasContractCode(address _contract, string memory _errorMessage) internal view {
         uint256 contractSize;
         assembly {
@@ -2067,10 +2132,6 @@ library LibDiamond {
         }
         require(contractSize > 0, _errorMessage);
     }
-
-	function _testFunc() internal {
-		emit TestEvent(333);
-	}
 
 	modifier authContract(uint _facetId) {
 		// console.log("_facetId is ", _facetId);

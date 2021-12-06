@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.1;
 
 import "./util/Pausable.sol";
 import "./libraries/LibDiamond.sol";
 
+
 contract Loan is Pausable, ILoan {
 	
-	/// Constructor
 	constructor() {
     	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 		// ds.adminLoanAddress = msg.sender;
@@ -30,8 +30,9 @@ contract Loan is Pausable, ILoan {
 		bytes32 _market,
 		bytes32 _commitment,
 		bytes32 _swapMarket
-	) external nonReentrant() returns (bool success) {
-		return LibDiamond._swapLoan(msg.sender, _market, _commitment, _swapMarket);
+	) external override nonReentrant() returns (bool) {
+		LibDiamond._swapLoan(msg.sender, _market, _commitment, _swapMarket);
+		return true;
 	}
 
 /// SwapToLoan
@@ -39,37 +40,35 @@ contract Loan is Pausable, ILoan {
 		bytes32 _swapMarket,
 		bytes32 _commitment,
 		bytes32 _market
-	) external nonReentrant() returns (bool success) {
+	) external override nonReentrant() returns (bool) {
 		uint256 _swappedAmount;
 		LibDiamond._swapToLoan(msg.sender, _swapMarket,_commitment, _market, _swappedAmount);
-		return success;
+		return true;
 	}
 
-	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external returns (bool success) {
-		return LibDiamond._withdrawCollateral(msg.sender, _market, _commitment);
+	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
+		LibDiamond._withdrawCollateral(msg.sender, _market, _commitment);
+		return true;
 	}
 
-	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view{
+	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view override returns (bool) {
     	LibDiamond._collateralPointer(_account, _market, _commitment, collateralMarket, collateralAmount);
+		return true;
 	}
 
-	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external  returns (bool success) {
-		return LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
+	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external override returns (bool success) {
+		LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
+		return true;
 	}
-
-	function testFunc() external {
-		LibDiamond._testFunc();
-	}
-
-	function pauseLoan() external authLoan() nonReentrant() {
+	function pauseLoan() external override authLoan() nonReentrant() {
 		_pause();
 	}
 	
-	function unpauseLoan() external authLoan() nonReentrant() {
+	function unpauseLoan() external override authLoan() nonReentrant() {
 		_unpause();   
 	}
 
-	function isPausedLoan() external view virtual returns (bool) {
+	function isPausedLoan() external view virtual override returns (bool) {
 		return _paused();
 	}
 

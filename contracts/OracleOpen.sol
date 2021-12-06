@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.1;
 import "./util/Pausable.sol";
 import "./libraries/LibDiamond.sol";
-import "hardhat/console.sol";
 
 
 contract OracleOpen is Pausable, IOracleOpen {
@@ -13,27 +12,24 @@ contract OracleOpen is Pausable, IOracleOpen {
         // ds.oracle = IOracleOpen(msg.sender);
     }
 
-    function getLatestPrice(bytes32 _market) external view returns (uint) {    
+    function getLatestPrice(bytes32 _market) external view override returns (uint) {    
         return LibDiamond._getLatestPrice(_market);
     }
 
-    function liquidationTrigger(
-        address account, 
-        uint loanId
-    ) external onlyAdmin() nonReentrant()
-    {
+    function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {
         LibDiamond._liquidation(account, loanId);
+        return true;
     }
 
-    function pauseOracle() external onlyAdmin() nonReentrant() {
+    function pauseOracle() external override onlyAdmin() nonReentrant() {
        _pause();
 	}
 	
-	function unpauseOracle() external onlyAdmin() nonReentrant() {
+	function unpauseOracle() external override onlyAdmin() nonReentrant() {
        _unpause();   
 	}
 
-    function isPausedOracle() external view virtual returns (bool) {
+    function isPausedOracle() external view override virtual returns (bool) {
         return _paused();
     }
 

@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.1;
 
 import "./util/Pausable.sol";
 import "./libraries/LibDiamond.sol";
+
 
 contract Reserve is Pausable, IReserve {
 
@@ -25,7 +26,7 @@ contract Reserve is Pausable, IReserve {
     function transferAnyBEP20(
         address _token,
         address _recipient,
-        uint256 _value) external nonReentrant returns(bool)   
+        uint256 _value) external override nonReentrant returns(bool)   
     {
     	LibDiamond._transferAnyBEP20(_token, msg.sender, _recipient, _value);
         return true;
@@ -38,21 +39,21 @@ contract Reserve is Pausable, IReserve {
     //     return loan.reserves(_market) + deposit.reserves(_market);
     // }
 
-    function avblMarketReserves(bytes32 _market) external view returns (uint) {
+    function avblMarketReserves(bytes32 _market) external view override returns (uint) {
         return LibDiamond._avblMarketReserves(_market);
     }
 
-    function marketReserves(bytes32 _market) external view returns(uint)	{
+    function marketReserves(bytes32 _market) external view override returns(uint)	{
         return LibDiamond._marketReserves(_market);
     }
-
 	
-	function marketUtilisation(bytes32 _market) external view returns(uint)	{
+	function marketUtilisation(bytes32 _market) external view override returns(uint)	{
 		return LibDiamond._marketUtilisation(_market);
 	}
 
-    function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external {
+    function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override returns (bool){
         LibDiamond._collateralTransfer(_account, _market, _commitment);
+        return true;
     }
 
     modifier authReserve()  {
@@ -64,15 +65,15 @@ contract Reserve is Pausable, IReserve {
         _;
     }
 
-    function pauseReserve() external authReserve() nonReentrant() {
+    function pauseReserve() external override authReserve() nonReentrant() {
        _pause();
 	}
 	
-	function unpauseReserve() external authReserve() nonReentrant() {
+	function unpauseReserve() external override authReserve() nonReentrant() {
        _unpause();   
 	}
 
-    function isPausedReserve() external view virtual returns (bool) {
+    function isPausedReserve() external view virtual override returns (bool) {
         return _paused();
     }
 

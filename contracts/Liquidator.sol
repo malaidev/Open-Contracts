@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.1;
 import "./util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "./libraries/LibDiamond.sol";
+
 
 contract Liquidator is Pausable, ILiquidator {
   
@@ -23,21 +24,20 @@ contract Liquidator is Pausable, ILiquidator {
     //     payable(ds.adminLiquidatorAddress).transfer(_msgValue());
     // }
     
-    function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) external returns (uint256 receivedAmount) {
-
+    function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) external override returns (uint256 receivedAmount) {
         require(_fromMarket != _toMarket, "FromToken can't be the same as ToToken.");
         receivedAmount = LibDiamond._swap(_fromMarket, _toMarket, _fromAmount, _mode);
     }
 
-    function pauseLiquidator() external authLiquidator() nonReentrant() {
+    function pauseLiquidator() external override authLiquidator() nonReentrant() {
        _pause();
 	}
 	
-	function unpauseLiquidator() external authLiquidator() nonReentrant() {
+	function unpauseLiquidator() external override authLiquidator() nonReentrant() {
        _unpause();   
 	}
 
-    function isPausedLiquidator() external view virtual returns (bool) {
+    function isPausedLiquidator() external view override virtual returns (bool) {
         return _paused();
     }
 

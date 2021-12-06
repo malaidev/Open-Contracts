@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.1;
 interface IMockBep20 {
   
   event Transfer(address indexed from, address indexed to, uint256 value);

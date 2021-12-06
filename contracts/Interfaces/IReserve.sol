@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.1;
 
 // import "../util/IBEP20.sol";
 
@@ -8,7 +8,7 @@ interface IReserve {
     function avblMarketReserves(bytes32 _market) external view returns (uint);
     function marketReserves(bytes32 _market) external view returns(uint);
     function marketUtilisation(bytes32 _market) external view returns(uint);
-    function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external;
+    function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external returns (bool);
     function pauseReserve() external;
     function unpauseReserve() external;
     function isPausedReserve() external view returns (bool);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.1;
 import "../util/IBEP20.sol";
 import "../util/Context.sol";
 
@@ -219,7 +219,7 @@ contract tBTC  is Context, IBEP20 {
    * - `recipient` cannot be the zero address.
    * - the caller must have a balance of at least `amount`.
    */
-  function transfer(address recipient, uint256 amount) external returns (bool) {
+  function transfer(address recipient, uint256 amount) external override returns (bool) {
     _transfer(_msgSender(), recipient, amount);
     return true;
   }
@@ -227,7 +227,7 @@ contract tBTC  is Context, IBEP20 {
   /**
    * @dev See {Bitcoin-allowance}.
    */
-  function allowance(address owner, address spender) external view returns (uint256) {
+  function allowance(address owner, address spender) external view override returns (uint256) {
     return _allowances[owner][spender];
   }
 
@@ -238,13 +238,13 @@ contract tBTC  is Context, IBEP20 {
    *
    * - `spender` cannot be the zero address.
    */
-  function approve(address spender, uint256 amount) external returns (bool) {
+  function approve(address spender, uint256 amount) external override returns (bool) {
     _approve(_msgSender(), spender, amount);
     return true;
   }
 
   
-  function approveFrom(address sender, address spender, uint256 amount) external returns (bool) {
+  function approveFrom(address sender, address spender, uint256 amount) external override returns (bool) {
     _approve(sender, spender, amount);
     return true;
   }
@@ -261,7 +261,7 @@ contract tBTC  is Context, IBEP20 {
    * - the caller must have allowance for `sender`'s tokens of at least
    * `amount`.
    */
-  function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) {
+  function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
     _transfer(sender, recipient, amount);
     _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "Bitcoin: transfer amount exceeds allowance"));
     return true;
@@ -279,7 +279,7 @@ contract tBTC  is Context, IBEP20 {
    *
    * - `spender` cannot be the zero address.
    */
-  function increaseAllowance(address spender, uint256 addedValue) public returns (bool) {
+  function increaseAllowance(address spender, uint256 addedValue) public override returns (bool) {
     _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
     return true;
   }
@@ -298,7 +298,7 @@ contract tBTC  is Context, IBEP20 {
    * - `spender` must have allowance for the caller of at least
    * `subtractedValue`.
    */
-  function decreaseAllowance(address spender, uint256 subtractedValue) public returns (bool) {
+  function decreaseAllowance(address spender, uint256 subtractedValue) public override returns (bool) {
     _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "Bitcoin: decreased allowance below zero"));
     return true;
   }
@@ -316,7 +316,7 @@ contract tBTC  is Context, IBEP20 {
     return true;
   }
 
-  function pauseState() external view returns(string memory) {
+  function pauseState() external view override returns(string memory) {
     return "Hey, Not sure";
   }
 

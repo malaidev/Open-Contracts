@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.9 <0.9.0;
+pragma solidity 0.8.1;
 import "./util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "./libraries/LibDiamond.sol";
@@ -21,11 +21,11 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         payable(ds.contractOwner).transfer(_msgValue());
     }
 
-    function hasRole(bytes32 role, address account) external view returns (bool) {
+    function hasRole(bytes32 role, address account) external view override returns (bool) {
         return LibDiamond._hasRole(role, account);
     }
 
-    function addRole(bytes32 role, address account) external onlyAdmin {
+    function addRole(bytes32 role, address account) external override onlyAdmin {
 
         require(
             !LibDiamond._hasRole(role, account),
@@ -34,13 +34,13 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         LibDiamond._addRole(role, account);
     }
 
-    function removeRole(bytes32 role, address account) external onlyAdmin {
+    function removeRole(bytes32 role, address account) external override onlyAdmin {
         require(LibDiamond._hasRole(role, account), "Role does not exist.");
 
         LibDiamond._revokeRole(role, account);
     }
 
-    function renounceRole(bytes32 role, address account) external nonReentrant() {
+    function renounceRole(bytes32 role, address account) external override nonReentrant() {
         require(LibDiamond._hasRole(role, account), "Role does not exist.");
         require(_msgSender() == account, "Inadequate permissions");
 
@@ -51,7 +51,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         bytes32 role,
         address oldAccount,
         address newAccount
-    ) external nonReentrant() {
+    ) external override nonReentrant() {
         require(
             LibDiamond._hasRole(role, oldAccount) && _msgSender() == oldAccount,
             "Role does not exist."
@@ -64,12 +64,13 @@ contract AccessRegistry is Pausable, IAccessRegistry {
     function hasAdminRole(bytes32 role, address account)
         external
         view
+        override 
         returns (bool)
     {
         return LibDiamond._hasAdminRole(role, account);
     }
 
-    function addAdminRole(bytes32 role, address account) external onlyAdmin {
+    function addAdminRole(bytes32 role, address account) external override onlyAdmin {
         require(
             !LibDiamond._hasAdminRole(role, account),
             "Role already exists. Please create a different role"
@@ -77,7 +78,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         LibDiamond._addAdminRole(role, account);
     }
 
-    function removeAdminRole(bytes32 role, address account) external onlyAdmin {
+    function removeAdminRole(bytes32 role, address account) external override onlyAdmin {
         require(LibDiamond._hasAdminRole(role, account), "Role does not exist.");
         LibDiamond._revokeAdmin(role, account);
     }
@@ -86,7 +87,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         bytes32 role,
         address oldAccount,
         address newAccount 
-    ) external onlyAdmin
+    ) external override onlyAdmin
     {
         require(
             LibDiamond._hasAdminRole(role, oldAccount),
@@ -97,7 +98,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         LibDiamond._addAdminRole(role, newAccount);
     }
 
-    function adminRoleRenounce(bytes32 role, address account) external onlyAdmin {
+    function adminRoleRenounce(bytes32 role, address account) external override onlyAdmin {
         require(LibDiamond._hasAdminRole(role, account), "Role does not exist.");
         require(_msgSender() == account, "Inadequate permissions");
 
@@ -111,15 +112,15 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         _;
     }
 
-    function pauseAccessRegistry() external onlyAdmin() nonReentrant() {
+    function pauseAccessRegistry() external override onlyAdmin() nonReentrant() {
        _pause();
 	}
 	
-	function unpauseAccessRegistry() external onlyAdmin() nonReentrant() {
+	function unpauseAccessRegistry() external override onlyAdmin() nonReentrant() {
        _unpause();   
 	}
 
-    function isPausedAccessRegistry() external view virtual returns (bool) {
+    function isPausedAccessRegistry() external view override virtual returns (bool) {
         return _paused();
     }
 

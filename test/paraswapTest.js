@@ -1,5 +1,9 @@
 const { expect } = require("chai");
-const { ethers } = require("hardhat");
+// const { ethers } = require("hardhat");
+const ethers = require('ethers');
+const utils = require('ethers').utils
+require('dotenv').config()
+const Web3 = require('web3');
 const {
     getSelectors,
     get,
@@ -12,85 +16,147 @@ const { assert } = require('chai')
 
 const {deployDiamond}= require('../scripts/deploy_diamond.js')
 
-describe("===== Paraswap Test =====", function () {
-    let diamond
-    let diamondCutFacet
-    let diamondLoupeFacet
-    let tokenList
-    let oracle
-    let liquidator
-    let bep20
-    let bepOne
-    let accounts
-    let contractOwner
-    const addresses = []
 
-    const symbol4 = "0xABCD7374737472696e6700000000000000000000000000000000000000000000";
-    const symbol2 = "0xABCD7374737972696e6700000000000000000000000000000000000000000000";
-   
-    const comit_NONE = "0x94557374737472696e6700000000000000000000000000000000000000000000";
-    const comit_TWOWEEKS = "0x78629858A2529819179178879ABD797997979AD97987979AC7979797979797DF";
-    const comit_ONEMONTH = "0x54567858A2529819179178879ABD797997979AD97987979AC7979797979797DF";
-    const comit_THREEMONTHS = "0x78639858A2529819179178879ABD797997979AD97987979AC7979797979797DF";
+// const ethers = require('ethers');
+const addresses = {
+  WETH: '0xc778417e063141139fce010982780140aa0cd5ab',
+  router: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+  recipient: '0x84c86da0a5c4f3Be99695f37811B8b154a6aD241',
+  swapper: '0x3D0Fc2b7A17d61915bcCA984B9eAA087C5486d18',
+  usdt: '0x0Fcb7A59C1Af082ED077a972173cF49430EfD0dC',
+  usdc: '0xe767f958a81Df36e76F96b03019eDfE3aAFd1CcD'
+}
+const mnemonic = process.env.MNEMONIC;
+const provider = new ethers.providers.WebSocketProvider('https://eth-ropsten.alchemyapi.io/v2/fxrejtNAKunh--Iym4w8DI4mpb4pEEbA');
+const wallet = ethers.Wallet.fromMnemonic(mnemonic);
+const account = wallet.connect(provider);
 
-    before(async function () {
-        accounts = await ethers.getSigners()
-        contractOwner = accounts[0]
-        diamondAddress = await deployDiamond()
-        // await deployOpenFacets(diamondAddress)
-        diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
-        diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
-        
-        tokenList = await ethers.getContractAt('TokenList', diamondAddress)
-        oracle = await ethers.getContractAt('OracleOpen', diamondAddress)
-        liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
+const router = new ethers.Contract(
+    addresses.router,
+    [
+      'function getAmountsOut(uint amountIn, address[] memory path) public view returns (uint[] memory amounts)',
+      'function swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)',
+      'function swapExactETHForTokens(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline) external returns (uint[] memory amounts)'
+    ],
+    account
+);
 
-        const Mock = await ethers.getContractFactory('MockBep20')
+const auguSwapper = new ethers.Contract(
+    addresses.swapper, 
+    [
+        'function simpleSwap(address fromToken,address toToken,uint256 fromAmount,uint256 toAmount,uint256 expectedAmount,address[] memory callees,bytes memory exchangeData,uint256[] memory startIndexes,uint256[] memory values,address payable beneficiary,string memory referrer,bool useReduxToken) external payable returns (uint256 receivedAmount)',
+        'function swapOnUniswap(uint256 amountIn,uint256 amountOutMin,address[] calldata path,uint8 referrer) external payable',
+        'function getTokenTransferProxy() external view returns (address)',
+    ],
+    account
+);
 
-        bep20 = await Mock.deploy()
-        await bep20.deployed()
-        bepOne = await Mock.deploy()
-        await bepOne.deployed()
-    })
+const usdtToken = new ethers.Contract(
+    addresses.usdt, 
+    [
+        'function approve(address spender, uint256 amount) external returns (bool)',
+        'function allowance(address owner, address spender) external view returns (uint256)',
+        'function transfer(address recipient, uint256 amount) external returns (bool)'
+    ],
+    account
+);
 
-    it("Deployment Check", async () => {
-        expect(oracle.address).to.not.equal("0x" + "0".repeat(40))
-        console.log("Oracle address is ", oracle.address)
-    })
+const usdcToken = new ethers.Contract(
+    addresses.usdc, 
+    [
+        'function approve(address spender, uint256 amount) external returns (bool)'
+    ],
+    account
+);
 
-    it('should have three facets -- call to facetAddresses function', async () => {
-        for (const address of await diamondLoupeFacet.facetAddresses()) {
-            addresses.push(address)
+async function UniSwap(){
+    const ethAmount = ethers.utils.parseEther("0.03");
+    const usdtAmount = ethers.utils.parseUnits("500", 18);
+    const btcAmount = ethers.utils.parseUnits("0.2", 8);
+    console.log("Begin ParaSend");
+    // const tx = await router.swapExactETHForTokens(
+    const tx = await router.swapExactTokensForTokens(
+        usdtAmount,
+      0,
+      ['0x0Fcb7A59C1Af082ED077a972173cF49430EfD0dC', '0xa48f5ab4cF6583029A981ccfAf0626EA37123a14'],
+      addresses.recipient, 
+      Date.now() + 1000 * 60 * 10, //10 minutes,
+      {
+          'gasLimit': 300000,
+          'gasPrice': ethers.utils.parseUnits('185', 'gwei'),
+      }
+    );
+    console.log("https://ropsten.etherscan.io/tx/" + tx.hash);
+    const receipt = await tx.wait(); 
+    console.log('Transaction receipt');
+    console.log(receipt);
+}
+
+async function ParaSwap() {
+    const usdtAmount = ethers.utils.parseUnits("10", 18);
+    const expAmount = ethers.utils.parseUnits('9', 18);
+    await usdtToken.approve('0xDb28dc14E5Eb60559844F6f900d23Dce35FcaE33', ethers.constants.MaxUint256);
+
+    const tx = await auguSwapper.simpleSwap(
+        '0x0Fcb7A59C1Af082ED077a972173cF49430EfD0dC',
+        '0xe767f958a81Df36e76F96b03019eDfE3aAFd1CcD',
+        usdtAmount,
+        expAmount,
+        usdtAmount,
+        [addresses.swapper, addresses.router],
+        "0x1234",
+        [0, 100, 296],
+        [0,0],
+        addresses.recipient,
+        "",
+        false,
+        {
+            'gasLimit': 300000,
+            'gasPrice': ethers.utils.parseUnits('185', 'gwei'),
         }
-        assert.equal(addresses.length, 11)
+    );
+
+    console.log("https://ropsten.etherscan.io/tx/" + tx.hash);
+    const receipt = await tx.wait(); 
+    console.log('Transaction receipt');
+    console.log(receipt);
+}
+
+async function directSwap() {
+    const usdtAmount = ethers.utils.parseUnits("100", 18);
+    const btcAmount = ethers.utils.parseUnits("0.001", 8);
+    // console.log(usdtAmount, expAmount);
+    // '000000000000000000'
+    await usdtToken.approve('0xDb28dc14E5Eb60559844F6f900d23Dce35FcaE33', ethers.constants.MaxUint256);
+    console.log("approved");
+    const tx = await auguSwapper.swapOnUniswap(
+        '100000000000000000000', 1,
+        ['0x0Fcb7A59C1Af082ED077a972173cF49430EfD0dC', '0xe767f958a81Df36e76F96b03019eDfE3aAFd1CcD'],
+        1,
+        {
+            'gasLimit': 300000,
+            'gasPrice': ethers.utils.parseUnits('385', 'gwei'),
+        }
+    );
+    console.log("https://ropsten.etherscan.io/tx/" + tx.hash);
+    const receipt = await tx.wait(); 
+    console.log('Transaction receipt');
+    console.log(receipt);
+}
+describe("===== Paraswap Test =====", function () {
+    
+    before(async function () {
+        console.log("wallet address is ", wallet.address)
+        console.log("wallet address is ", account.address)
     })
 
-    it('facets should have the right function selectors -- call to facetFunctionSelectors function', async () => {
-        let selectors = getSelectors(diamondCutFacet)
-        result = await diamondLoupeFacet.facetFunctionSelectors(addresses[0])
-        assert.sameMembers(result, selectors)
-        selectors = getSelectors(diamondLoupeFacet)
-        result = await diamondLoupeFacet.facetFunctionSelectors(addresses[1])
-        assert.sameMembers(result, selectors)
+    // it("Uniswap", async () => {
+    //     await UniSwap();
+    // })
+
+    it("DirectSwap", async () => {
+        await directSwap();
+        // await directSwap();
     })
 
-    it("Add token to tokenList", async () => {
-        await expect(tokenList.connect(contractOwner).addMarketSupport(
-            symbol4, 
-            18, 
-            bep20.address, 
-            1,
-            {gasLimit: 250000}
-        )).to.emit(tokenList, "MarketSupportAdded")
-        expect(await tokenList.isMarketSupported(symbol4)).to.be.equal(true);
-
-        await expect(tokenList.connect(accounts[1]).addMarketSupport(
-            symbol2, 18, bep20.address, 1, {gasLimit: 240000}
-        )).to.be.revertedWith("Only an admin can call this function");
-    })
-
-    it("Test Paraswap", async () => {
-        expect(await liquidator.swap(symbol2, symbol4, 1, 0)).to.equal(1)
-    })
-  
 })
