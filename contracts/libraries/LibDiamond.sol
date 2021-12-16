@@ -693,7 +693,7 @@ library LibDiamond {
         address addrToMarket;
         if(_mode == 0){
             addrFromMarket = _getMarketAddress(_fromMarket);
-            addrToMarket = _getMarket2Address(_fromMarket);
+            addrToMarket = _getMarket2Address(_toMarket);
         } else if(_mode == 1) {
             addrFromMarket = _getMarket2Address(_fromMarket);
             addrToMarket = _getMarketAddress(_toMarket);
