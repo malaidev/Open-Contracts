@@ -4,19 +4,19 @@ pragma experimental ABIEncoderV2;
 
 import "../util/Address.sol";
 import "../util/IBEP20.sol";
-import "../interfaces/ITokenList.sol";
-import "../interfaces/IComptroller.sol";
-import "../interfaces/ILiquidator.sol";
-import "../interfaces/IDeposit.sol";
-import "../interfaces/IReserve.sol";
-import "../interfaces/ILoan.sol";
-import "../interfaces/ILoan1.sol";
-import "../interfaces/IOracleOpen.sol";
-import "../interfaces/IAccessRegistry.sol";
-import "../interfaces/AggregatorV3Interface.sol";
-import "../interfaces/IAugustusSwapper.sol";
+import "../Interfaces/ITokenList.sol";
+import "../Interfaces/IComptroller.sol";
+import "../Interfaces/ILiquidator.sol";
+import "../Interfaces/IDeposit.sol";
+import "../Interfaces/IReserve.sol";
+import "../Interfaces/ILoan.sol";
+import "../Interfaces/ILoan1.sol";
+import "../Interfaces/IOracleOpen.sol";
+import "../Interfaces/IAccessRegistry.sol";
+import "../Interfaces/AggregatorV3Interface.sol";
+import "../Interfaces/IAugustusSwapper.sol";
 
-import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
+import { IDiamondCut } from "../Interfaces/IDiamondCut.sol";
 
 library LibDiamond {
     using Address for address;
