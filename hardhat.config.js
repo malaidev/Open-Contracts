@@ -298,7 +298,7 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
  require("@tenderly/hardhat-tenderly");
 
 module.exports = {
-  defaultNetwork: "harmony",
+  defaultNetwork: "bsctestnet",
   networks: {
     hardhat: {
       // forking: {
@@ -333,13 +333,13 @@ module.exports = {
       chainId: 97,
       timeout: 200000
     },
-    harmony: {
-      url: 'https://api.s0.b.hmny.io',
-      timeout: 200000,
-      accounts: [process.env.HARMONY_PRIVATE_KEY],
-      gas: 2100000, 
-      gasPrice: 8000000000
-    }
+//     harmony: {
+//       url: 'https://api.s0.b.hmny.io',
+//       timeout: 200000,
+//       accounts: [process.env.HARMONY_PRIVATE_KEY],
+//       gas: 2100000, 
+//       gasPrice: 8000000000
+//     }
   },
   solidity: {
     version: "0.8.1",
