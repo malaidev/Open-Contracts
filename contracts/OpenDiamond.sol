@@ -2,7 +2,7 @@
 pragma solidity 0.8.1;
 
 import { LibDiamond } from "./libraries/LibDiamond.sol";
-import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
+import { IDiamondCut } from "./Interfaces/IDiamondCut.sol";
 
 
 contract OpenDiamond {
