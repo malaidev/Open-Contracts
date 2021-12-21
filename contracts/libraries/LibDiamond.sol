@@ -15,6 +15,7 @@ import "../interfaces/IOracleOpen.sol";
 import "../interfaces/IAccessRegistry.sol";
 import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IAugustusSwapper.sol";
+import "../interfaces/IPancakeRouter01.sol";
 
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import "hardhat/console.sol";
@@ -32,6 +33,13 @@ library LibDiamond {
 	uint8 constant LOAN1_ID = 16;
 	uint8 constant DEPOSIT_ID = 17; 
 	uint8 constant ACCESSREGISTRY_ID = 18;
+	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
+	address constant WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
+	bytes32 constant MARKET_USDT = 0x555344542e740000000000000000000000000000000000000000000000000000;
+	bytes32 constant MARKET_BUSD = 0x555344542e740000000000000000000000000000000000000000000000000000;
+	bytes32 constant MARKET_DAI = 0x555344542e740000000000000000000000000000000000000000000000000000;
+	bytes32 constant MARKET_WBNB = 0x555344542e740000000000000000000000000000000000000000000000000000;
+
 
     struct FacetAddressAndSelectorPosition {
         address facetAddress;
@@ -704,20 +712,68 @@ library LibDiamond {
             addrFromMarket = _getMarketAddress(_toMarket);
             addrToMarket = _getMarketAddress(_fromMarket);
         }
-		address[] memory callee = new address[](2);
-		callee[0] = addrFromMarket;
-		callee[1] = addrToMarket;
 
+		//paraswap
+		// address[] memory callee = new address[](2);
+		// if(_fromMarket == MARKET_WBNB) callee[0] = WBNB;
+		// if(_toMarket == MARKET_WBNB) callee[1] = WBNB;
+		// IBEP20(addrFromMarket).approve(0xDb28dc14E5Eb60559844F6f900d23Dce35FcaE33, _fromAmount);
+		// receivedAmount = IAugustusSwapper(0x3D0Fc2b7A17d61915bcCA984B9eAA087C5486d18).swapOnUniswap(
+		// 	_fromAmount, 1,
+		// 	callee,
+		// 	1
+		// );
 
-		IBEP20(addrFromMarket).approve(0xDb28dc14E5Eb60559844F6f900d23Dce35FcaE33, _fromAmount);
+		//PancakeSwap
+		IBEP20(addrFromMarket).transferFrom(msg.sender, address(this), _fromAmount);
+        IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
-		
-		receivedAmount = IAugustusSwapper(0x3D0Fc2b7A17d61915bcCA984B9eAA087C5486d18).swapOnUniswap(
-			_fromAmount, 1,
-			callee,
-			1
-		);
+        address[] memory path;
+        if (addrFromMarket == WBNB || addrToMarket == WBNB) {
+            path = new address[](2);
+            path[0] = addrFromMarket;
+            path[1] = addrToMarket;
+        } else {
+            path = new address[](3);
+            path[0] = addrFromMarket;
+            path[1] = WBNB;
+            path[2] = addrToMarket;
+        }
+
+        IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(
+            _fromAmount,
+            _getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),
+            path,
+            address(this),
+            block.timestamp
+        );
 		return receivedAmount;
+    }
+
+	function _getAmountOutMin(
+        address _tokenIn,
+        address _tokenOut,
+        uint _amountIn
+    ) private view returns (uint) {
+        address[] memory path;
+        if (_tokenIn == WBNB || _tokenOut == WBNB) {
+            path = new address[](2);
+            path[0] = _tokenIn;
+            path[1] = _tokenOut;
+        } else {
+            path = new address[](3);
+            path[0] = _tokenIn;
+            path[1] = WBNB;
+            path[2] = _tokenOut;
+        }
+
+        // same length as path
+        uint[] memory amountOutMins = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
+            _amountIn,
+            path
+        );
+
+        return amountOutMins[path.length - 1];
     }
 
 // =========== Deposit Functions ===========
@@ -1966,9 +2022,11 @@ library LibDiamond {
 		_addAdminRole(keccak256("AccessRegistry.admin"), _newOwner);
         emit OwnershipTransferred(previousOwner, _newOwner);
 
-		// ds.pairAddresses[0x555344542e740000000000000000000000000000000000000000000000000000] = 0x9A37E1abFC430B9f5E204CA9294809c1AF37F697; // USDT.t ~ decimal 8, not 18
-		// ds.pairAddresses[0x555344432e740000000000000000000000000000000000000000000000000000] = 0x6F2bD4158F771E120d3692C45Eb482C16f067dec; // USDC.t ~ decimal 8, not 18
-		// ds.pairAddresses[0x4254432e74000000000000000000000000000000000000000000000000000000] = 0xEF637736B220a58C661bfF4b71e03ca898DCC0Bd; // BTC.t
+		//BSC testnet pair addresses.
+		ds.pairAddresses[MARKET_USDT] = 0x7ef95a0fee0dd31b22626fa2e10ee6a223f8a684; // USDT.t ~ decimal 8, not 18
+		ds.pairAddresses[MARKET_BUSD] = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7; // BUSD
+		ds.pairAddresses[MARKET_DAI] = 0x8a9424745056Eb399FD19a0EC26A14316684e274; // DAI
+		ds.pairAddresses[MARKET_WBNB] = 0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE; // BNB.t
 
     }
 
