@@ -1,6 +1,7 @@
-const { utils, ethers } = require('hardhat')
-const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
+const { ethers } = require('hardhat')
+const utils = require('ethers').utils
 
+const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 async function deployDiamond() {
     const accounts = await ethers.getSigners()
     const contractOwner = await accounts[0]

@@ -90,7 +90,6 @@ library LibDiamond {
         uint timelockValidity; // timelock duration
         uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
     }
-
 // =========== Loan structs ===========
     struct LoanAccount {
 		uint256 accOpenTime;
@@ -607,8 +606,6 @@ library LibDiamond {
 		
 		LibDiamond.APR storage apr = ds.indAPRRecords[_commitment];
 
-		console.log("calcAPR oldLengthAcc is ", oldLengthAccruedInterest);
-
 		require(oldLengthAccruedInterest > 0, "oldLengthAccruedInterest is 0");
 
 		uint256 index = oldLengthAccruedInterest - 1;
@@ -696,10 +693,6 @@ library LibDiamond {
     function _swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256 receivedAmount) {
         address addrFromMarket;
         address addrToMarket;
-		console.log("MarketAddresses");
-		console.log(_getMarketAddress(0x555344542e740000000000000000000000000000000000000000000000000000));
-		console.log(_getMarketAddress(0x555344432e740000000000000000000000000000000000000000000000000000));
-		console.log(_getMarketAddress(0x4254432e74000000000000000000000000000000000000000000000000000000));
 
         if(_mode == 0){
             addrFromMarket = _getMarketAddress(_fromMarket);
@@ -714,11 +707,11 @@ library LibDiamond {
 		address[] memory callee = new address[](2);
 		callee[0] = addrFromMarket;
 		callee[1] = addrToMarket;
-		console.log("_swap mode is ", _mode);
-		console.log("fromAmount is ", _fromAmount);
-		console.log("calle is ", callee[0]);
-		console.log(callee[1]);
+
+
 		IBEP20(addrFromMarket).approve(0xDb28dc14E5Eb60559844F6f900d23Dce35FcaE33, _fromAmount);
+
+		
 		receivedAmount = IAugustusSwapper(0x3D0Fc2b7A17d61915bcCA984B9eAA087C5486d18).swapOnUniswap(
 			_fromAmount, 1,
 			callee,
@@ -1264,10 +1257,6 @@ library LibDiamond {
 		uint256 oldLengthAccruedInterest;
 		uint256 oldTime;
 
-		console.log("loanRequest", (_account));
-		console.log("loanRequest", toHex(_loanMarket));
-		console.log("loanRequest", toHex(_commitment));
-
 		(oldLengthAccruedInterest, oldTime) = _calcAPR(
 			ds.indLoanRecords[_account][_loanMarket][_commitment].commitment, 
 			ds.indAccruedAPR[_account][_loanMarket][_commitment].oldLengthAccruedInterest,
@@ -1432,9 +1421,6 @@ library LibDiamond {
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_market][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
 
-		console.log("loanRequest", (_account));
-		console.log("loanRequest", toHex(_market));
-		console.log("loanRequest", toHex(_commitment));
 		// if (loanAccount.loans.length == 0) {
 		// 	id = 1;
 		// } else if (loanAccount.loans.length != 0) {
@@ -1501,8 +1487,6 @@ library LibDiamond {
 			cYield.market = _collateralMarket;
 			cYield.commitment = _getCommitment(1);
 			cYield.oldLengthAccruedYield = _getApyTimeLength(_commitment);
-			console.log("getAprTimeLength is ", deductibleInterest.oldLengthAccruedInterest );
-			console.log("getApyTimeLength is ", cYield.oldLengthAccruedYield );
 			cYield.oldTime = block.timestamp;
 			cYield.accruedYield =0;
 
@@ -1925,12 +1909,10 @@ library LibDiamond {
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
 		// For test
-		if(_market == 0x4254432e74000000000000000000000000000000000000000000000000000000)
-			return 57635;
-		return 1;
-        // DiamondStorage storage ds = diamondStorage();
-		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-        // return uint256(price);
+		
+        DiamondStorage storage ds = diamondStorage();
+		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+        return uint256(price);
 	}
 
 // =========== AccessRegistry Functions =================
@@ -2134,8 +2116,6 @@ library LibDiamond {
     }
 
 	modifier authContract(uint _facetId) {
-		// console.log("_facetId is ", _facetId);
-		// console.log("diamond fId is", LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId);
 		require(_facetId == LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId || 
 				LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId == 0, "Not permitted");
 		_;

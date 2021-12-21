@@ -1,13 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
-
 contract Test {
+    bytes32 private student;
+    address private _owner;
     constructor() {
-    	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-        // ds.adminReserveAddress = msg.sender;
-        // ds.reserve = IReserve(msg.sender);
+        _owner = msg.sender;
     }
-    function Myfunc() public view returns(uint256) {
-        return 123;
+    function getStudent() public view returns(bytes32) {
+        return student;
+    }
+
+    function addStudent(bytes32 st) external {
+        student = st;
+    }
+
+    function destroy() external onlyMe {
+        student = 0x0;
+    }
+
+    modifier onlyMe {
+        require(msg.sender == _owner, "You cannot access");
+        _;
     }
 }

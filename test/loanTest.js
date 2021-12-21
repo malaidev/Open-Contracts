@@ -193,13 +193,17 @@ describe("===== Loan Test =====", function () {
     // //     console.log(events);
     // })
 
-    it("Swap Loan", async () => {
-        await expect(loan.connect(accounts[1]).swapLoan(symbolUsdt, comit_ONEMONTH, symbolUsdc, {gasLimit: 5000000}))
-            .to.emit(library, "SwapTestAmount");
+    // it("Swap Loan", async () => {
+    //     await expect(loan.connect(accounts[1]).swapLoan(symbolUsdt, comit_ONEMONTH, symbolUsdc, {gasLimit: 5000000}))
+    //         .to.emit(library, "SwapTestAmount");
         
-        let eventFilter = library.filters.SwapTestAmount;
-        let events = await library.queryFilter(eventFilter, "latest");
-        console.log(events);
+    //     let eventFilter = library.filters.SwapTestAmount;
+    //     let events = await library.queryFilter(eventFilter, "latest");
+    //     console.log(events);
+    // })
+
+    it("SwapTest", async () => {
+        await (loan.connect(accounts[1]).swapTest());
     })
 
     // it("Check repayLoan", async () => {
