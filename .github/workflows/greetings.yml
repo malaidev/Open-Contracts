@@ -4,7 +4,7 @@ on: [pull_request, issues]
 
 jobs:
   greeting: Hello! Welcome to Open-protocol
-    runs-on: ubuntu-latest
+  runs-on: ubuntu-latest
     permissions:
       issues: write
       pull-requests: write
