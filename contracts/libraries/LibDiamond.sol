@@ -76,6 +76,10 @@ library LibDiamond {
         bytes32 commitment;
         uint amount;
         uint lastUpdate;
+		bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        uint timelockValidity; // timelock duration
+        uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
     }
 
     struct YieldLedger    {
@@ -746,8 +750,10 @@ library LibDiamond {
     function _withdrawDeposit(address _account, bytes32 _market, bytes32 _commitment, uint _amount, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) {
         DiamondStorage storage ds = diamondStorage(); 
 		
-		_hasAccount(_account);
+		_hasAccount(_account);// checks if user has savings account 
 		_isMarketSupported(_market);
+
+		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
 
 		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
 		// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
@@ -755,20 +761,30 @@ library LibDiamond {
 		_accruedYield(_account,_market,_commitment);
 
 		uint _savingsBalance = _accountBalance(_account, _market, _commitment, _request);
+		require(deposit !=0,"No deposit available" );
 		require(_amount <= _savingsBalance, "Insufficient balance"); // Dinh modified
-		if (_commitment == _getCommitment(0))	{
+		if (_commitment != _getCommitment(0))	{
+			if (deposit.isTimelockActivated =  false){
+				deposit.isTimelockActivated =  true;
+				deposit.timelockValidity = 86400;
+							// 3 days = 86400s; 
+				deposit.isTimelockApplicable = true;
+			}
+			else if (deposit.isTimelockActivated =  true){
+				require(yield.timelockvalidity + yield.activationTime <= block.timestamp, "Deposit cannot be withdrawn untill the commitment period ends ");
+				/// Transfer funds to the user's wallet.
+			ds.token  = IBEP20(_connectMarket(_market));
+			ds.token.approveFrom(ds.contractOwner, address(this), _amount);
+			ds.token.transferFrom(ds.contractOwner, _account, _amount);
+			}
+		
+			
 			_updateSavingsBalance(_account, _market, _commitment, _amount, _request);
-		}
-		/// Transfer funds to the user's wallet.
-		ds.token = IBEP20(_connectMarket(_market));
-		ds.token.approveFrom(ds.contractOwner, address(this), _amount);
-		ds.token.transferFrom(ds.contractOwner, _account, _amount);
+			_updateReservesDeposit(_market, _amount, 1);
+		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);	
 
-		_updateReservesDeposit(_market, _amount, 1);
-		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);
-	}
-
-    function _accruedYield(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
+    }
+	function _accruedYield(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
         DiamondStorage storage ds = diamondStorage(); 
 		
 		_hasDeposit(_account, _market, _commitment);
