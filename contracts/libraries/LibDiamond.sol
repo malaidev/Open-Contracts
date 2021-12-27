@@ -1027,6 +1027,8 @@ library LibDiamond {
 
     function _updateReservesDeposit(bytes32 _market, uint _amount, uint _num) internal authContract(DEPOSIT_ID) {
         DiamondStorage storage ds = diamondStorage();
+	// num is a variable with only 2 outputs[0 or 1]. Here 0 denotes addition of liquidity into reserves,
+	// meanwhile 1 represents deduction of liqudity from reserves
 		if (_num == 0)	{
 			ds.marketReservesDeposit[_market] += _amount;
 		} else if (_num == 1)	{
