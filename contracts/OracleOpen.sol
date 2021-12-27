@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
+
 import "./util/Pausable.sol";
 import "./libraries/LibDiamond.sol";
 
@@ -14,6 +15,10 @@ contract OracleOpen is Pausable, IOracleOpen {
 
     function getLatestPrice(bytes32 _market) external view override returns (uint) {    
         return LibDiamond._getLatestPrice(_market);
+    }
+
+    function getFairPrice(uint _requestId) external view override returns (uint) {
+        return LibDiamond._getFairPrice(_requestId);
     }
 
     function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {

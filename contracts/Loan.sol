@@ -60,6 +60,11 @@ contract Loan is Pausable, ILoan {
 		LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
 		return true;
 	}
+
+    function getFairPriceLoan(uint _requestId) external override returns (uint price){
+		price = LibDiamond._getFairPrice(_requestId);
+	}
+
 	function pauseLoan() external override authLoan() nonReentrant() {
 		_pause();
 	}

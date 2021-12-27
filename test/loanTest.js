@@ -22,7 +22,7 @@ describe("===== Loan Test =====", function () {
     let deposit
     let loan
     let oracle
-    let library;
+    let library
     let loan1
     let liquidator
     let bepUsdt
@@ -202,9 +202,6 @@ describe("===== Loan Test =====", function () {
     //     console.log(events);
     // })
 
-    it("SwapTest", async () => {
-        await (loan.connect(accounts[1]).swapTest());
-    })
 
     // it("Check repayLoan", async () => {
     //     await (loan.connect(accounts[1]).repayLoan(symbolUsdt, comit_ONEMONTH, 30, {gasLimit: 5000000}));

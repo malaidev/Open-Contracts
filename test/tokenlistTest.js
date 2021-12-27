@@ -10,13 +10,13 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/1_deploy_diamond.js')
-const {deployFacets} = require("../scripts/2_deploy_facets.js")
+const {deployDiamond}= require('../scripts/deploy_diamond.js')
 
 describe("===== TokenList Test =====", function () {
     let diamondAddress
     let diamondCutFacet
     let diamondLoupeFacet
+    let library
     let tokenList
     let bep20
     let accounts    
@@ -35,13 +35,13 @@ describe("===== TokenList Test =====", function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
-        await deployFacets(diamondAddress)
         // const diamond = await ethers.getContractAt('OpenDiamond', "0xEF1a30678f7d205d310bADBA8dfA4B122B0Fb24b")
         // diamondAddress = diamond.address
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 
         tokenList = await ethers.getContractAt('TokenList', diamondAddress)
+        library = await ethers.getContractAt('LibDiamond', diamondAddress)
 
         const Mock = await ethers.getContractFactory('MockBep20')
         bep20 = await Mock.deploy()
@@ -80,7 +80,7 @@ describe("===== TokenList Test =====", function () {
             bep20.address, 
             1,
             {gasLimit: 250000}
-        )).to.emit(tokenList, "MarketSupportAdded")
+        )).to.emit(library, "MarketSupportAdded")
         expect(await tokenList.isMarketSupported(symbol4)).to.be.equal(true);
 
         console.log("symbol4 = ", symbol4);
@@ -120,7 +120,7 @@ describe("===== TokenList Test =====", function () {
 
     it("updateMarketSupport", async () => {
         expect(await tokenList.connect(contractOwner).updateMarketSupport(symbol4, 28, bep20.address, {gasLimit: 250000}))
-            .to.emit(tokenList, "MarketSupportUpdated")
+            .to.emit(library, "MarketSupportUpdated")
     })
 
     it("Market 2", async () => {

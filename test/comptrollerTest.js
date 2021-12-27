@@ -10,8 +10,7 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/1_deploy_diamond.js')
-const {deployFacets} = require("../scripts/2_deploy_facets.js")
+const {deployDiamond}= require('../scripts/deploy_diamond.js')
 
 describe("===== Comptroller Test =====", function () {
     let diamondAddress
@@ -20,6 +19,7 @@ describe("===== Comptroller Test =====", function () {
     let tokenList
     let comptroller
     let bep20
+    let library
     let accounts
     let contractOwner
     const addresses = []
@@ -36,13 +36,13 @@ describe("===== Comptroller Test =====", function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
-        await deployFacets(diamondAddress)
         // await deployOpenFacets(diamondAddress)
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 
         tokenList = await ethers.getContractAt('TokenList', diamondAddress)
         comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
+        library = await ethers.getContractAt('LibDiamond', diamondAddress)
 
         const Mock = await ethers.getContractFactory('MockBep20')
         bep20 = await Mock.deploy()
@@ -72,7 +72,7 @@ describe("===== Comptroller Test =====", function () {
             bep20.address, 
             1,
             {gasLimit: 250000}
-        )).to.emit(tokenList, "MarketSupportAdded")
+        )).to.emit(library, "MarketSupportAdded")
         expect(await tokenList.isMarketSupported(symbol4)).to.be.equal(true);
 
         await expect(tokenList.connect(accounts[1]).addMarketSupport(
