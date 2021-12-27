@@ -1161,14 +1161,18 @@ library LibDiamond {
         LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
-
-		_hasAccount(_account);
+		const collateral.timelockValidity = 864000; // 30 days
+		_hasloanAccount(_account); //Check for "loan" account 
 		_isMarketSupported(_market);
-
+		require(loan.id !=0, "ERROR: No Loan");
+		require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
+		if (_commitment != _getCommitment(0)) {
 		require((collateral.timelockValidity + collateral.activationTime) <= block.timestamp, "ERROR: Timelock in progress");
-
 		_collateralTransfer(_account, loan.market, loan.commitment);
-
+		}
+		else{
+		_collateralTransfer(_account, loan.market, loan.commitment);
+		}
 		delete ds.indCollateralRecords[_account][loan.market][loan.commitment];
 		delete ds.indLoanState[_account][loan.market][loan.commitment];
 		delete ds.indLoanRecords[_account][loan.market][loan.commitment];
