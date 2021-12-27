@@ -53,7 +53,7 @@ contract Loan1 is Pausable, ILoan1 {
 		return true;
 	}
 
-	function liquidation(address _account, uint256 _id) external override nonReentrant()	authLoan1() returns (bool success) {
+	function liquidation(address _account, uint256 _id) external override nonReentrant() authLoan1() returns (bool success) {
 		LibDiamond._liquidation(_account, _id);
 		return true;
 	}

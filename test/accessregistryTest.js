@@ -10,8 +10,7 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/1_deploy_diamond.js')
-const {deployFacets} = require("../scripts/2_deploy_facets.js")
+const {deployDiamond}= require('../scripts/deploy_diamond.js')
 
 describe("===== AccessRegistry Test =====", function () {
     let diamondAddress
@@ -24,6 +23,7 @@ describe("===== AccessRegistry Test =====", function () {
     let oracle
     let loan
     let liquidator
+    let library
     let accessRegistry
     let bep20
     let accounts
@@ -47,7 +47,6 @@ describe("===== AccessRegistry Test =====", function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
-        await deployFacets(diamondAddress)
         // await deployOpenFacets(diamondAddress)
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -56,6 +55,7 @@ describe("===== AccessRegistry Test =====", function () {
         comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
         deposit = await ethers.getContractAt('Deposit', diamondAddress)
         accessRegistry = await ethers.getContractAt('AccessRegistry', diamondAddress)
+        library = await ethers.getContractAt('LibDiamond', diamondAddress)
 
         const Mock = await ethers.getContractFactory('MockBep20')
         bep20 = await Mock.deploy()
@@ -67,7 +67,6 @@ describe("===== AccessRegistry Test =====", function () {
             addresses.push(address)
         }
         assert.equal(addresses.length, 11)
-
     })
 
     it('facets should have the right function selectors -- call to facetFunctionSelectors function', async () => {
@@ -86,7 +85,7 @@ describe("===== AccessRegistry Test =====", function () {
             bep20.address, 
             1,
             {gasLimit: 250000}
-        )).to.emit(tokenList, "MarketSupportAdded")
+        )).to.emit(library, "MarketSupportAdded")
         expect(await tokenList.isMarketSupported(symbol4)).to.be.equal(true)
 
         await expect(tokenList.connect(accounts[1]).addMarketSupport(

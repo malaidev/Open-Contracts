@@ -1,8 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const {deployDiamond}= require('../scripts/1_deploy_diamond.js')
-const {deployFacets} = require("../scripts/2_deploy_facets.js")
+const {deployDiamond}= require('../scripts/deploy_diamond.js')
 
 describe("===== Deposit Test =====", function () {
     let diamondAddress
@@ -11,6 +10,7 @@ describe("===== Deposit Test =====", function () {
     let tokenList
     let comptroller
     let deposit
+    let library
     let bep20
     let tusdt
     let accounts
@@ -30,8 +30,6 @@ describe("===== Deposit Test =====", function () {
         contractOwner = accounts[0]
         // diamondAddress = '0x1f2523fCb78c739Ed60460f9Bc9845a622771710'
         diamondAddress = await deployDiamond()
-        await deployFacets(diamondAddress)
-
 
         // await deployFacets()
         
@@ -42,6 +40,7 @@ describe("===== Deposit Test =====", function () {
         tokenList = await ethers.getContractAt('TokenList', diamondAddress)
         comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
         deposit = await ethers.getContractAt("Deposit", diamondAddress)
+        library = await ethers.getContractAt('LibDiamond', diamondAddress)
         
         const Mock = await ethers.getContractFactory('MockBep20')
         bep20 = await Mock.deploy()
@@ -74,7 +73,7 @@ describe("===== Deposit Test =====", function () {
             bep20.address, 
             1,
             {gasLimit: 250000}
-        )).to.emit(tokenList, "MarketSupportAdded")
+        )).to.emit(library, "MarketSupportAdded")
         expect(await tokenList.isMarketSupported(symbolUsdt)).to.be.equal(true);
     })
 
@@ -115,7 +114,7 @@ describe("===== Deposit Test =====", function () {
 
 
         await expect(deposit.connect(contractOwner).createDeposit(symbolUsdt, comit_NONE, depositAmount, {gasLimit: 5000000}))
-        .to.emit(deposit, "NewDeposit")
+        .to.emit(library, "NewDeposit")
 
         const reserve = await deposit.avblReservesDeposit(symbolUsdt);
         console.log("Reserve amount is ", reserve)
@@ -133,6 +132,6 @@ describe("===== Deposit Test =====", function () {
 
     it("Check addToDeposit", async () => {
         await expect(deposit.connect(contractOwner).addToDeposit(symbolUsdt, comit_NONE, 400, {gasLimit: 3000000}))
-        .to.emit(deposit, "DepositAdded");
+        .to.emit(library, "DepositAdded");
     })
 })

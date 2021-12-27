@@ -94,17 +94,8 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
   // })
 });
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
-
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
-
-//  require("@nomiclabs/hardhat-waffle");
  require('hardhat-contract-sizer');
  require("@nomiclabs/hardhat-etherscan");
-//  require("solidity-coverage");
  require('dotenv').config();
 
  require("@tenderly/hardhat-tenderly");
@@ -177,6 +168,5 @@ module.exports = {
   tenderly: {
     project: "Test",
     username: "dinh",
-}
-  
+  }
 };

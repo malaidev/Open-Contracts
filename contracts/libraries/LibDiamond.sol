@@ -69,7 +69,7 @@ library LibDiamond {
 			bytes32 commitment; // validity
 			uint[] time; // ledger of time when the APR changes were made.
 			uint[] aprChanges; // Per block.timestamp APR is tabulated in here.
-		}	
+		}
 
 // =========== Deposit structs ===========
     struct SavingsAccount {
@@ -154,6 +154,13 @@ library LibDiamond {
 		uint256 accruedInterest;
 	}
 
+// =========== OracleOpen structs =============
+	struct PriceData {
+		bytes32 market;
+		uint amount;
+		uint price;
+	}
+
 // =========== AccessRegistry structs =============
     struct RoleData {
         mapping(address => bool) _members;
@@ -233,7 +240,9 @@ library LibDiamond {
         // bytes32 adminOpenOracle;
         // address adminOpenOracleAddress;
 		mapping(bytes32 => address) pairAddresses;
-
+		PriceData[] prices;
+		mapping(uint => PriceData) priceData;
+		uint requestEventId;
     // =========== Loan state variables ============
         // bytes32 adminLoan;
         // address adminLoanAddress;
@@ -347,6 +356,8 @@ library LibDiamond {
 	);
 
 // =========== Liquidator events ===============
+// =========== OracleOpen events ===============
+	event FairPriceCall(uint requestId, bytes32 market, uint amount);
 
 // =========== AccessRegistry events ===============
     event AdminRoleDataGranted(
@@ -1301,6 +1312,9 @@ library LibDiamond {
 	function _accruedInterest(address _account, bytes32 _loanMarket, bytes32 _commitment) private /*authContract(LOAN_ID)*/ {
         DiamondStorage storage ds = diamondStorage(); 
 
+		emit FairPriceCall(ds.requestEventId++, _loanMarket, ds.indLoanRecords[_account][_loanMarket][_commitment].amount);
+		emit FairPriceCall(ds.requestEventId++, ds.indCollateralRecords[_account][_loanMarket][_commitment].market, ds.indCollateralRecords[_account][_loanMarket][_commitment].amount);
+
 		// LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
 		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_loanMarket][_commitment];
@@ -1319,8 +1333,8 @@ library LibDiamond {
 			ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime, 
 			aggregateYield);
 
-		deductibleUSDValue = ((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * _getLatestPrice(_loanMarket)) * aggregateYield;
-		ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest +=deductibleUSDValue / _getLatestPrice(ds.indCollateralRecords[_account][_loanMarket][_commitment].market);
+		deductibleUSDValue = ((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * _getFairPrice(ds.requestEventId - 2)) * aggregateYield;
+		ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest += deductibleUSDValue / _getFairPrice(ds.requestEventId - 1);
 		ds.indAccruedAPR[_account][_loanMarket][_commitment].oldLengthAccruedInterest = oldLengthAccruedInterest;
 		ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime = oldTime;
 
@@ -1330,12 +1344,16 @@ library LibDiamond {
 	}
 
     function _checkPermissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private /*authContract(LOAN_ID)*/ {
+
+		
         DiamondStorage storage ds = diamondStorage(); 
 		// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
 		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
-		
+		emit FairPriceCall(ds.requestEventId++, _collateralMarket, _amount);
+		emit FairPriceCall(ds.requestEventId++, _market, _amount);
+		emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);		
 		// _quantifyAmount(loanState.currentMarket, _amount);
 		require(_amount <= loanState.currentAmount, "ERROR: Exceeds available loan");
 		
@@ -1343,9 +1361,9 @@ library LibDiamond {
 		uint256 collateralAvbl = collateral.amount - ds.indAccruedAPR[_sender][_market][_commitment].accruedInterest;
 
 		// fetch usdPrices
-		uint256 usdCollateral = _getLatestPrice(_collateralMarket);
-		uint256 usdLoan = _getLatestPrice(_market);
-		uint256 usdLoanCurrent = _getLatestPrice(loanState.currentMarket);
+		uint256 usdCollateral = _getFairPrice(ds.requestEventId - 3);
+		uint256 usdLoan = _getFairPrice(ds.requestEventId - 2);
+		uint256 usdLoanCurrent = _getFairPrice(ds.requestEventId - 1);
 
 		// Quantification of the assets
 		// uint256 cAmount = usdCollateral*collateral.amount;
@@ -1513,7 +1531,6 @@ library LibDiamond {
 
 		loanAccount.loans.push(loan);
 		loanAccount.loanState.push(loanState);
-		deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
 
 		if (_commitment == _getCommitment(0)) {
 			
@@ -1523,7 +1540,7 @@ library LibDiamond {
 			collateral.activationTime = 0;
 
 			// pays 18% APR
-			// deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
+			deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
 
 			loanAccount.collaterals.push(collateral);
 			loanAccount.accruedAPR.push(deductibleInterest);
@@ -1537,7 +1554,7 @@ library LibDiamond {
 			collateral.activationTime = 0;
 
 			// 15% APR
-			// deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
+			deductibleInterest.oldLengthAccruedInterest = _getAprTimeLength(_commitment);
 			
 			cYield.id = loanAccount.loans.length + 1;
 			cYield.market = _collateralMarket;
@@ -1584,15 +1601,18 @@ library LibDiamond {
         bytes32 _collateralMarket,
         uint256 _loanAmount,
         uint256 _collateralAmount
-    ) internal view {
-        //  check if the
+    ) internal {
+        DiamondStorage storage ds = diamondStorage();
+
+		emit FairPriceCall(ds.requestEventId++, _market, _loanAmount);
+		emit FairPriceCall(ds.requestEventId++, _collateralMarket, _collateralAmount);
 
         uint256 loanByCollateral;
         uint256 amount = _avblMarketReserves(_market) - _loanAmount ;
         uint rF = _getReserveFactor()* _marketReserves(_market);
 
-        uint256 usdLoan = (_getLatestPrice(_market)) * _loanAmount;
-        uint256 usdCollateral = (_getLatestPrice(_collateralMarket)) * _collateralAmount;
+        uint256 usdLoan = (_getFairPrice(ds.requestEventId - 2)) * _loanAmount;
+        uint256 usdCollateral = (_getFairPrice(ds.requestEventId - 1)) * _collateralAmount;
 
         require(amount > 0, "ERROR: Loan exceeds reserves");
         require(_marketReserves(_market) - amount >= rF, "ERROR: Minimum reserve exeception");
@@ -1667,7 +1687,7 @@ library LibDiamond {
 
 		require(loan.id != 0, "ERROR: No loan");
 		require(loan.isSwapped == false && loanState.currentMarket == _market, "ERROR: Already swapped");
-		
+
 		uint256 _swappedAmount;
 		uint256 num = loan.id - 1;
 
@@ -1709,6 +1729,7 @@ library LibDiamond {
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 
 		require(loan.id == 0, "ERROR: Active loan");
+
 		ds.collateralToken.approveFrom(_sender, address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(_sender, ds.contractOwner, _collateralAmount);
 		_updateReservesLoan(_collateralMarket,_collateralAmount, 0);
@@ -1729,14 +1750,14 @@ library LibDiamond {
 		// CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];		
 		
 		require(diamondStorage().indLoanRecords[_sender][_market][_commitment].id != 0,"ERROR: No Loan");
-
+		
 		_accruedInterest(_sender, _market, _commitment);
 		_accruedYield(diamondStorage().loanPassbook[_sender], diamondStorage().indCollateralRecords[_sender][_market][_commitment], diamondStorage().indAccruedAPY[_sender][_market][_commitment]);
 
 		if (_repayAmount == 0) {
 			// converting the current market into loanMarket for repayment.
 			if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market)	_repayAmount = diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
-			else if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket != _market)	_repayAmount = _swap(diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket,_market,diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount, 1);
+			else if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket != _market)	_repayAmount = _swap(diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _market,diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount, 1);
 			
 			_repaymentProcess(
 				_sender,
@@ -1883,52 +1904,49 @@ library LibDiamond {
 		bytes32 _market = ds.loanPassbook[_account].loans[_id-1].market;
 
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
-		// LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
+		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_market][_commitment];
-		CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
+		// CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
+
+		emit FairPriceCall(ds.requestEventId++, collateral.market, collateral.amount);
+		emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);
 
 		require(loan.id == _id, "ERROR: id mismatch");
 
 		_accruedInterest(_account, _market, _commitment);
 		
 		if (loan.commitment == _getCommitment(2))
-			collateral.amount += cYield.accruedYield - deductibleInterest.accruedInterest;
+			collateral.amount += ds.indAccruedAPY[_account][_market][_commitment].accruedYield - deductibleInterest.accruedInterest;
 		else if (loan.commitment == _getCommitment(2))
 			collateral.amount -= deductibleInterest.accruedInterest;
 
-		// delete cYield;
-		// delete deductibleInterest;
-		// delete loanPassbook[_account].accruedAPR[loan.id - 1];
-		// delete loanPassbook[_account].accruedAPY[loan.id - 1];
+		delete ds.indAccruedAPY[_account][_market][_commitment];
+		delete ds.indAccruedAPR[_account][_market][_commitment];
+		delete ds.loanPassbook[_account].accruedAPR[loan.id - 1];
+		delete ds.loanPassbook[_account].accruedAPY[loan.id - 1];
 
 		// Convert to USD.
-		// uint256 usdCollateral = _getLatestPrice(collateral.market);
-		// uint256 usdLoanCurrent = _getLatestPrice(loanState.currentMarket);
-		// uint256 usdLoanActual = _getLatestPrice(loan.market);
-		// uint256 cAmount = _getLatestPrice(collateral.market)*collateral.amount;
-		// uint256 lAmountCurrent = _getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
+		uint256 cAmount = _getFairPrice(ds.requestEventId - 2) * collateral.amount;
+		uint256 lAmountCurrent = _getFairPrice(ds.requestEventId - 1) * loanState.currentAmount;
 		// convert collateral & loanCurrent into loanActual
-		// uint256 _repaymentAmount = _swap(collateral.market, loan.market, cAmount, 2);
-		// _repaymentAmount += _swap(loanState.currentMarket, loan.market, lAmountCurrent, 1);
-		// uint256 _remnantAmount = _repaymentAmount - lAmount;
+		uint256 _repaymentAmount = _swap(collateral.market, loan.market, cAmount, 2);
+		_repaymentAmount += _swap(loanState.currentMarket, loan.market, lAmountCurrent, 1);
+		uint256 _remnantAmount = _repaymentAmount - lAmountCurrent;
 
-		// uint256 num = id - 1;
-		// delete loanState;
-		// delete loan;
-		// delete collateral;
+		delete ds.indLoanState[_account][_market][_commitment];
+		delete ds.indLoanRecords[_account][_market][_commitment];
+		delete ds.indCollateralRecords[_account][_market][_commitment];
 
-		// delete loanPassbook[_account].loanState[num];
-		// delete loanPassbook[_account].loans[num];
-		// delete loanPassbook[_account].collaterals[num];
+		delete ds.loanPassbook[_account].loanState[_id - 1];
+		delete ds.loanPassbook[_account].loans[_id - 1];
+		delete ds.loanPassbook[_account].collaterals[_id - 1];
 		_updateUtilisationLoan(loan.market, loan.amount, 1);
 
 		emit LoanRepaid(_account, _id, loan.market, block.timestamp);
 		emit Liquidation(_account,_market, _commitment, loan.amount, block.timestamp);
 		
     }
-
-
 
 // =========== Reserve Functions =====================
 	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(RESERVE_ID) {
@@ -1953,7 +1971,6 @@ library LibDiamond {
         return _marketReserves(_market) - _marketUtilisation(_market);
     }
 
-
 	function _marketReserves(bytes32 _market) internal view returns (uint) {
         return _avblReservesDeposit(_market) + _avblReservesLoan(_market);
 	}
@@ -1964,11 +1981,22 @@ library LibDiamond {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		// For test
-		
         DiamondStorage storage ds = diamondStorage();
 		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
         return uint256(price);
+	}
+
+	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {
+		DiamondStorage storage ds = diamondStorage();
+		retPrice = ds.priceData[_requestId].price;
+	}
+
+	function _fairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) internal {
+		DiamondStorage storage ds = diamondStorage();
+		PriceData storage newPrice = ds.priceData[_requestId];
+		newPrice.market = _market;
+		newPrice.amount = _amount;
+		newPrice.price = _fPrice;
 	}
 
 // =========== AccessRegistry Functions =================
@@ -2023,7 +2051,7 @@ library LibDiamond {
         emit OwnershipTransferred(previousOwner, _newOwner);
 
 		//BSC testnet pair addresses.
-		ds.pairAddresses[MARKET_USDT] = 0x7ef95a0fee0dd31b22626fa2e10ee6a223f8a684; // USDT.t ~ decimal 8, not 18
+		ds.pairAddresses[MARKET_USDT] = 0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684; // USDT.t ~ decimal 8, not 18
 		ds.pairAddresses[MARKET_BUSD] = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7; // BUSD
 		ds.pairAddresses[MARKET_DAI] = 0x8a9424745056Eb399FD19a0EC26A14316684e274; // DAI
 		ds.pairAddresses[MARKET_WBNB] = 0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE; // BNB.t
