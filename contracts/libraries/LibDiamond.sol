@@ -1218,7 +1218,7 @@ library LibDiamond {
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
-		_hasAccount(_account);
+		_hasLoanAccount(_account);
 		_isMarketSupported(_market);
 
 		require((collateral.timelockValidity + collateral.activationTime) <= block.timestamp, "ERROR: Timelock in progress");
@@ -1988,6 +1988,7 @@ library LibDiamond {
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {
 		DiamondStorage storage ds = diamondStorage();
+		require(ds.priceData[_requestId].price != 0, "No fetched price");
 		retPrice = ds.priceData[_requestId].price;
 	}
 

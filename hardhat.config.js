@@ -101,7 +101,7 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
  require("@tenderly/hardhat-tenderly");
 
 module.exports = {
-  defaultNetwork: "harmony",
+  defaultNetwork: "hardhat",
   networks: {
     hardhat: {
       // forking: {

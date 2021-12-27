@@ -17,7 +17,7 @@ contract Loan1 is Pausable, ILoan1 {
 		return LibDiamond._hasLoanAccount(_account);
 	}
 
-	function avblReservesLoan(bytes32 _market) external view override returns(uint) {
+			function avblReservesLoan(bytes32 _market) external view override returns(uint) {
 		return LibDiamond._avblReservesLoan(_market);
 	}
 
