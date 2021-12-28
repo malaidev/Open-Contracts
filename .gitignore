@@ -4,10 +4,15 @@ coverage
 coverage.json
 typechain
 
+<<<<<<< HEAD
 #Hardhat files
 cache
 artifacts
 yarn-error.log
+=======
+# *.md
+node_modules/
+>>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
 
 libraries/LibDiamond.sol
 scripts
