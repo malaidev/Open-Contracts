@@ -45,7 +45,6 @@ contract Loan is Pausable, ILoan {
 		LibDiamond._swapToLoan(msg.sender, _swapMarket,_commitment, _market, _swappedAmount);
 		return true;
 	}
-<<<<<<< HEAD
 
 	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
 		LibDiamond._withdrawCollateral(msg.sender, _market, _commitment);
@@ -66,7 +65,6 @@ contract Loan is Pausable, ILoan {
 		price = LibDiamond._getFairPrice(_requestId);
 	}
 
-=======
 
 	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
 		LibDiamond._withdrawCollateral(msg.sender, _market, _commitment);
@@ -82,7 +80,6 @@ contract Loan is Pausable, ILoan {
 		LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
 		return true;
 	}
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
 	function pauseLoan() external override authLoan() nonReentrant() {
 		_pause();
 	}
@@ -96,11 +93,8 @@ contract Loan is Pausable, ILoan {
 	}
 
 	modifier authLoan() {
-<<<<<<< HEAD
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-=======
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
 		require(
 			msg.sender == ds.contractOwner,
 			"ERROR: Require Admin access"

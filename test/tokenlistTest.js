@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const {
@@ -142,7 +141,6 @@ describe("===== TokenList Test =====", function () {
 
 
 })
-=======
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const {
@@ -282,4 +280,3 @@ describe("===== TokenList Test =====", function () {
 
 
 })
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc

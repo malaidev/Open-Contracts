@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const { ethers } = require('hardhat')
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 
@@ -37,7 +36,6 @@ updateLoanAddTest()
     console.error(error);
     process.exit(1);
   });
-=======
 const { ethers } = require('hardhat')
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 
@@ -76,5 +74,4 @@ updateLoanAddTest()
     console.error(error);
     process.exit(1);
   });
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
   

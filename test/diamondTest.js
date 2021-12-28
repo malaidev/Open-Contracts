@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const {
@@ -360,7 +359,6 @@ describe("DiamondTest", function () {
     //   assert.sameMembers(result, selectors)
     // })
 });
-=======
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const {
@@ -713,4 +711,3 @@ describe("DiamondTest", function () {
       assert.sameMembers(result, selectors)
     })
 });
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc

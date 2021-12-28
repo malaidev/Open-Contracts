@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const { ethers } = require('hardhat')
 const utils = require('ethers').utils
 
@@ -132,7 +131,6 @@ if (require.main === module) {
 }
   exports.deployDiamond = deployDiamond
   exports.deployOpenFacets = deployOpenFacets
-=======
 const { utils, ethers } = require('hardhat')
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 
@@ -265,4 +263,3 @@ if (require.main === module) {
 }
   exports.deployDiamond = deployDiamond
   exports.deployOpenFacets = deployOpenFacets
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc

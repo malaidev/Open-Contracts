@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
@@ -12,18 +11,3 @@ interface IDiamondLoupe {
     function facetAddresses() external view returns (address[] memory facetAddresses_);
     function facetAddress(bytes4 _functionSelector) external view returns (address facetAddress_);
 }
-=======
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.1;
-
-interface IDiamondLoupe {
-    struct Facet {
-        address facetAddress;
-        bytes4[] functionSelectors;
-    }
-    function facets() external view returns (Facet[] memory facets_);
-    function facetFunctionSelectors(address _facet) external view returns (bytes4[] memory facetFunctionSelectors_);
-    function facetAddresses() external view returns (address[] memory facetAddresses_);
-    function facetAddress(bytes4 _functionSelector) external view returns (address facetAddress_);
-}
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc

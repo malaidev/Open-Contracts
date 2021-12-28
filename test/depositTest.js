@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
@@ -137,7 +136,6 @@ describe("===== Deposit Test =====", function () {
         .to.emit(library, "DepositAdded");
     })
 })
-=======
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
@@ -276,4 +274,3 @@ describe("===== Deposit Test =====", function () {
         .to.emit(deposit, "DepositAdded");
     })
 })
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc

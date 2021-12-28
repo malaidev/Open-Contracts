@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const { expect } = require("chai")
 const { ethers } = require("hardhat")
 const {
@@ -177,7 +176,6 @@ describe("===== AccessRegistry Test =====", function () {
         expect(await accessRegistry.hasAdminRole(roleAdmin1, accounts[2].address)).to.be.equal(false)
     })
 })
-=======
 const { expect } = require("chai")
 const { ethers } = require("hardhat")
 const {
@@ -353,4 +351,3 @@ describe("===== AccessRegistry Test =====", function () {
         expect(await accessRegistry.hasAdminRole(roleAdmin1, accounts[2].address)).to.be.equal(false)
     })
 })
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc

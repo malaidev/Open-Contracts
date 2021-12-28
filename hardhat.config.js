@@ -4,8 +4,6 @@ const utils = require('ethers').utils
 
 require("@nomiclabs/hardhat-waffle");
 
-<<<<<<< HEAD
-=======
 // async function deployDiamond() {
 //   const accounts = await ethers.getSigners()
 //   const contractOwner = await accounts[0]
@@ -194,7 +192,6 @@ require("@nomiclabs/hardhat-waffle");
 //   )
 // }
 
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {

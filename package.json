@@ -1,10 +1,7 @@
 {
   "name": "hardhat-openprotocol",
   "version": "1.0.0",
-<<<<<<< HEAD
   "description": "",
-=======
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,22 +20,16 @@
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.7",
     "dotenv": "^10.0.0",
-<<<<<<< HEAD
     "eth-crypto": "^2.1.0",
-=======
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
     "hardhat": "^2.6.7",
     "hardhat-contract-sizer": "^2.1.1",
     "solc": "^0.8.10",
     "web3": "^1.6.0"
-<<<<<<< HEAD
   }
-=======
   },
   "directories": {
     "test": "test"
   },
   "keywords": [],
   "description": ""
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
 }
