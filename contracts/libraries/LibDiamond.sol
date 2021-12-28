@@ -1216,13 +1216,18 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage(); 
         LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
+		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
-		_hasLoanAccount(_account);
 		_isMarketSupported(_market);
+		//Below are checked in _collateralPointer
 
-		require((collateral.timelockValidity + collateral.activationTime) <= block.timestamp, "ERROR: Timelock in progress");
-
+		// _hasLoanAccount(_account);
+		// require(loan.id !=0, "ERROR: No Loan");
+		// require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
+		// if (_commitment != _getCommitment(0)) {
+		// 	require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
+		// }
 		_collateralTransfer(_account, loan.market, loan.commitment);
 
 		delete ds.indCollateralRecords[_account][loan.market][loan.commitment];
@@ -1248,8 +1253,9 @@ library LibDiamond {
 
 		require(loan.id !=0, "ERROR: No Loan");
 		require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
-		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
-		
+		if (_commitment != _getCommitment(0)) {
+			require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
+		}		
 		collateralMarket = collateral.market;
 		collateralAmount = collateral.amount;
 	}

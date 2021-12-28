@@ -1,7 +1,9 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-const {deployDiamond}= require('../scripts/deploy_diamond.js')
+const {deployDiamond}= require('../scripts/deploy_all.js')
+const {deployOpenFacets}= require('../scripts/deploy_all.js')
+const {addMarkets}= require('../scripts/deploy_all.js')
 
 describe("===== Deposit Test =====", function () {
     let diamondAddress
@@ -28,12 +30,11 @@ describe("===== Deposit Test =====", function () {
     before(async function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
-        // diamondAddress = '0x1f2523fCb78c739Ed60460f9Bc9845a622771710'
-        diamondAddress = await deployDiamond()
 
-        // await deployFacets()
-        
-        // await deployOpenFacets(diamondAddress)
+        diamondAddress = await deployDiamond()
+        await deployOpenFacets(diamondAddress)
+        await addMarkets(diamondAddress)
+
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 

@@ -10,7 +10,9 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/deploy_diamond.js')
+const {deployDiamond}= require('../scripts/deploy_all.js')
+const {deployOpenFacets}= require('../scripts/deploy_all.js')
+const {addMarkets}= require('../scripts/deploy_all.js')
 
 describe("===== TokenList Test =====", function () {
     let diamondAddress
@@ -35,6 +37,8 @@ describe("===== TokenList Test =====", function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
+        await deployOpenFacets(diamondAddress)
+        await addMarkets(diamondAddress)
         // const diamond = await ethers.getContractAt('OpenDiamond', "0xEF1a30678f7d205d310bADBA8dfA4B122B0Fb24b")
         // diamondAddress = diamond.address
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)

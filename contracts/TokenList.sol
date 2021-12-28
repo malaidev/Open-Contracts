@@ -90,7 +90,7 @@ contract TokenList is Pausable, ITokenList {
 	}
 
   function isPausedTokenList() public view virtual override returns (bool) {
-    return _paused();
+    return _paused(); 
   }
 
 	modifier authTokenList() {

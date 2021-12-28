@@ -10,7 +10,10 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/deploy_diamond.js')
+// const {deployDiamond}= require('../scripts/deploy_diamond.js')
+const {deployDiamond}= require('../scripts/deploy_all.js')
+const {deployOpenFacets}= require('../scripts/deploy_all.js')
+const {addMarkets}= require('../scripts/deploy_all.js')
 
 describe("===== AccessRegistry Test =====", function () {
     let diamondAddress
@@ -47,7 +50,8 @@ describe("===== AccessRegistry Test =====", function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
-        // await deployOpenFacets(diamondAddress)
+        await deployOpenFacets(diamondAddress)
+        await addMarkets(diamondAddress)
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 

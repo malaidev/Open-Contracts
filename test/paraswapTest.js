@@ -14,7 +14,9 @@ const {
   
 const { assert } = require('chai')
 
-const {deployDiamond}= require('../scripts/deploy_diamond.js')
+const {deployDiamond}= require('../scripts/deploy_all.js')
+const {deployOpenFacets}= require('../scripts/deploy_all.js')
+const {addMarkets}= require('../scripts/deploy_all.js')
 
 
 // const ethers = require('ethers');
