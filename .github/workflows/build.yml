@@ -25,4 +25,4 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm install
-    - run: npx hardhat deploy scripts/1_deploy_diamond.js
+    - run: npx hardhat run scripts/deploy_all.js
