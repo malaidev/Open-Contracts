@@ -65,6 +65,21 @@ contract Loan is Pausable, ILoan {
 		price = LibDiamond._getFairPrice(_requestId);
 	}
 
+
+	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
+		LibDiamond._withdrawCollateral(msg.sender, _market, _commitment);
+		return true;
+	}
+
+	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view override returns (bool) {
+    	LibDiamond._collateralPointer(_account, _market, _commitment, collateralMarket, collateralAmount);
+		return true;
+	}
+
+	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external override returns (bool success) {
+		LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
+		return true;
+	}
 	function pauseLoan() external override authLoan() nonReentrant() {
 		_pause();
 	}
@@ -78,6 +93,7 @@ contract Loan is Pausable, ILoan {
 	}
 
 	modifier authLoan() {
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 		require(
 			msg.sender == ds.contractOwner,
