@@ -1,9 +1,10 @@
+
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
 import {LibDiamond} from "../libraries/LibDiamond.sol";
-import { IDiamondLoupe } from "../Interfaces/IDiamondLoupe.sol";
-import { IDiamondCut } from "../Interfaces/IDiamondCut.sol";
+import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
+import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 import "hardhat/console.sol";
 // It is exapected that this contract is customized if you want to deploy your diamond
 // with data from a deployment script. Use the init function to initialize state variables

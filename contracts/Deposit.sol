@@ -8,7 +8,6 @@ import "./libraries/LibDiamond.sol";
 
 contract Deposit is Pausable, IDeposit{
 	
-	
 	constructor() 
 	{
     	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
@@ -95,6 +94,9 @@ contract Deposit is Pausable, IDeposit{
 	function addToDeposit(bytes32 _market, bytes32 _commitment, uint _amount) external override nonReentrant() returns(bool) {
 		LibDiamond._addToDeposit(msg.sender, _market, _commitment, _amount);
 		return true;
+	}
+    function getFairPriceDeposit(uint _requestId) external override returns (uint price){
+		price = LibDiamond._getFairPrice(_requestId);
 	}
 
 	function pauseDeposit() external override authDeposit() nonReentrant() {

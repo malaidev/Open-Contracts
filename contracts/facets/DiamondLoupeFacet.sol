@@ -2,7 +2,7 @@
 pragma solidity 0.8.1;
 
 import { LibDiamond } from  "../libraries/LibDiamond.sol";
-import { IDiamondLoupe } from "../Interfaces/IDiamondLoupe.sol";
+import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
 
 contract DiamondLoupeFacet is IDiamondLoupe {
     function facets() external override view returns (Facet[] memory facets_) {
