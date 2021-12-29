@@ -1,0 +1,29 @@
+name: Build
+on:
+  push:
+    branches: [ staging ]
+    paths:
+      - '/contracts'
+  pull_request:
+    branches: [ review ]
+    paths:
+      - '/contracts'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm install
+    - run: npx hardhat deploy scripts/1_deploy_diamond.js
+    //would be adding a deployer script straight away

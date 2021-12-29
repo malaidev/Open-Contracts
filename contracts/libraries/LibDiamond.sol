@@ -85,6 +85,10 @@ library LibDiamond {
         bytes32 commitment;
         uint amount;
         uint lastUpdate;
+		bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        uint timelockValidity; // timelock duration
+        uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
     }
 
     struct YieldLedger    {
@@ -818,8 +822,10 @@ library LibDiamond {
     function _withdrawDeposit(address _account, bytes32 _market, bytes32 _commitment, uint _amount, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) {
         DiamondStorage storage ds = diamondStorage(); 
 		
-		_hasAccount(_account);
+		_hasAccount(_account);// checks if user has savings account 
 		_isMarketSupported(_market);
+
+		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
 
 		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
 		// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
@@ -827,18 +833,29 @@ library LibDiamond {
 		_accruedYield(_account,_market,_commitment);
 
 		uint _savingsBalance = _accountBalance(_account, _market, _commitment, _request);
+		require(deposit !=0,"No deposit available" );
 		require(_amount <= _savingsBalance, "Insufficient balance"); // Dinh modified
-		if (_commitment == _getCommitment(0))	{
+		if (_commitment != _getCommitment(0))	{
+			if (deposit.isTimelockActivated =  false){
+				deposit.isTimelockActivated =  true;
+				deposit.timelockValidity = 86400;
+							// 3 days = 86400s; 
+				deposit.isTimelockApplicable = true;
+			}
+			else if (deposit.isTimelockActivated =  true){
+				require(yield.timelockvalidity + yield.activationTime <= block.timestamp, "Deposit cannot be withdrawn untill the commitment period ends ");
+				/// Transfer funds to the user's wallet.
+			ds.token  = IBEP20(_connectMarket(_market));
+			ds.token.approveFrom(ds.contractOwner, address(this), _amount);
+			ds.token.transferFrom(ds.contractOwner, _account, _amount);
+			}
+		
+			
 			_updateSavingsBalance(_account, _market, _commitment, _amount, _request);
-		}
-		/// Transfer funds to the user's wallet.
-		ds.token = IBEP20(_connectMarket(_market));
-		ds.token.approveFrom(ds.contractOwner, address(this), _amount);
-		ds.token.transferFrom(ds.contractOwner, _account, _amount);
+			_updateReservesDeposit(_market, _amount, 1);
+		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);	
 
-		_updateReservesDeposit(_market, _amount, 1);
-		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);
-	}
+    }
 
     function _accruedYield(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
         DiamondStorage storage ds = diamondStorage(); 
@@ -1027,8 +1044,6 @@ library LibDiamond {
 
     function _updateReservesDeposit(bytes32 _market, uint _amount, uint _num) internal authContract(DEPOSIT_ID) {
         DiamondStorage storage ds = diamondStorage();
-	// num is a variable with only 2 outputs[0 or 1]. Here 0 denotes addition of liquidity into reserves,
-	// meanwhile 1 represents deduction of liqudity from reserves
 		if (_num == 0)	{
 			ds.marketReservesDeposit[_market] += _amount;
 		} else if (_num == 1)	{
@@ -2182,26 +2197,6 @@ library LibDiamond {
         }
     }
 
-	function toHex16 (bytes16 data) internal pure returns (bytes32 result) {
-		result = bytes32 (data) & 0xFFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000000 |
-			(bytes32 (data) & 0x0000000000000000FFFFFFFFFFFFFFFF00000000000000000000000000000000) >> 64;
-		result = result & 0xFFFFFFFF000000000000000000000000FFFFFFFF000000000000000000000000 |
-			(result & 0x00000000FFFFFFFF000000000000000000000000FFFFFFFF0000000000000000) >> 32;
-		result = result & 0xFFFF000000000000FFFF000000000000FFFF000000000000FFFF000000000000 |
-			(result & 0x0000FFFF000000000000FFFF000000000000FFFF000000000000FFFF00000000) >> 16;
-		result = result & 0xFF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000 |
-			(result & 0x00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000) >> 8;
-		result = (result & 0xF000F000F000F000F000F000F000F000F000F000F000F000F000F000F000F000) >> 4 |
-			(result & 0x0F000F000F000F000F000F000F000F000F000F000F000F000F000F000F000F00) >> 8;
-		result = bytes32 (0x3030303030303030303030303030303030303030303030303030303030303030 +
-			uint256 (result) +
-			(uint256 (result) + 0x0606060606060606060606060606060606060606060606060606060606060606 >> 4 &
-			0x0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F) * 7);
-	}
-
-	function toHex (bytes32 data) public pure returns (string memory) {
-		return string (abi.encodePacked ("0x", toHex16 (bytes16 (data)), toHex16 (bytes16 (data << 128))));
-	}
     function enforceHasContractCode(address _contract, string memory _errorMessage) internal view {
         uint256 contractSize;
         assembly {
@@ -2211,6 +2206,8 @@ library LibDiamond {
     }
 
 	modifier authContract(uint _facetId) {
+		// console.log("_facetId is ", _facetId);
+		// console.log("diamond fId is", LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId);
 		require(_facetId == LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId || 
 				LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId == 0, "Not permitted");
 		_;
