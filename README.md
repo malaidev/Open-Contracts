@@ -2,7 +2,7 @@
 
 This is a complete deployment guide on how you can deploy contracts by yourself. Initially we are deploying on Binance smart chain testnet, 
 you can deploy on any chain with minor changes in hardhatconfig.js file. Initially you will require some test bnb so grab some tokens from
-the faucet.
+the [faucet](https://testnet.binance.org/faucet-smart).
 
 Open your terminal and follow the steps
 
