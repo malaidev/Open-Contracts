@@ -43,10 +43,7 @@ contract Liquidator is Pausable, ILiquidator {
 
 	modifier authLiquidator() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-		require(
-			msg.sender == ds.contractOwner,
-			"Only Liquidator admin can call this function"
-		);
+		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminLiquidator, ds.adminLiquidatorAddress), "Admin role does not exist.");
 		_;
 	}
 }

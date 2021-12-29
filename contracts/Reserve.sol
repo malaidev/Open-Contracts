@@ -59,9 +59,8 @@ contract Reserve is Pausable, IReserve {
     modifier authReserve()  {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 
-        require(msg.sender == ds.contractOwner, 
-            "Only Reverse admin can call this function"
-        );
+        require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminReserve, ds.adminReserveAddress), "Admin role does not exist.");
+
         _;
     }
 
