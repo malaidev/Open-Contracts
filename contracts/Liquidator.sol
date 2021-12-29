@@ -44,7 +44,7 @@ contract Liquidator is Pausable, ILiquidator {
 	modifier authLiquidator() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 		require(
-			msg.sender == ds.contractOwner,
+			msg.sender == ds.contractOwner || msg.sender == ds.adminLiquidatorAddress,
 			"Only Liquidator admin can call this function"
 		);
 		_;

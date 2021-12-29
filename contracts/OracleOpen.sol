@@ -40,7 +40,7 @@ contract OracleOpen is Pausable, IOracleOpen {
 
     modifier onlyAdmin() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-        require(msg.sender == ds.contractOwner, 
+        require(msg.sender == ds.contractOwner || msg.sender == ds.adminOpenOracleAddress,
             "Only Oracle admin can call this function"
         );
         _;

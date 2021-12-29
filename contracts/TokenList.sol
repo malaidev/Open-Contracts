@@ -95,7 +95,8 @@ contract TokenList is Pausable, ITokenList {
 
 	modifier authTokenList() {
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-		require(msg.sender == ds.contractOwner, "Only an admin can call this function");
+		require(msg.sender == ds.contractOwner || msg.sender == ds.adminTokenListAddress,
+    "Only an admin can call this function");
 		_;
 	}
 }

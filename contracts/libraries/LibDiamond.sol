@@ -178,19 +178,17 @@ library LibDiamond {
         mapping(bytes4 => FacetAddressAndSelectorPosition) facetAddressAndSelectorPosition;
         bytes4[] selectors;
         mapping(bytes4 => bool) supportedInterfaces;
-        // owner of the contract
-        address contractOwner;
 		address[] facetAddresses;
 		// address reserveAddress;
         IBEP20 token;
 
     // ===========  admin addresses ===========
         bytes32 superAdmin;
-        // address superAdminAddress;
+        address contractOwner;
 
     // =========== TokenList state variables ===========
-        // bytes32 adminTokenList;
-        // address adminTokenListAddress;
+        bytes32 adminTokenList;
+        address adminTokenListAddress;
         bytes32[] pMarkets; // Primary markets
         bytes32[] sMarkets; // Secondary markets
 
@@ -203,8 +201,8 @@ library LibDiamond {
         mapping (bytes32 => MarketData) indMarket2Data;
 
     // =========== Comptroller state variables ===========
-        // bytes32 adminComptroller;
-        // address adminComptrollerAddress;        
+        bytes32 adminComptroller;
+        address adminComptrollerAddress;        
         bytes32[] commitment; // NONE, TWOWEEKS, ONEMONTH, THREEMONTHS
         uint reserveFactor;
         uint loanIssuanceFees;
@@ -221,12 +219,12 @@ library LibDiamond {
         mapping(bytes32 => APR) indAPRRecords;
 
     // =========== Liquidator state variables ===========
-        // bytes32 adminLiquidator;
-        // address adminLiquidatorAddress;
+        bytes32 adminLiquidator;
+        address adminLiquidatorAddress;
 
     // =========== Deposit state variables ===========
-        // bytes32 adminDeposit;
-        // address adminDepositAddress;
+        bytes32 adminDeposit;
+        address adminDepositAddress;
 
         mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
         mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address =>_market => _commitment => depositRecord
@@ -237,17 +235,15 @@ library LibDiamond {
         mapping(bytes32 => uint) marketUtilisationDeposit; // mapping(market => marketBalance)
 
     // =========== OracleOpen state variables ==============
-        // bytes32 adminOpenOracle;
-        // address adminOpenOracleAddress;
+        bytes32 adminOpenOracle;
+        address adminOpenOracleAddress;
 		mapping(bytes32 => address) pairAddresses;
 		PriceData[] prices;
 		mapping(uint => PriceData) priceData;
 		uint requestEventId;
     // =========== Loan state variables ============
-        // bytes32 adminLoan;
-        // address adminLoanAddress;
-		// bytes32 adminLoan1;
-		// address adminLoan1Address;
+        bytes32 adminLoan;
+        address adminLoanAddress;
         IBEP20 loanToken;
         IBEP20 collateralToken;
         IBEP20 withdrawToken;
@@ -267,13 +263,12 @@ library LibDiamond {
         mapping(bytes32 => uint) marketUtilisationLoan; // mapping(market => marketBalance)
 
     // =========== Reserve state variables ===========
-        // bytes32 adminReserve;
-        // address adminReserveAddress;
+        bytes32 adminReserve;
+        address adminReserveAddress;
 
     // =========== AccessRegistry state variables ==============
         mapping(bytes32 => RoleData) _roles;
         mapping(bytes32 => AdminRoleData) _adminRoles;
-
     }
 	
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -2062,8 +2057,42 @@ library LibDiamond {
 		ds.pairAddresses[MARKET_BUSD] = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7; // BUSD
 		ds.pairAddresses[MARKET_DAI] = 0x8a9424745056Eb399FD19a0EC26A14316684e274; // DAI
 		ds.pairAddresses[MARKET_WBNB] = 0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE; // BNB.t
-
     }
+
+	function setTokenListAdmin(bytes32 _newRole, address _newAdmin) {
+		adminTokenList = _newRole;
+		adminTokenListAddress = _newAdmin;
+	}
+
+	function setComptrollerAdmin(bytes32 _newRole, address _newAdmin) {
+		adminComptroller = _newRole;
+		adminComptrollerAddress = _newAdmin;
+	}
+
+	function setDepositAdmin(bytes32 _newRole, address _newAdmin) {
+		adminDeposit = _newRole;
+		adminDepositAddress = _newAdmin;
+	}
+
+	function setLiquidatorAdmin(bytes32 _newRole, address _newAdmin) {
+		adminDeposit = _newRole;
+		adminDepositAddress = _newAdmin;
+	}
+
+	function setLoanAdmin(bytes32 _newRole, address _newAdmin) {
+		adminLoan = _newRole;
+		adminLoanAddress = _newAdmin;
+	}
+
+	function setOracleAdmin(bytes32 _newRole, address _newAdmin) {
+		adminOpenOracle = _newRole;
+		adminOpenOracleAddress = _newAdmin;
+	}
+
+	function setReserveAdmin(bytes32 _newRole, address _newAdmin) {
+		adminReserve = _newRole;
+		adminReserveAddress = _newAdmin;
+	}
 
 	function addFacetAddress(address _address) internal {
         DiamondStorage storage ds = diamondStorage();

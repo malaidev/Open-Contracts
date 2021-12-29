@@ -106,8 +106,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
     }
     
     modifier onlyAdmin {
-    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner), "Admin role does not exist.");
         _;
     }
