@@ -1268,11 +1268,11 @@ library LibDiamond {
 		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
-		require(loan.id !=0, "ERROR: No Loan");
+		//require(loan.id !=0, "ERROR: No Loan");
 		require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
-		if (_commitment != _getCommitment(0)) {
+		//if (_commitment != _getCommitment(0)) {
 			require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
-		}		
+		//}		
 		collateralMarket = collateral.market;
 		collateralAmount = collateral.amount;
 	}
@@ -1972,7 +1972,7 @@ library LibDiamond {
     }
 
 // =========== Reserve Functions =====================
-	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(RESERVE_ID) {
+	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(L_ID) {
         DiamondStorage storage ds = diamondStorage(); 
 
 		bytes32 collateralMarket;
