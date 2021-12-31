@@ -1972,7 +1972,7 @@ library LibDiamond {
     }
 
 // =========== Reserve Functions =====================
-	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(L_ID) {
+	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
         DiamondStorage storage ds = diamondStorage(); 
 
 		bytes32 collateralMarket;
