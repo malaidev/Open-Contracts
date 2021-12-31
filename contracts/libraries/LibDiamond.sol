@@ -181,7 +181,8 @@ library LibDiamond {
         // function selector => facet address and selector position in selectors array
         mapping(bytes4 => FacetAddressAndSelectorPosition) facetAddressAndSelectorPosition;
         bytes4[] selectors;
-        mapping(bytes4 => bool) supportedInterfaces;
+        //  Function selectors with the ABI of a contract provide enough information about functions to be useful for user-interface software.
+	mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner;
 		address[] facetAddresses;
