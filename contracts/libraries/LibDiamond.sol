@@ -193,8 +193,8 @@ library LibDiamond {
         // address superAdminAddress;
 
     // =========== TokenList state variables ===========
-        // bytes32 adminTokenList;
-        // address adminTokenListAddress;
+        bytes32 adminTokenList;
+        address adminTokenListAddress;
         bytes32[] pMarkets; // Primary markets
         bytes32[] sMarkets; // Secondary markets
 
@@ -207,8 +207,8 @@ library LibDiamond {
         mapping (bytes32 => MarketData) indMarket2Data;
 
     // =========== Comptroller state variables ===========
-        // bytes32 adminComptroller;
-        // address adminComptrollerAddress;        
+        bytes32 adminComptroller;
+        address adminComptrollerAddress;        
         bytes32[] commitment; // NONE, TWOWEEKS, ONEMONTH, THREEMONTHS
         uint reserveFactor;
         uint loanIssuanceFees;
@@ -225,12 +225,12 @@ library LibDiamond {
         mapping(bytes32 => APR) indAPRRecords;
 
     // =========== Liquidator state variables ===========
-        // bytes32 adminLiquidator;
-        // address adminLiquidatorAddress;
+        bytes32 adminLiquidator;
+        address adminLiquidatorAddress;
 
     // =========== Deposit state variables ===========
-        // bytes32 adminDeposit;
-        // address adminDepositAddress;
+        bytes32 adminDeposit;
+        address adminDepositAddress;
 
         mapping(address => SavingsAccount) savingsPassbook;  // Maps an account to its savings Passbook
         mapping(address => mapping(bytes32 => mapping(bytes32 => DepositRecords))) indDepositRecord; // address =>_market => _commitment => depositRecord
@@ -241,17 +241,17 @@ library LibDiamond {
         mapping(bytes32 => uint) marketUtilisationDeposit; // mapping(market => marketBalance)
 
     // =========== OracleOpen state variables ==============
-        // bytes32 adminOpenOracle;
-        // address adminOpenOracleAddress;
+        bytes32 adminOpenOracle;
+        address adminOpenOracleAddress;
 		mapping(bytes32 => address) pairAddresses;
 		PriceData[] prices;
 		mapping(uint => PriceData) priceData;
 		uint requestEventId;
     // =========== Loan state variables ============
-        // bytes32 adminLoan;
-        // address adminLoanAddress;
-		// bytes32 adminLoan1;
-		// address adminLoan1Address;
+        bytes32 adminLoan;
+        address adminLoanAddress;
+		bytes32 adminLoan1;
+		address adminLoan1Address;
         IBEP20 loanToken;
         IBEP20 collateralToken;
         IBEP20 withdrawToken;
@@ -271,8 +271,8 @@ library LibDiamond {
         mapping(bytes32 => uint) marketUtilisationLoan; // mapping(market => marketBalance)
 
     // =========== Reserve state variables ===========
-        // bytes32 adminReserve;
-        // address adminReserveAddress;
+        bytes32 adminReserve;
+        address adminReserveAddress;
 
     // =========== AccessRegistry state variables ==============
         mapping(bytes32 => RoleData) _roles;
@@ -1268,11 +1268,11 @@ library LibDiamond {
 		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
-		require(loan.id !=0, "ERROR: No Loan");
+		//require(loan.id !=0, "ERROR: No Loan");
 		require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
-		if (_commitment != _getCommitment(0)) {
+		//if (_commitment != _getCommitment(0)) {
 			require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
-		}		
+		//}		
 		collateralMarket = collateral.market;
 		collateralAmount = collateral.amount;
 	}
@@ -1972,7 +1972,7 @@ library LibDiamond {
     }
 
 // =========== Reserve Functions =====================
-	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(RESERVE_ID) {
+	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(L_ID) {
         DiamondStorage storage ds = diamondStorage(); 
 
 		bytes32 collateralMarket;

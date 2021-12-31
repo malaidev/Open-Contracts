@@ -76,10 +76,8 @@ contract Loan1 is Pausable, ILoan1 {
 
     modifier authLoan1() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-		require(
-			msg.sender == ds.contractOwner,
-			"ERROR: Require Admin access"
-		);
+		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminLoan1, ds.adminLoan1Address), "Admin role does not exist.");
+
 		_;
 	}
 
