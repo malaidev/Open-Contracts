@@ -17,7 +17,7 @@ contract Loan1 is Pausable, ILoan1 {
 		return LibDiamond._hasLoanAccount(_account);
 	}
 
-	function avblReservesLoan(bytes32 _market) external view override returns(uint) {
+			function avblReservesLoan(bytes32 _market) external view override returns(uint) {
 		return LibDiamond._avblReservesLoan(_market);
 	}
 
@@ -53,7 +53,7 @@ contract Loan1 is Pausable, ILoan1 {
 		return true;
 	}
 
-	function liquidation(address _account, uint256 _id) external override nonReentrant()	authLoan1() returns (bool success) {
+	function liquidation(address _account, uint256 _id) external override nonReentrant() authLoan1() returns (bool success) {
 		LibDiamond._liquidation(_account, _id);
 		return true;
 	}
@@ -76,10 +76,8 @@ contract Loan1 is Pausable, ILoan1 {
 
     modifier authLoan1() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-		require(
-			msg.sender == ds.contractOwner,
-			"ERROR: Require Admin access"
-		);
+		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminLoan1, ds.adminLoan1Address), "Admin role does not exist.");
+
 		_;
 	}
 

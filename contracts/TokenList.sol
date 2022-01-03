@@ -90,12 +90,11 @@ contract TokenList is Pausable, ITokenList {
 	}
 
   function isPausedTokenList() public view virtual override returns (bool) {
-    return _paused();
+    return _paused(); 
   }
 
 	modifier authTokenList() {
     LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-		require(msg.sender == ds.contractOwner, "Only an admin can call this function");
-		_;
+		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminTokenList, ds.adminTokenListAddress), "Admin role does not exist.");
 	}
 }

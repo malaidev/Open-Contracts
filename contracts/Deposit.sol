@@ -8,7 +8,6 @@ import "./libraries/LibDiamond.sol";
 
 contract Deposit is Pausable, IDeposit{
 	
-	
 	constructor() 
 	{
     	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
@@ -96,6 +95,9 @@ contract Deposit is Pausable, IDeposit{
 		LibDiamond._addToDeposit(msg.sender, _market, _commitment, _amount);
 		return true;
 	}
+    function getFairPriceDeposit(uint _requestId) external override returns (uint price){
+		price = LibDiamond._getFairPrice(_requestId);
+	}
 
 	function pauseDeposit() external override authDeposit() nonReentrant() {
 		_pause();
@@ -112,10 +114,7 @@ contract Deposit is Pausable, IDeposit{
 	modifier authDeposit() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 
-		require(
-			msg.sender == ds.contractOwner,
-			"Only an admin can call this function"
-		);
+		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminDeposit, ds.adminDepositAddress), "Admin role does not exist.");
 		_;
 	}
 }

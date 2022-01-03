@@ -282,23 +282,15 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
   // })
 });
 
-// You need to export an object to set up your config
-// Go to https://hardhat.org/config/ to learn more
-
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
-
-//  require("@nomiclabs/hardhat-waffle");
  require('hardhat-contract-sizer');
  require("@nomiclabs/hardhat-etherscan");
-//  require("solidity-coverage");
+
  require('dotenv').config();
 
  require("@tenderly/hardhat-tenderly");
 
 module.exports = {
-  defaultNetwork: "harmony",
+  defaultNetwork: "hardhat",
   networks: {
     hardhat: {
       // forking: {
@@ -307,6 +299,7 @@ module.exports = {
       // }
     },
     ropsten: {
+      chainId: 3,
       url: process.env.API_URL,
       accounts: {
         mnemonic: process.env.MNEMONIC
@@ -315,8 +308,9 @@ module.exports = {
       gasPrice: 8000000000
     },
     kovan: {
-      accounts: {
-        mnemonic: process.env.MNEMONIC
+      accounts: 
+      {
+          mnemonic: process.env.MNEMONIC,
       },
       url: "https://kovan.infura.io/v3/99b8947af7e14278ae235bb21eb81f53",
       chainId: 42,
@@ -333,12 +327,20 @@ module.exports = {
       chainId: 97,
       timeout: 200000
     },
-    harmony: {
-      url: 'https://api.s0.b.hmny.io',
+//     harmony: {
+//       url: 'https://api.s0.b.hmny.io',
+//       timeout: 200000,
+//       accounts: [process.env.HARMONY_PRIVATE_KEY],
+//       gas: 2100000, 
+//       gasPrice: 8000000000
+//     }
+
+    },
+    avax: {
+      url: 'https://api.avax.network/ext/bc/C/rpc',
       timeout: 200000,
-      accounts: [process.env.HARMONY_PRIVATE_KEY],
-      gas: 2100000, 
-      gasPrice: 8000000000
+      accounts: [process.env.PRIVATE_KEY],
+      chainId: 43114
     }
   },
   solidity: {
@@ -356,6 +358,5 @@ module.exports = {
   tenderly: {
     project: "Test",
     username: "dinh",
-}
-  
+  }
 };
