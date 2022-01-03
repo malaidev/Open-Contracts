@@ -93,7 +93,6 @@ contract Loan is Pausable, ILoan {
 	}
 
 	modifier authLoan() {
-    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminLoan, ds.adminLoanAddress), "Admin role does not exist.");
 
