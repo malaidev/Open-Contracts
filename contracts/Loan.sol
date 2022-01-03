@@ -51,11 +51,6 @@ contract Loan is Pausable, ILoan {
 		return true;
 	}
 
-	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view override returns (bool) {
-    	LibDiamond._collateralPointer(_account, _market, _commitment, collateralMarket, collateralAmount);
-		return true;
-	}
-
 	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external override returns (bool success) {
 		LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
 		return true;
@@ -66,20 +61,11 @@ contract Loan is Pausable, ILoan {
 	}
 
 
-	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
-		LibDiamond._withdrawCollateral(msg.sender, _market, _commitment);
-		return true;
-	}
-
 	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view override returns (bool) {
     	LibDiamond._collateralPointer(_account, _market, _commitment, collateralMarket, collateralAmount);
 		return true;
 	}
 
-	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external override returns (bool success) {
-		LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
-		return true;
-	}
 	function pauseLoan() external override authLoan() nonReentrant() {
 		_pause();
 	}

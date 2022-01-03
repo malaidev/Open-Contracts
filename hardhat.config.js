@@ -282,10 +282,6 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
   // })
 });
 
-<<<<<<< HEAD
- require('hardhat-contract-sizer');
- require("@nomiclabs/hardhat-etherscan");
-=======
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
@@ -297,17 +293,12 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
  require('hardhat-contract-sizer');
  require("@nomiclabs/hardhat-etherscan");
 //  require("solidity-coverage");
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
  require('dotenv').config();
 
  require("@tenderly/hardhat-tenderly");
 
 module.exports = {
-<<<<<<< HEAD
-  defaultNetwork: "hardhat",
-=======
   defaultNetwork: "harmony",
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
   networks: {
     hardhat: {
       // forking: {
@@ -316,10 +307,6 @@ module.exports = {
       // }
     },
     ropsten: {
-<<<<<<< HEAD
-      chainId: 3,
-=======
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
       url: process.env.API_URL,
       accounts: {
         mnemonic: process.env.MNEMONIC
@@ -327,17 +314,9 @@ module.exports = {
       gas: 2100000, 
       gasPrice: 8000000000
     },
-<<<<<<< HEAD
-    
-    kovan: {
-      accounts: 
-      {
-          mnemonic: process.env.MNEMONIC,
-=======
     kovan: {
       accounts: {
         mnemonic: process.env.MNEMONIC
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
       },
       url: "https://kovan.infura.io/v3/99b8947af7e14278ae235bb21eb81f53",
       chainId: 42,
@@ -350,9 +329,9 @@ module.exports = {
       accounts: {
         mnemonic: process.env.MNEMONIC
       },
-      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
       chainId: 97,
-      timeout: 200000
+      timeout: 20000000
     },
     harmony: {
       url: 'https://api.s0.b.hmny.io',
@@ -360,15 +339,6 @@ module.exports = {
       accounts: [process.env.HARMONY_PRIVATE_KEY],
       gas: 2100000, 
       gasPrice: 8000000000
-<<<<<<< HEAD
-    },
-    avax: {
-      url: 'https://api.avax.network/ext/bc/C/rpc',
-      timeout: 200000,
-      accounts: [process.env.PRIVATE_KEY],
-      chainId: 43114
-=======
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
     }
   },
   solidity: {
@@ -386,10 +356,6 @@ module.exports = {
   tenderly: {
     project: "Test",
     username: "dinh",
-<<<<<<< HEAD
-  }
-=======
 }
   
->>>>>>> 24a2f5b138a7c09f54be2d2dd357f39580a432dc
 };
