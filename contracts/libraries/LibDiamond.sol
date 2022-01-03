@@ -278,7 +278,6 @@ library LibDiamond {
     // =========== AccessRegistry state variables ==============
         mapping(bytes32 => RoleData) _roles;
         mapping(bytes32 => AdminRoleData) _adminRoles;
-
     }
 	
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -834,29 +833,18 @@ library LibDiamond {
 		_accruedYield(_account,_market,_commitment);
 
 		uint _savingsBalance = _accountBalance(_account, _market, _commitment, _request);
-		require(deposit !=0,"No deposit available" );
 		require(_amount <= _savingsBalance, "Insufficient balance"); // Dinh modified
-		if (_commitment != _getCommitment(0))	{
-			if (deposit.isTimelockActivated =  false){
-				deposit.isTimelockActivated =  true;
-				deposit.timelockValidity = 86400;
-							// 3 days = 86400s; 
-				deposit.isTimelockApplicable = true;
-			}
-			else if (deposit.isTimelockActivated =  true){
-				require(yield.timelockvalidity + yield.activationTime <= block.timestamp, "Deposit cannot be withdrawn untill the commitment period ends ");
-				/// Transfer funds to the user's wallet.
-			ds.token  = IBEP20(_connectMarket(_market));
-			ds.token.approveFrom(ds.contractOwner, address(this), _amount);
-			ds.token.transferFrom(ds.contractOwner, _account, _amount);
-			}
-		
-			
+		if (_commitment == _getCommitment(0))	{
 			_updateSavingsBalance(_account, _market, _commitment, _amount, _request);
-			_updateReservesDeposit(_market, _amount, 1);
-		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);	
+		}
+		/// Transfer funds to the user's wallet.
+		ds.token = IBEP20(_connectMarket(_market));
+		ds.token.approveFrom(ds.contractOwner, address(this), _amount);
+		ds.token.transferFrom(ds.contractOwner, _account, _amount);
 
-    }
+		_updateReservesDeposit(_market, _amount, 1);
+		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);
+	}
 
     function _accruedYield(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
         DiamondStorage storage ds = diamondStorage(); 
@@ -1973,7 +1961,7 @@ library LibDiamond {
     }
 
 // =========== Reserve Functions =====================
-	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
+	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(RESERVE_ID) {
         DiamondStorage storage ds = diamondStorage(); 
 
 		bytes32 collateralMarket;
@@ -2080,8 +2068,8 @@ library LibDiamond {
 		ds.pairAddresses[MARKET_BUSD] = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7; // BUSD
 		ds.pairAddresses[MARKET_DAI] = 0x8a9424745056Eb399FD19a0EC26A14316684e274; // DAI
 		ds.pairAddresses[MARKET_WBNB] = 0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE; // BNB.t
-
     }
+
 
 	function addFacetAddress(address _address) internal {
         DiamondStorage storage ds = diamondStorage();
