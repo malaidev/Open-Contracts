@@ -342,21 +342,21 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY],
       chainId: 43114
     }
-  },
+  }
   solidity: {
-    version: "0.8.1",
+    version: "0.8.1"
     settings: {
       optimizer: {
-        enabled: true,
-        runs: 1000,
-      },
-    },
-  },
+        enabled: true
+        runs: 1000
+      }
+    }
+  }
   mocha: {
     timeout: 200000
-  },
-  tenderly: {
-    project: "Test",
-    username: "dinh",
   }
-};
+  tenderly: {
+    project: "Test"
+    username: "dinh"
+  }
+
