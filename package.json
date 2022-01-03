@@ -26,10 +26,4 @@
     "solc": "^0.8.10",
     "web3": "^1.6.0"
   }
-  },
-  "directories": {
-    "test": "test"
-  },
-  "keywords": [],
-  "description": ""
 }
