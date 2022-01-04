@@ -217,9 +217,7 @@ contract Comptroller is Pausable, IComptroller {
 
 	modifier authComptroller() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-		require(msg.sender == ds.contractOwner || msg.sender == ds.adminComptrollerAddress,
-			"Only the comptroller admin can modify this function" 
-		);
+		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminComptroller, ds.adminComptrollerAddress), "Admin role does not exist.");
 		_;
 	}
 

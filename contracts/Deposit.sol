@@ -113,10 +113,8 @@ contract Deposit is Pausable, IDeposit{
 
 	modifier authDeposit() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-		require(
-			msg.sender == ds.contractOwner || msg.sender == ds.adminDepositAddress,
-			"Only an admin can call this function"
-		);
-		_;                                                                                                                                                                                                                                                                                        
+
+		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminDeposit, ds.adminDepositAddress), "Admin role does not exist.");
+		_;
 	}
 }
