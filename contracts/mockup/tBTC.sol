@@ -316,7 +316,7 @@ contract tBTC  is Context, IBEP20 {
     return true;
   }
 
-  function pauseState() external view override returns(string memory) {
+  function pauseState() external pure override returns(string memory) {
     return "Hey, Not sure";
   }
 
