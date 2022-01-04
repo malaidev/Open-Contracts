@@ -254,10 +254,8 @@ async function addMarkets(diamondAddress) {
 
 }
 
-async function redeployTokens() {
-    const accounts = await ethers.getSigners()
-    const contractOwner = accounts[0]
-
+async function redeployTokens (diamondAddress) {
+    
     console.log("Deploy test tokens");
     const tBTC = await ethers.getContractFactory('tBTC')
     const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
@@ -277,10 +275,72 @@ async function redeployTokens() {
     await tusdt.deployed()
     console.log("tUSDT deployed: ", tusdt.address)
     console.log("5000000000 tUSDT mint to hashstack deployer");
+
+    console.log("addMarket");
+    await tokenList.connect(contractOwner).addMarketSupport(
+        symbolUsdt,
+        18,
+        tusdt.address, // USDT.t
+        1, 
+        { gasLimit: 800000 }
+    )
+
+    await tokenList.connect(contractOwner).addMarketSupport(
+        symbolUsdc,
+        18,
+        tusdc.address, // USDC.t
+        1, 
+        { gasLimit: 800000 }
+    ) 
+
+    await tokenList.connect(contractOwner).addMarketSupport(
+        symbolBtc,
+        8,
+        tbtc.address, // BTC.t
+        1, 
+        { gasLimit: 800000 }
+    )
+
+    console.log("addMarket2");
+    await tokenList.connect(contractOwner).addMarket2Support(
+        symbolUsdt,
+        18,
+        tusdt.address, // USDT.t
+        { gasLimit: 800000 }
+    )
+
+    await tokenList.connect(contractOwner).addMarket2Support(
+        symbolUsdc,
+        18,
+        tusdc.address, // USDC.t
+        { gasLimit: 800000 }
+    ) 
+
+    await tokenList.connect(contractOwner).addMarket2Support(
+        symbolBtc,
+        8,
+        tbtc.address, // BTC.t
+        { gasLimit: 800000 }
+    )
+
+    await tokenList.connect(contractOwner).addMarket2Support(
+        symbolSxp,
+        8,
+        '0x833d9fd415df4ae8c71f411d5a819b6f78ebb134',
+        { gasLimit: 800000 }
+    )
+
+    await tokenList.connect(contractOwner).addMarket2Support(
+        symbolCAKE,
+        8,
+        '0xeed4e4d94aeb8ab7ba127d5fdce96f6e7628cf5d',
+        { gasLimit: 800000 }
+    )
+
 }
 
 if (require.main === module) {
-    redeployTokens()
+    main()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)
