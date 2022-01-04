@@ -106,13 +106,12 @@ contract AccessRegistry is Pausable, IAccessRegistry {
     }
     
     modifier onlyAdmin {
-    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-
+    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner), "Admin role does not exist.");
         _;
     }
 
-    function pauseAccessRegistry() external override onlyAdmin() nonReentrant() {
+    function pauseAccessRegistry() external override onlyAdmin() nonReentrant() {                                                                                                  
        _pause();
 	}
 	
@@ -120,7 +119,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
        _unpause();   
 	}
 
-    function isPausedAccessRegistry() external view override virtual returns (bool) {
+    function isPausedAccessRegistry() external view override virtual returns (bool) {                                                                                                                                                                                                                                                               
         return _paused();
     }
 

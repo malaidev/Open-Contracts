@@ -95,7 +95,7 @@ contract Deposit is Pausable, IDeposit{
 		LibDiamond._addToDeposit(msg.sender, _market, _commitment, _amount);
 		return true;
 	}
-    function getFairPriceDeposit(uint _requestId) external override returns (uint price){
+    function getFairPriceDeposit(uint _requestId) external view override returns (uint price){
 		price = LibDiamond._getFairPrice(_requestId);
 	}
 
