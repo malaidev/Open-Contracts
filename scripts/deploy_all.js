@@ -126,6 +126,7 @@ async function addMarkets(diamondAddress) {
     const accounts = await ethers.getSigners()
     const contractOwner = accounts[0]
 
+    const diamond = await ethers.getContractAt('OpenDiamond', diamondAddress)
     const tokenList = await ethers.getContractAt('TokenList', diamondAddress)
     const comptroller = await ethers.getContractAt('Comptroller', diamondAddress);
 
