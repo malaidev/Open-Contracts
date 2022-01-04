@@ -35,12 +35,6 @@ library LibDiamond {
 	uint8 constant ACCESSREGISTRY_ID = 18;
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 	address constant WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
-	bytes32 constant MARKET_USDT = 0x555344542e740000000000000000000000000000000000000000000000000000;
-	bytes32 constant MARKET_BUSD = 0x555344542e740000000000000000000000000000000000000000000000000000;
-	bytes32 constant MARKET_DAI = 0x555344542e740000000000000000000000000000000000000000000000000000;
-	bytes32 constant MARKET_SXP = 0x5358500000000000000000000000000000000000000000000000000000000000;
-	bytes32 constant MARKET_CAKE = 0x43414b4500000000000000000000000000000000000000000000000000000000;
-
 
     struct FacetAddressAndSelectorPosition {
         address facetAddress;
@@ -186,7 +180,6 @@ library LibDiamond {
 	mapping(bytes4 => bool) supportedInterfaces;
         // owner of the contract
         address contractOwner;
-		address[] facetAddresses;
 		// address reserveAddress;
         IBEP20 token;
 
@@ -313,10 +306,11 @@ library LibDiamond {
 	/// EVENTS
 	event NewLoan(
 		address indexed _account,
-		bytes32 indexed market,
-		uint256 indexed amount,
-		bytes32 loanCommitment,
-		uint256 timestamp
+		bytes32 loanmarket,
+		uint256 loanamount,
+		bytes32 collateralmarket,
+		uint256 collateralamount,
+		uint256 indexed loanid
 	);
 	event LoanRepaid(
 		address indexed _account,
@@ -333,10 +327,10 @@ library LibDiamond {
 	);
 	event MarketSwapped(
 		address indexed _account,
-		uint256 indexed id,
+		uint256 indexed loanid,
 		bytes32 marketFrom,
 		bytes32 marketTo,
-		uint256 timestamp
+		uint256 amount
 	);
 	event CollateralReleased(
 		address indexed _account,
@@ -826,7 +820,7 @@ library LibDiamond {
 		_hasAccount(_account);// checks if user has savings account 
 		_isMarketSupported(_market);
 
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
+		// DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
 
 		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
 		// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
@@ -1215,7 +1209,7 @@ library LibDiamond {
 		_accruedInterest(_account, _market, _commitment);
 		_accruedYield(ds.loanPassbook[_account], collateral, cYield);
 
-		emit MarketSwapped(_account,loan.id,_swapMarket,_market,block.timestamp);
+		emit MarketSwapped(_account,loan.id,_swapMarket,_market,_swappedAmount);
         success = true;
 	}
 
@@ -1223,7 +1217,7 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage(); 
         LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
+		// LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
 		_isMarketSupported(_market);
@@ -1254,7 +1248,7 @@ library LibDiamond {
 		
 		_hasLoanAccount(_account);
 
-		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
+		// LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
 		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
@@ -1722,7 +1716,7 @@ library LibDiamond {
 		_accruedInterest(_sender, _market, _commitment);
 		if (collateral.isCollateralisedDeposit) _accruedYield(loanAccount, collateral, cYield);
 
-		emit MarketSwapped(_sender,loan.id,_market,_swapMarket, block.timestamp);
+		emit MarketSwapped(_sender,loan.id,_market,_swapMarket, loan.amount);
     }
 
 	
@@ -1750,7 +1744,7 @@ library LibDiamond {
 
 		_processNewLoan(_sender,_market,_commitment,_loanAmount,_collateralMarket,_collateralAmount);
 
-		emit NewLoan(_sender, _market, _loanAmount, _commitment, block.timestamp);
+		emit NewLoan(_sender, _market, _loanAmount, _collateralMarket, _collateralAmount, ds.loanPassbook[_sender].loans.length+1);
     }
 
     function _repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount, address _sender) internal authContract(LOAN_ID) {
@@ -1945,7 +1939,7 @@ library LibDiamond {
 		// convert collateral & loanCurrent into loanActual
 		uint256 _repaymentAmount = _swap(collateral.market, loan.market, cAmount, 2);
 		_repaymentAmount += _swap(loanState.currentMarket, loan.market, lAmountCurrent, 1);
-		uint256 _remnantAmount = _repaymentAmount - lAmountCurrent;
+		// uint256 _remnantAmount = _repaymentAmount - lAmountCurrent;
 
 		delete ds.indLoanState[_account][_market][_commitment];
 		delete ds.indLoanRecords[_account][_market][_commitment];
@@ -2063,19 +2057,18 @@ library LibDiamond {
 		ds.superAdmin = keccak256("AccessRegistry.admin");
 		_addAdminRole(keccak256("AccessRegistry.admin"), _newOwner);
         emit OwnershipTransferred(previousOwner, _newOwner);
-
-		//BSC testnet pair addresses.
-		ds.pairAddresses[MARKET_USDT] = 0x7ef95a0FEE0Dd31b22626fA2e10Ee6A223F8a684; // USDT.t ~ decimal 8, not 18
-		ds.pairAddresses[MARKET_BUSD] = 0x78867BbEeF44f2326bF8DDd1941a4439382EF2A7; // BUSD
-		ds.pairAddresses[MARKET_DAI] = 0x8a9424745056Eb399FD19a0EC26A14316684e274; // DAI
-		ds.pairAddresses[MARKET_WBNB] = 0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE; // BNB.t
     }
 
-
-	function addFacetAddress(address _address) internal {
+	function _addFairPriceAddress(bytes32 _market, address _address) internal {
         DiamondStorage storage ds = diamondStorage();
-		ds.facetAddresses.push(_address);
+		ds.pairAddresses[_market] = _address;
 	}
+
+	function _getFairPriceAddress(bytes32 _market) internal view returns (address){
+        DiamondStorage storage ds = diamondStorage();
+		return ds.pairAddresses[_market];
+	}
+
 
     function contractOwner() internal view returns (address contractOwner_) {
         contractOwner_ = diamondStorage().contractOwner;

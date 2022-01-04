@@ -11,6 +11,7 @@ async function test(){
     console.log("Bytes32 for USDT.t is ", utils.formatBytes32String("USDT.t"))
     console.log("Bytes32 for USDC.t is ", utils.formatBytes32String("USDC.t"))
     console.log("Bytes32 for BTC.t is ", utils.formatBytes32String("BTC.t"))
+    console.log("Bytes32 for ETH is ", utils.formatBytes32String("ETH"))
     console.log("Bytes32 for SXP is ", utils.formatBytes32String("SXP"))
     console.log("Bytes32 for CAKE is ", utils.formatBytes32String("CAKE"))
 

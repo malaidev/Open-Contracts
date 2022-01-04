@@ -51,10 +51,13 @@ contract OpenDiamond {
         }
     }
 
-    function addFacetAddress(address _facetAddress) external {
-        LibDiamond.addFacetAddress(_facetAddress);
+    function addFairPriceAddress(bytes32 _market, address _address) external {
+        LibDiamond._addFairPriceAddress(_market, _address);
     }
 
+    function getFairPriceAddress(bytes32 _market) external view returns(address) {
+        return LibDiamond._getFairPriceAddress(_market);
+    }
     receive() external payable {}
 
 }
