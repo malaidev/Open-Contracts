@@ -323,9 +323,9 @@ module.exports = {
       accounts: {
         mnemonic: process.env.MNEMONIC
       },
-      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
+      url: 'https://data-seed-prebsc-1-s1.binance.org:8545/',
       chainId: 97,
-      timeout: 200000
+      timeout: 20000000
     },
 //     harmony: {
 //       url: 'https://api.s0.b.hmny.io',
@@ -342,21 +342,21 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY],
       chainId: 43114
     }
-  },
+  }
   solidity: {
-    version: "0.8.1",
+    version: "0.8.1"
     settings: {
       optimizer: {
-        enabled: true,
-        runs: 1000,
-      },
-    },
-  },
+        enabled: true
+        runs: 1000
+      }
+    }
+  }
   mocha: {
     timeout: 200000
-  },
-  tenderly: {
-    project: "Test",
-    username: "dinh",
   }
-};
+  tenderly: {
+    project: "Test"
+    username: "dinh"
+  }
+
