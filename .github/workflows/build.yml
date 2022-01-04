@@ -1,4 +1,4 @@
-name: Build
+name: Build Yaml
 on:
   push:
     branches: [ staging ]
