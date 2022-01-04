@@ -117,6 +117,6 @@ contract Deposit is Pausable, IDeposit{
 			msg.sender == ds.contractOwner || msg.sender == ds.adminDepositAddress,
 			"Only an admin can call this function"
 		);
-		_;
+		_;                                                                                                                                                                                                                                                                                        
 	}
 }

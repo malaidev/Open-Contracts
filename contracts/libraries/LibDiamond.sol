@@ -38,7 +38,8 @@ library LibDiamond {
 	bytes32 constant MARKET_USDT = 0x555344542e740000000000000000000000000000000000000000000000000000;
 	bytes32 constant MARKET_BUSD = 0x555344542e740000000000000000000000000000000000000000000000000000;
 	bytes32 constant MARKET_DAI = 0x555344542e740000000000000000000000000000000000000000000000000000;
-	bytes32 constant MARKET_WBNB = 0x555344542e740000000000000000000000000000000000000000000000000000;
+	bytes32 constant MARKET_SXP = 0x5358500000000000000000000000000000000000000000000000000000000000;
+	bytes32 constant MARKET_CAKE = 0x43414b4500000000000000000000000000000000000000000000000000000000;
 
 
     struct FacetAddressAndSelectorPosition {
@@ -85,6 +86,10 @@ library LibDiamond {
         bytes32 commitment;
         uint amount;
         uint lastUpdate;
+		bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+        uint timelockValidity; // timelock duration
+        uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
     }
 
     struct YieldLedger    {
@@ -177,14 +182,17 @@ library LibDiamond {
         // function selector => facet address and selector position in selectors array
         mapping(bytes4 => FacetAddressAndSelectorPosition) facetAddressAndSelectorPosition;
         bytes4[] selectors;
-        mapping(bytes4 => bool) supportedInterfaces;
+        //  Function selectors with the ABI of a contract provide enough information about functions to be useful for user-interface software.
+	mapping(bytes4 => bool) supportedInterfaces;
+        // owner of the contract
+        address contractOwner;
 		address[] facetAddresses;
 		// address reserveAddress;
         IBEP20 token;
 
     // ===========  admin addresses ===========
         bytes32 superAdmin;
-        address contractOwner;
+        // address superAdminAddress;
 
     // =========== TokenList state variables ===========
         bytes32 adminTokenList;
@@ -244,6 +252,8 @@ library LibDiamond {
     // =========== Loan state variables ============
         bytes32 adminLoan;
         address adminLoanAddress;
+		bytes32 adminLoan1;
+		address adminLoan1Address;
         IBEP20 loanToken;
         IBEP20 collateralToken;
         IBEP20 withdrawToken;
@@ -813,8 +823,10 @@ library LibDiamond {
     function _withdrawDeposit(address _account, bytes32 _market, bytes32 _commitment, uint _amount, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) {
         DiamondStorage storage ds = diamondStorage(); 
 		
-		_hasAccount(_account);
+		_hasAccount(_account);// checks if user has savings account 
 		_isMarketSupported(_market);
+
+		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
 
 		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
 		// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
@@ -1246,11 +1258,11 @@ library LibDiamond {
 		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
-		require(loan.id !=0, "ERROR: No Loan");
+		//require(loan.id !=0, "ERROR: No Loan");
 		require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
-		if (_commitment != _getCommitment(0)) {
+		//if (_commitment != _getCommitment(0)) {
 			require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
-		}		
+		//}		
 		collateralMarket = collateral.market;
 		collateralAmount = collateral.amount;
 	}
@@ -2059,40 +2071,6 @@ library LibDiamond {
 		ds.pairAddresses[MARKET_WBNB] = 0x0567F2323251f0Aab15c8dFb1967E4e8A7D42aeE; // BNB.t
     }
 
-	function setTokenListAdmin(bytes32 _newRole, address _newAdmin) {
-		adminTokenList = _newRole;
-		adminTokenListAddress = _newAdmin;
-	}
-
-	function setComptrollerAdmin(bytes32 _newRole, address _newAdmin) {
-		adminComptroller = _newRole;
-		adminComptrollerAddress = _newAdmin;
-	}
-
-	function setDepositAdmin(bytes32 _newRole, address _newAdmin) {
-		adminDeposit = _newRole;
-		adminDepositAddress = _newAdmin;
-	}
-
-	function setLiquidatorAdmin(bytes32 _newRole, address _newAdmin) {
-		adminDeposit = _newRole;
-		adminDepositAddress = _newAdmin;
-	}
-
-	function setLoanAdmin(bytes32 _newRole, address _newAdmin) {
-		adminLoan = _newRole;
-		adminLoanAddress = _newAdmin;
-	}
-
-	function setOracleAdmin(bytes32 _newRole, address _newAdmin) {
-		adminOpenOracle = _newRole;
-		adminOpenOracleAddress = _newAdmin;
-	}
-
-	function setReserveAdmin(bytes32 _newRole, address _newAdmin) {
-		adminReserve = _newRole;
-		adminReserveAddress = _newAdmin;
-	}
 
 	function addFacetAddress(address _address) internal {
         DiamondStorage storage ds = diamondStorage();
@@ -2209,26 +2187,6 @@ library LibDiamond {
         }
     }
 
-	function toHex16 (bytes16 data) internal pure returns (bytes32 result) {
-		result = bytes32 (data) & 0xFFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000000 |
-			(bytes32 (data) & 0x0000000000000000FFFFFFFFFFFFFFFF00000000000000000000000000000000) >> 64;
-		result = result & 0xFFFFFFFF000000000000000000000000FFFFFFFF000000000000000000000000 |
-			(result & 0x00000000FFFFFFFF000000000000000000000000FFFFFFFF0000000000000000) >> 32;
-		result = result & 0xFFFF000000000000FFFF000000000000FFFF000000000000FFFF000000000000 |
-			(result & 0x0000FFFF000000000000FFFF000000000000FFFF000000000000FFFF00000000) >> 16;
-		result = result & 0xFF000000FF000000FF000000FF000000FF000000FF000000FF000000FF000000 |
-			(result & 0x00FF000000FF000000FF000000FF000000FF000000FF000000FF000000FF0000) >> 8;
-		result = (result & 0xF000F000F000F000F000F000F000F000F000F000F000F000F000F000F000F000) >> 4 |
-			(result & 0x0F000F000F000F000F000F000F000F000F000F000F000F000F000F000F000F00) >> 8;
-		result = bytes32 (0x3030303030303030303030303030303030303030303030303030303030303030 +
-			uint256 (result) +
-			(uint256 (result) + 0x0606060606060606060606060606060606060606060606060606060606060606 >> 4 &
-			0x0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F0F) * 7);
-	}
-
-	function toHex (bytes32 data) public pure returns (string memory) {
-		return string (abi.encodePacked ("0x", toHex16 (bytes16 (data)), toHex16 (bytes16 (data << 128))));
-	}
     function enforceHasContractCode(address _contract, string memory _errorMessage) internal view {
         uint256 contractSize;
         assembly {
@@ -2238,6 +2196,8 @@ library LibDiamond {
     }
 
 	modifier authContract(uint _facetId) {
+		// console.log("_facetId is ", _facetId);
+		// console.log("diamond fId is", LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId);
 		require(_facetId == LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId || 
 				LibDiamond.diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId == 0, "Not permitted");
 		_;

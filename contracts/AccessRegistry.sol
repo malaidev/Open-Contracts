@@ -111,7 +111,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         _;
     }
 
-    function pauseAccessRegistry() external override onlyAdmin() nonReentrant() {
+    function pauseAccessRegistry() external override onlyAdmin() nonReentrant() {                                                                                                  
        _pause();
 	}
 	
@@ -119,7 +119,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
        _unpause();   
 	}
 
-    function isPausedAccessRegistry() external view override virtual returns (bool) {
+    function isPausedAccessRegistry() external view override virtual returns (bool) {                                                                                                                                                                                                                                                               
         return _paused();
     }
 
