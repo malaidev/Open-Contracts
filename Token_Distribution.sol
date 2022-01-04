@@ -29,7 +29,7 @@ contract Faucet {
     
     mapping(address => uint256) lastAccessTime;
 
-    constructor (address  _tokenInstance1,address _tokenInstance2,address _tokenInstance3/*,address _tokenInstance4,address _tokenInstance5*/)  public {
+    constructor (address  _tokenInstance1,address _tokenInstance2,address _tokenInstance3/*,address _tokenInstance4,address _tokenInstance5*/) {
         require(_tokenInstance1 != address(0));
         require(_tokenInstance2 != address(0));
         require(_tokenInstance3 != address(0));
@@ -45,10 +45,31 @@ contract Faucet {
 
     }
 
-    function requestTokens() public {
+    function requestTokens1() public {
         require(allowedToWithdraw(msg.sender));
         tokenInstance1.transfer(msg.sender, tokenAmount1);
+        // tokenInstance2.transfer(msg.sender, tokenAmount2);
+        // tokenInstance3.transfer(msg.sender, tokenAmount3);
+        // tokenInstance4.transfer(msg.sender, tokenAmount4);
+        // tokenInstance5.transfer(msg.sender, tokenAmount5);
+
+        lastAccessTime[msg.sender] = block.timestamp + waitTime;
+    }
+
+     function requestTokens2() public {
+        require(allowedToWithdraw(msg.sender));
+        // tokenInstance1.transfer(msg.sender, tokenAmount1);
         tokenInstance2.transfer(msg.sender, tokenAmount2);
+        // tokenInstance3.transfer(msg.sender, tokenAmount3);
+        // tokenInstance4.transfer(msg.sender, tokenAmount4);
+        // tokenInstance5.transfer(msg.sender, tokenAmount5);
+
+        lastAccessTime[msg.sender] = block.timestamp + waitTime;
+    }
+     function requestTokens3() public {
+        require(allowedToWithdraw(msg.sender));
+        // tokenInstance1.transfer(msg.sender, tokenAmount1);
+        // tokenInstance2.transfer(msg.sender, tokenAmount2);
         tokenInstance3.transfer(msg.sender, tokenAmount3);
         // tokenInstance4.transfer(msg.sender, tokenAmount4);
         // tokenInstance5.transfer(msg.sender, tokenAmount5);
