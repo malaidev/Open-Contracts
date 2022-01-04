@@ -125,13 +125,17 @@ async function deployOpenFacets(diamondAddress) {
 async function addMarkets(diamondAddress) {
     const accounts = await ethers.getSigners()
     const contractOwner = accounts[0]
+    const hashstackDeployer = "0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E";
 
+
+    const diamond = await ethers.getContractAt('OpenDiamond', diamondAddress)
     const tokenList = await ethers.getContractAt('TokenList', diamondAddress)
     const comptroller = await ethers.getContractAt('Comptroller', diamondAddress);
 
     const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
     const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
     const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+    const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
     const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
     const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
    
@@ -139,6 +143,14 @@ async function addMarkets(diamondAddress) {
     const comit_TWOWEEKS = "0x636f6d69745f54574f5745454b53000000000000000000000000000000000000";
     const comit_ONEMONTH = "0x636f6d69745f4f4e454d4f4e5448000000000000000000000000000000000000";
     const comit_THREEMONTHS = "0x636f6d69745f54485245454d4f4e544853000000000000000000000000000000";
+
+    console.log("Add fairPrice addresses");
+    await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
+    await diamond.addFairPriceAddress(symbolUsdc, '0x90c069C4538adAc136E051052E14c1cD799C41B7');
+    await diamond.addFairPriceAddress(symbolBtc, '0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf');
+    await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
+    await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
+    await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
 
     console.log("setCommitment begin");
     await comptroller.connect(contractOwner).setCommitment(comit_NONE);
@@ -158,23 +170,26 @@ async function addMarkets(diamondAddress) {
     await comptroller.connect(contractOwner).updateAPR(comit_ONEMONTH, 18);
     await comptroller.connect(contractOwner).updateAPR(comit_THREEMONTHS, 18);
 
-    console.log("Deploy test tokens");
 
+    console.log("Deploy test tokens");
     const tBTC = await ethers.getContractFactory('tBTC')
-    const admin_ = '0x39eA12dA7D4991D96572FD8addb8E397C113401B';
+    const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     const tbtc = await tBTC.deploy(admin_)
     await tbtc.deployed()
     console.log("tBTC deployed: ", tbtc.address)
+    console.log("5000000 tBTC mint to hashstack deployer");
 
     const tUSDC = await ethers.getContractFactory('tUSDC')
     const tusdc = await tUSDC.deploy(admin_)
     await tusdc.deployed()
     console.log("tUSDC deployed: ", tusdc.address)
+    console.log("5000000000 tUSDC mint to hashstack deployer");
 
     const tUSDT = await ethers.getContractFactory('tUSDT')
     const tusdt = await tUSDT.deploy(admin_)
     await tusdt.deployed()
     console.log("tUSDT deployed: ", tusdt.address)
+    console.log("5000000000 tUSDT mint to hashstack deployer");
 
     console.log("addMarket");
     await tokenList.connect(contractOwner).addMarketSupport(
@@ -239,8 +254,33 @@ async function addMarkets(diamondAddress) {
 
 }
 
+async function redeployTokens() {
+    const accounts = await ethers.getSigners()
+    const contractOwner = accounts[0]
+
+    console.log("Deploy test tokens");
+    const tBTC = await ethers.getContractFactory('tBTC')
+    const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
+    const tbtc = await tBTC.deploy(admin_)
+    await tbtc.deployed()
+    console.log("tBTC deployed: ", tbtc.address)
+    console.log("5000000 tBTC mint to hashstack deployer");
+
+    const tUSDC = await ethers.getContractFactory('tUSDC')
+    const tusdc = await tUSDC.deploy(admin_)
+    await tusdc.deployed()
+    console.log("tUSDC deployed: ", tusdc.address)
+    console.log("5000000000 tUSDC mint to hashstack deployer");
+
+    const tUSDT = await ethers.getContractFactory('tUSDT')
+    const tusdt = await tUSDT.deploy(admin_)
+    await tusdt.deployed()
+    console.log("tUSDT deployed: ", tusdt.address)
+    console.log("5000000000 tUSDT mint to hashstack deployer");
+}
+
 if (require.main === module) {
-    main()
+    redeployTokens()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)

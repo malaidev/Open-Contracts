@@ -18,8 +18,8 @@ abstract contract Pausable is Context {
         require(!_paused(), "Paused status");
         _;
     }
-
-    modifier whenPaused() {
+                                                                                                                                                                                                                                              
+    modifier whenPaused() {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
         require(_paused(), "Not paused status");
         _;
     }

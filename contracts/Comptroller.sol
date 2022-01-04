@@ -226,7 +226,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 	
 	function unpauseComptroller() external override authComptroller() nonReentrant() {
-		_unpause();   
+		_unpause(); 
 	}
 
 	function isPausedComptroller() external view virtual override returns (bool) {

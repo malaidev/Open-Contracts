@@ -56,7 +56,7 @@ contract Loan is Pausable, ILoan {
 		return true;
 	}
 
-    function getFairPriceLoan(uint _requestId) external override returns (uint price){
+    function getFairPriceLoan(uint _requestId) external view override returns (uint price){
 		price = LibDiamond._getFairPrice(_requestId);
 	}
 

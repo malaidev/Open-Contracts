@@ -11,6 +11,10 @@ async function test(){
     console.log("Bytes32 for USDT.t is ", utils.formatBytes32String("USDT.t"))
     console.log("Bytes32 for USDC.t is ", utils.formatBytes32String("USDC.t"))
     console.log("Bytes32 for BTC.t is ", utils.formatBytes32String("BTC.t"))
+    console.log("Bytes32 for ETH is ", utils.formatBytes32String("ETH"))
+    console.log("Bytes32 for SXP is ", utils.formatBytes32String("SXP"))
+    console.log("Bytes32 for CAKE is ", utils.formatBytes32String("CAKE"))
+
 }
 
 async function addMarkets() {
@@ -97,7 +101,7 @@ async function addMarkets() {
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 if (require.main === module) {
-    addMarkets()
+    test()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)
