@@ -11,6 +11,8 @@ on:
     paths:
       - 'contracts/**'
       - '.github/workflows/slither.yaml'
+  
+  workflow_dispatch:
 
 jobs:
   build:
@@ -56,6 +58,7 @@ jobs:
       - name: Inheritance
         run: |
           slither . --print inheritance
+      
 
 
 
