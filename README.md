@@ -1,3 +1,9 @@
+[![Static Analysis](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)
+
+<!-- [![Test](https://github.com/0xHashstack/Open-protocol/actions/workflows/test.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/test.yml) -->
+
+[![Build](https://github.com/0xHashstack/Open-protocol/actions/workflows/main.yml/badge.svg)](https://github.com/0xHashstack/Open-protocol/actions/workflows/main.yml)
+
 ### Deployment Guide
 
 This is a complete deployment guide on how you can deploy contracts by yourself. Initially we are deploying on Binance smart chain testnet, 
@@ -39,8 +45,4 @@ npx hardhat node
 node scripts/sample-script.js
 npx hardhat help
 ```
-[![Static Analysis](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)
 
-<!-- [![Test](https://github.com/0xHashstack/Open-protocol/actions/workflows/test.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/test.yml) -->
-
-[![Build](https://github.com/0xHashstack/Open-protocol/actions/workflows/main.yml/badge.svg)](https://github.com/0xHashstack/Open-protocol/actions/workflows/main.yml)
