@@ -64,3 +64,5 @@ npx hardhat help
 [![Static Analysis](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)
 
 [![Test](https://github.com/0xHashstack/Open-protocol/actions/workflows/test.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/test.yml)
+
+[![Build](https://github.com/0xHashstack/Open-protocol/actions/workflows/main.yml/badge.svg)](https://github.com/0xHashstack/Open-protocol/actions/workflows/main.yml)
