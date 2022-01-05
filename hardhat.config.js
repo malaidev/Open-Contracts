@@ -129,19 +129,19 @@ module.exports = {
       timeout: 200000,
       gas: 2100000, 
     },
-    harmony: {
-      url: 'https://api.s0.b.hmny.io',
-      timeout: 200000,
-      accounts: [process.env.HARMONY_PRIVATE_KEY],
-      gas: 2100000, 
-      gasPrice: 8000000000
-    },
-    avax: {
-      url: 'https://api.avax.network/ext/bc/C/rpc',
-      timeout: 200000,
-      accounts: [process.env.PRIVATE_KEY],
-      chainId: 43114
-    }
+//     harmony: {
+//       url: 'https://api.s0.b.hmny.io',
+//       timeout: 200000,
+//       accounts: [process.env.HARMONY_PRIVATE_KEY],
+//       gas: 2100000, 
+//       gasPrice: 8000000000
+//     },
+//     avax: {
+//       url: 'https://api.avax.network/ext/bc/C/rpc',
+//       timeout: 200000,
+//       accounts: [process.env.PRIVATE_KEY],
+//       chainId: 43114
+//     }
   },
   solidity: {
     compilers: [

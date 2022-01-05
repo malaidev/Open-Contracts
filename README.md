@@ -1,3 +1,10 @@
+
+In this repository, you will find the latest smart contracts enabling Open protocol.
+
+------
+
+[![Static Analysis](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)
+
 ### Deployment Guide
 
 This is a complete deployment guide on how you can deploy contracts by yourself. Initially we are deploying on Binance smart chain testnet, 
