@@ -161,7 +161,7 @@ contract tUSDC  is Context, IBEP20 {
     _name = "USD-Coin";
     _symbol = "USDC.t";
     _decimals = 18;
-    _totalSupply = 1000000000000000000000000000;
+    _totalSupply = 10000000000000000000000000000;
     // _balances[msg.sender] = _totalSupply;
     _mint(admintUSDC, 5000000000000000000000000000);
 
