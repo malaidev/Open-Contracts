@@ -111,6 +111,13 @@ contract Deposit is Pausable, IDeposit{
 		return _paused();
 	}
 
+	//For upgradibility test
+	function upgradeTest(address _account) external view returns (bool success) {
+    	LibDiamond._hasAccount(_account);
+		LibDiamond._hasLoanAccount(_account);
+		success = true;
+	}
+
 	modifier authDeposit() {
     	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 
