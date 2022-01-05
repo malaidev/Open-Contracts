@@ -58,6 +58,6 @@ jobs:
           slither . --print inheritance
       - name: Save the result as a SARIF json file
             #  slither . --json - --sarif results.sarif
-        run: |
-            python report.py
+
+
       
