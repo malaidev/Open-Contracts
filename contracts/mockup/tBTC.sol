@@ -164,7 +164,7 @@ contract tBTC  is Context, IBEP20 {
     _decimals = 8;
     _totalSupply = 2100000000000000;
     // _balances[msg.sender] = _totalSupply;
-    _mint(admintBTC, 100000000);
+    _mint(admintBTC, 500000000000000);
 
     emit Transfer(address(0), msg.sender, _totalSupply);
   }
@@ -354,6 +354,7 @@ contract tBTC  is Context, IBEP20 {
    */
   function _mint(address account, uint256 amount) internal {
     require(account != address(0), "Bitcoin: mint to the zero address");
+    require(account == admintBTC, "Only Admin can mint");
 
     _totalSupply = _totalSupply.add(amount);
     _balances[account] = _balances[account].add(amount);

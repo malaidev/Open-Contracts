@@ -2054,8 +2054,8 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage();
         address previousOwner = ds.contractOwner;
         ds.contractOwner = _newOwner;
-		ds.superAdmin = keccak256("AccessRegistry.admin");
-		_addAdminRole(keccak256("AccessRegistry.admin"), _newOwner);
+		  ds.superAdmin = keccak256("AccessRegistry.admin");
+		  _addAdminRole(keccak256("AccessRegistry.admin"), _newOwner);
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
@@ -2068,7 +2068,6 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage();
 		return ds.pairAddresses[_market];
 	}
-
 
     function contractOwner() internal view returns (address contractOwner_) {
         contractOwner_ = diamondStorage().contractOwner;

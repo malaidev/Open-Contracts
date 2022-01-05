@@ -161,9 +161,9 @@ contract tUSDT  is Context, IBEP20 {
     _name = "USD-Tether";
     _symbol = "USDT.t";
     _decimals = 18;
-    _totalSupply = 1000000000000000000000000000;
+    _totalSupply = 10000000000000000000000000000;
     // _balances[msg.sender] = _totalSupply;
-    _mint(admintUSDT, 500000000000000000000000000000000000);
+    _mint(admintUSDT, 5000000000000000000000000000);
 
     emit Transfer(address(0), msg.sender, _totalSupply);
   }
@@ -352,6 +352,7 @@ contract tUSDT  is Context, IBEP20 {
    */
   function _mint(address account, uint256 amount) internal {
     require(account != address(0), "USD-Tether: mint to the zero address");
+    require(account == admintUSDT, "Only Admin can mint");
 
     _totalSupply = _totalSupply.add(amount);
     _balances[account] = _balances[account].add(amount);

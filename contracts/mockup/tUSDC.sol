@@ -161,9 +161,9 @@ contract tUSDC  is Context, IBEP20 {
     _name = "USD-Coin";
     _symbol = "USDC.t";
     _decimals = 18;
-    _totalSupply = 1000000000000000000000000000;
+    _totalSupply = 10000000000000000000000000000;
     // _balances[msg.sender] = _totalSupply;
-    _mint(admintUSDC, 500000000000000000000000000000000000);
+    _mint(admintUSDC, 5000000000000000000000000000);
 
     emit Transfer(address(0), msg.sender, _totalSupply);
   }
@@ -353,7 +353,7 @@ contract tUSDC  is Context, IBEP20 {
    */
   function _mint(address account, uint256 amount) internal {
     require(account != address(0), "USD-Coin: mint to the zero address");
-
+    require(account == admintUSDC, "Only Admin can mint");
     _totalSupply = _totalSupply.add(amount);
     _balances[account] = _balances[account].add(amount);
     emit Transfer(address(0), account, amount);

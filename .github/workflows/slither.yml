@@ -40,6 +40,7 @@ jobs:
         run: |
           sudo snap install solc
           python -m pip install --upgrade pip
+          pip3 install slither-analyzer
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Summary of static ananlysis
         run: |
@@ -58,9 +59,4 @@ jobs:
       - name: Inheritance
         run: |
           slither . --print inheritance
-      
-
-
-
-
       
