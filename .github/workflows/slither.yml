@@ -11,6 +11,8 @@ on:
     paths:
       - 'contracts/**'
       - '.github/workflows/slither.yaml'
+  
+  workflow_dispatch:
 
 jobs:
   build:
@@ -38,7 +40,6 @@ jobs:
         run: |
           sudo snap install solc
           python -m pip install --upgrade pip
-          pip3 install slither-analyzer
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Summary of static ananlysis
         run: |
@@ -57,8 +58,4 @@ jobs:
       - name: Inheritance
         run: |
           slither . --print inheritance
-      - name: Save the result as a SARIF json file
-            #  slither . --json - --sarif results.sarif
-        run: |
-            python report.py
       
