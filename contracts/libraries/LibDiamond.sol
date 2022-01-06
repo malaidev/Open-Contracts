@@ -735,6 +735,7 @@ library LibDiamond {
 		// );
 
 		//PancakeSwap
+		IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).transferFrom(msg.sender, address(this), _fromAmount);
         IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
@@ -1994,9 +1995,10 @@ library LibDiamond {
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {
-		DiamondStorage storage ds = diamondStorage();
-		require(ds.priceData[_requestId].price != 0, "No fetched price");
-		retPrice = ds.priceData[_requestId].price;
+		retPrice = 200;
+		// DiamondStorage storage ds = diamondStorage();
+		// require(ds.priceData[_requestId].price != 0, "No fetched price");
+		// retPrice = ds.priceData[_requestId].price;
 	}
 
 	function _fairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) internal {
