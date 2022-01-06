@@ -669,9 +669,9 @@ library LibDiamond {
 		
 		uint256 index = oldLengthAccruedYield - 1;
 		uint256 time = oldTime;
-
+		console.log("apy.time.length = %d", apy.time.length);
+		
 		// 1. apr.time.length > oldLengthAccruedInterest => there is some change.
-
 		if (apy.time.length > oldLengthAccruedYield)  {
 
 			if (apy.time[index] < time) {
@@ -691,7 +691,9 @@ library LibDiamond {
 				}
 			}
 		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
+			console.log("here");
 			if (apy.time[index] < time || apy.time[index] == time) {
+			console.log("here2");
 				aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/100;
 				// Convert the aprChanges to the lowest unit value.
 				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);

@@ -70,8 +70,7 @@ describe("===== Loan Test =====", function () {
 		oracle = await ethers.getContractAt('OracleOpen', diamondAddress)
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 
-
-		bepUsdt = await ethers.getContractAt('tUSDT', rets['tUsdtAddres'])
+		bepUsdt = await ethers.getContractAt('tUSDT', rets['tUsdtAddress'])
 		bepBtc = await ethers.getContractAt('tBTC', rets['tBtcAddress'])
 		bepUsdc = await ethers.getContractAt('tUSDC', rets['tUsdcAddress'])
 	})
@@ -123,15 +122,6 @@ describe("===== Loan Test =====", function () {
 			'gasPrice': ethers.utils.parseUnits('185', 'gwei'),
 	})).to.emit(library, "MarketSwapped")
 	})
-
-	// it("Swap Loan", async () => {
-	//     await expect(loan.connect(accounts[1]).swapLoan(symbolUsdt, comit_ONEMONTH, symbolUsdc, {gasLimit: 5000000}))
-	//         .to.emit(library, "SwapTestAmount");
-			
-	//     let eventFilter = library.filters.SwapTestAmount;
-	//     let events = await library.queryFilter(eventFilter, "latest");
-	//     console.log(events);
-	// })
 
 
 	// it("Check repayLoan", async () => {

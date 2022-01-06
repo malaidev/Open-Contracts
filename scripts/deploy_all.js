@@ -193,7 +193,7 @@ async function addMarkets(diamondAddress) {
     const tUSDT = await ethers.getContractFactory('tUSDT')
     const tusdt = await tUSDT.deploy(admin_)
     await tusdt.deployed()
-    const tUsdtAddres = tusdt.address
+    const tUsdtAddress = tusdt.address
     console.log("tUSDT deployed: ", tusdt.address)
     console.log("500000000000 tUSDT mint to hashstack deployer");
 
@@ -277,7 +277,7 @@ async function addMarkets(diamondAddress) {
     )
     const tCakeAddress = '0xB6064eD41d4f67e353768aA239cA86f4F73665a1'
 
-    return {tBtcAddress, tUsdtAddres, tUsdcAddress, tSxpAddress, tCakeAddress}
+    return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress}
 }
 
 if (require.main === module) {
