@@ -16,7 +16,7 @@ contract OpenDiamond {
         cut[0] = IDiamondCut.FacetCut({
             facetAddress: _diamondCutFacet, 
             action: IDiamondCut.FacetCutAction.Add,
-            functionSelectors: functionSelectors,    
+            functionSelectors: functionSelectors,
             facetId: 0
         });
         LibDiamond.diamondCut(cut, address(0), "");
