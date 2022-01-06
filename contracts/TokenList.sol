@@ -19,7 +19,7 @@ contract TokenList is Pausable, ITokenList {
     return LibDiamond._getMarketAddress(_market);
   }
 
-  function getMarketDecimal(bytes32 _market) external view override returns (uint) {
+  function getMarketDecimal(bytes32 _market) external view override returns (uint) { 
     return LibDiamond._getMarketDecimal(_market);
   }
   
