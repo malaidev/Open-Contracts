@@ -1,13 +1,13 @@
-name: Test
+name: Build Updated
 on:
   push:
     branches: [ staging ]
     paths:
-      - 'tests/**'
+      - '/contracts'
   pull_request:
     branches: [ review ]
     paths:
-      - 'tests/**'
+      - '/contracts'
   workflow_dispatch:
 
 jobs:
@@ -26,5 +26,4 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm install
-    - run: npx hardhat compile
-    - run: npx hardhat test
+    - run: npx hardhat run scripts/deploy_all.js

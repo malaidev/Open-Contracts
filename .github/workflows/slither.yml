@@ -11,6 +11,8 @@ on:
     paths:
       - 'contracts/**'
       - '.github/workflows/slither.yaml'
+  
+  workflow_dispatch:
 
 jobs:
   build:
@@ -57,8 +59,4 @@ jobs:
       - name: Inheritance
         run: |
           slither . --print inheritance
-      - name: Save the result as a SARIF json file
-            #  slither . --json - --sarif results.sarif
-        run: |
-            python report.py
       

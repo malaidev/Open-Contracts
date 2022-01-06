@@ -178,19 +178,19 @@ async function addMarkets(diamondAddress) {
     const tbtc = await tBTC.deploy(admin_)
     await tbtc.deployed()
     console.log("tBTC deployed: ", tbtc.address)
-    console.log("5000000 tBTC mint to hashstack deployer");
+    console.log("50000000 tBTC mint to hashstack deployer");
 
     const tUSDC = await ethers.getContractFactory('tUSDC')
     const tusdc = await tUSDC.deploy(admin_)
     await tusdc.deployed()
     console.log("tUSDC deployed: ", tusdc.address)
-    console.log("5000000000 tUSDC mint to hashstack deployer");
+    console.log("500000000000 tUSDC mint to hashstack deployer");
 
     const tUSDT = await ethers.getContractFactory('tUSDT')
     const tusdt = await tUSDT.deploy(admin_)
     await tusdt.deployed()
     console.log("tUSDT deployed: ", tusdt.address)
-    console.log("5000000000 tUSDT mint to hashstack deployer");
+    console.log("500000000000 tUSDT mint to hashstack deployer");
 
     console.log("addMarket");
     await tokenList.connect(contractOwner).addMarketSupport(
