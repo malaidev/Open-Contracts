@@ -132,50 +132,50 @@ describe("===== Comptroller Test =====", function () {
 
         await comptroller.connect(contractOwner).updateAPR(comit_TWOWEEKS, 55, {gasLimit: 250000});
         console.log("Before: LenIntereset = ", oldLenAccruedInterest, " oldTime = ", oldTime, " aggregateIntereset = ", aggregateInterest);
-        await comptroller.calcAPR(comit_NONE, oldLenAccruedInterest, oldTime, aggregateInterest);
-        console.log("After: LenIntereset = ", oldLenAccruedInterest, " oldTime = ", oldTime, " aggregateIntereset = ", aggregateInterest);
+        const rets = await comptroller.calcAPR(comit_NONE, oldLenAccruedInterest, oldTime, aggregateInterest);
+        console.log("After: LenIntereset = ", rets[0], " oldTime = ", rets[1], " aggregateIntereset = ", rets[2]);
     })
 
-    // it("updateLoanIssuanceFees", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateLoanIssuanceFees(23, {gasLimit: 250000})).to.emit(comptroller, "LoanIssuanceFeesUpdated");
-    // });
+    it("updateLoanIssuanceFees", async () => {
+        await expect(comptroller.connect(contractOwner).updateLoanIssuanceFees(23, {gasLimit: 250000})).to.emit(comptroller, "LoanIssuanceFeesUpdated");
+    });
 
-    // it("updateLoanClosureFees", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateLoanClosureFees(33, {gasLimit: 250000})).to.emit(comptroller, "LoanClosureFeesUpdated");
-    // });
+    it("updateLoanClosureFees", async () => {
+        await expect(comptroller.connect(contractOwner).updateLoanClosureFees(33, {gasLimit: 250000})).to.emit(comptroller, "LoanClosureFeesUpdated");
+    });
 
-    // it("updateLoanPreClosureFees", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateLoanPreClosureFees(543, {gasLimit: 250000})).to.emit(comptroller, "LoanPreClosureFeesUpdated");
-    // });
+    it("updateLoanPreClosureFees", async () => {
+        await expect(comptroller.connect(contractOwner).updateLoanPreClosureFees(543, {gasLimit: 250000})).to.emit(comptroller, "LoanPreClosureFeesUpdated");
+    });
 
-    // it("updateDepositPreclosureFees", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateDepositPreclosureFees(44, {gasLimit: 250000})).to.emit(comptroller, "DepositPreClosureFeesUpdated");
-    //     expect(await comptroller.depositPreClosureFees()).to.be.equal(44);
-    // });
+    it("updateDepositPreclosureFees", async () => {
+        await expect(comptroller.connect(contractOwner).updateDepositPreclosureFees(44, {gasLimit: 250000})).to.emit(comptroller, "DepositPreClosureFeesUpdated");
+        expect(await comptroller.depositPreClosureFees()).to.be.equal(44);
+    });
     
-    // it("updateWithdrawalFees", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateWithdrawalFees(2, {gasLimit: 250000})).to.emit(comptroller, "DepositWithdrawalFeesUpdated");
-    //     expect(await comptroller.depositWithdrawalFees()).to.be.equal(2);
-    // });
+    it("updateWithdrawalFees", async () => {
+        await expect(comptroller.connect(contractOwner).updateWithdrawalFees(2, {gasLimit: 250000})).to.emit(comptroller, "DepositWithdrawalFeesUpdated");
+        expect(await comptroller.depositWithdrawalFees()).to.be.equal(2);
+    });
 
-    // it("updateCollateralReleaseFees", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateCollateralReleaseFees(55, {gasLimit: 250000})).to.emit(comptroller, "CollateralReleaseFeesUpdated");
-    //     expect(await comptroller.collateralReleaseFees()).to.be.equal(55);
-    // });
+    it("updateCollateralReleaseFees", async () => {
+        await expect(comptroller.connect(contractOwner).updateCollateralReleaseFees(55, {gasLimit: 250000})).to.emit(comptroller, "CollateralReleaseFeesUpdated");
+        expect(await comptroller.collateralReleaseFees()).to.be.equal(55);
+    });
 
-    // it("updateYieldConversion", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateYieldConversion(56, {gasLimit: 250000})).to.emit(comptroller, "YieldConversionFeesUpdated");
-    // });
+    it("updateYieldConversion", async () => {
+        await expect(comptroller.connect(contractOwner).updateYieldConversion(56, {gasLimit: 250000})).to.emit(comptroller, "YieldConversionFeesUpdated");
+    });
 
-    // it("updateMarketSwapFees", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateMarketSwapFees(3, {gasLimit: 250000})).to.emit(comptroller, "MarketSwapFeesUpdated");
-    // });
+    it("updateMarketSwapFees", async () => {
+        await expect(comptroller.connect(contractOwner).updateMarketSwapFees(3, {gasLimit: 250000})).to.emit(comptroller, "MarketSwapFeesUpdated");
+    });
 
-    // it("updateReserveFactor", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateReserveFactor(23, {gasLimit: 250000})).to.emit(comptroller, "ReserveFactorUpdated");
-    // });
+    it("updateReserveFactor", async () => {
+        await expect(comptroller.connect(contractOwner).updateReserveFactor(23, {gasLimit: 250000})).to.emit(comptroller, "ReserveFactorUpdated");
+    });
 
-    // it("updateMaxWithdrawal", async () => {
-    //     await expect(comptroller.connect(contractOwner).updateMaxWithdrawal(6, 444, {gasLimit: 250000})).to.emit(comptroller, "MaxWithdrawalUpdated");
-    // });
+    it("updateMaxWithdrawal", async () => {
+        await expect(comptroller.connect(contractOwner).updateMaxWithdrawal(6, 444, {gasLimit: 250000})).to.emit(comptroller, "MaxWithdrawalUpdated");
+    });
 })
