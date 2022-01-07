@@ -181,21 +181,30 @@ async function addMarkets(diamondAddress) {
     await tbtc.deployed()
     const tBtcAddress = tbtc.address
     console.log("tBTC deployed: ", tbtc.address)
-    console.log("50000000 tBTC mint to hashstack deployer");
 
     const tUSDC = await ethers.getContractFactory('tUSDC')
     const tusdc = await tUSDC.deploy(admin_)
     await tusdc.deployed()
     const tUsdcAddress = tusdc.address
     console.log("tUSDC deployed: ", tusdc.address)
-    console.log("500000000000 tUSDC mint to hashstack deployer");
 
     const tUSDT = await ethers.getContractFactory('tUSDT')
     const tusdt = await tUSDT.deploy(admin_)
     await tusdt.deployed()
     const tUsdtAddress = tusdt.address
     console.log("tUSDT deployed: ", tusdt.address)
-    console.log("500000000000 tUSDT mint to hashstack deployer");
+
+    const tSxp = await ethers.getContractFactory('tSxp')
+    const tsxp = await tSxp.deploy(admin_)
+    await tsxp.deployed()
+    const tSxpAddress = tsxp.address
+    console.log("tSxp deployed: ", tsxp.address)
+
+    const tCake = await ethers.getContractFactory('tCake')
+    const tcake = await tCake.deploy(admin_)
+    await tcake.deployed()
+    const tCakeAddress = tcake.address
+    console.log("tCake deployed: ", tcake.address)
 
     console.log("addMarket");
     await tokenList.connect(contractOwner).addMarketSupport(
@@ -257,10 +266,9 @@ async function addMarkets(diamondAddress) {
     await tokenList.connect(contractOwner).addMarket2Support(
         symbolSxp,
         8,
-        '0x833d9fd415df4ae8c71f411d5a819b6f78ebb134',
+        tsxp.address,
         { gasLimit: 800000 }
     )
-    const tSxpAddress = '0x833d9fd415df4ae8c71f411d5a819b6f78ebb134'
 
     await tokenList.connect(contractOwner).addMarket2Support(
         symbolWBNB,
@@ -272,10 +280,9 @@ async function addMarkets(diamondAddress) {
     await tokenList.connect(contractOwner).addMarket2Support(
         symbolCAKE,
         18,
-        '0xB6064eD41d4f67e353768aA239cA86f4F73665a1',
+        tcake.address,
         { gasLimit: 800000 }
     )
-    const tCakeAddress = '0xB6064eD41d4f67e353768aA239cA86f4F73665a1'
 
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress}
 }
