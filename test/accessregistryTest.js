@@ -96,6 +96,11 @@ describe("===== AccessRegistry Test =====", function () {
         console.log("AccessRegistry is deployed at: ", accessRegistry.address)
     })
 
+    it("Check super admin", async () => {
+        expect(await accessRegistry.hasAdminRole("0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8", 
+        contractOwner.address)).to.be.equal(true);
+    })
+
     it("Add Role", async () => {
         await accessRegistry.addRole(role1, accounts[1].address)
         await accessRegistry.addRole(role1, accounts[2].address)
