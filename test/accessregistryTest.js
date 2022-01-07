@@ -1,5 +1,6 @@
-const { expect } = require("chai")
-const { ethers } = require("hardhat")
+const { expect } = require("chai");
+const { ethers } = require("hardhat");
+const utils = require('ethers').utils
 const {
     getSelectors,
     get,
@@ -10,7 +11,6 @@ const {
   
 const { assert } = require('chai')
 
-// const {deployDiamond}= require('../scripts/deploy_diamond.js')
 const {deployDiamond}= require('../scripts/deploy_all.js')
 const {deployOpenFacets}= require('../scripts/deploy_all.js')
 const {addMarkets}= require('../scripts/deploy_all.js')
@@ -21,25 +21,32 @@ describe("===== AccessRegistry Test =====", function () {
     let diamondLoupeFacet
     let tokenList
     let comptroller
-    let reserve
     let deposit
     let oracle
     let loan
     let liquidator
     let library
     let accessRegistry
-    let bep20
+	let bepUsdt
+	let bepBtc
+	let bepUsdc
     let accounts
     let contractOwner
-    const addresses = []
+    let rets
+	const addresses = []
 
-    const symbol4 = "0xABCD7374737472696e6700000000000000000000000000000000000000000000"
-    const symbol2 = "0xABCD7374737972696e6700000000000000000000000000000000000000000000"
-   
-    const comit_NONE = "0x94557374737472696e6700000000000000000000000000000000000000000000"
-    const comit_TWOWEEKS = "0x78629858A2529819179178879ABD797997979AD97987979AC7979797979797DF"
-    const comit_ONEMONTH = "0x54567858A2529819179178879ABD797997979AD97987979AC7979797979797DF"
-    const comit_THREEMONTHS = "0x78639858A2529819179178879ABD797997979AD97987979AC7979797979797DF"
+	const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+	const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
+	const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+	const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+	const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
+	const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
+	const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
+	
+	const comit_NONE = utils.formatBytes32String("comit_NONE");
+	const comit_TWOWEEKS = utils.formatBytes32String("comit_TWOWEEKS");
+	const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
+	const comit_THREEMONTHS = utils.formatBytes32String("comit_THREEMONTHS");
 
     const role1 = "0x94557374737472696e6700000000000000000000000000000000000000000000"
     const role2 = "0x78629858A2529819179178979ABD797997979AD97987979AC7979797979797DF"
@@ -51,7 +58,7 @@ describe("===== AccessRegistry Test =====", function () {
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
         await deployOpenFacets(diamondAddress)
-        await addMarkets(diamondAddress)
+        rets = await addMarkets(diamondAddress)
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 
@@ -61,9 +68,10 @@ describe("===== AccessRegistry Test =====", function () {
         accessRegistry = await ethers.getContractAt('AccessRegistry', diamondAddress)
         library = await ethers.getContractAt('LibDiamond', diamondAddress)
 
-        const Mock = await ethers.getContractFactory('MockBep20')
-        bep20 = await Mock.deploy()
-        await bep20.deployed()
+        bepUsdt = await ethers.getContractAt('tUSDT', rets['tUsdtAddress'])
+		bepBtc = await ethers.getContractAt('tBTC', rets['tBtcAddress'])
+		bepUsdc = await ethers.getContractAt('tUSDC', rets['tUsdcAddress'])
+
     })
 
     it('should have three facets -- call to facetAddresses function', async () => {
@@ -80,21 +88,6 @@ describe("===== AccessRegistry Test =====", function () {
         selectors = getSelectors(diamondLoupeFacet)
         result = await diamondLoupeFacet.facetFunctionSelectors(addresses[1])
         assert.sameMembers(result, selectors)
-    })
-
-    it("Add token to tokenList", async () => {
-        await expect(tokenList.connect(contractOwner).addMarketSupport(
-            symbol4, 
-            18, 
-            bep20.address, 
-            1,
-            {gasLimit: 250000}
-        )).to.emit(library, "MarketSupportAdded")
-        expect(await tokenList.isMarketSupported(symbol4)).to.be.equal(true)
-
-        await expect(tokenList.connect(accounts[1]).addMarketSupport(
-            symbol2, 18, bep20.address, 1, {gasLimit: 240000}
-        )).to.be.revertedWith("Only an admin can call this function")
     })
 
     it("Check if the contract is deployed", async () => {

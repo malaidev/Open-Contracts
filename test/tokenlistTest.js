@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
+const utils = require('ethers').utils
 const {
     getSelectors,
     get,
@@ -16,40 +17,45 @@ const {addMarkets}= require('../scripts/deploy_all.js')
 
 describe("===== TokenList Test =====", function () {
     let diamondAddress
-    let diamondCutFacet
-    let diamondLoupeFacet
-    let library
-    let tokenList
-    let bep20
-    let accounts    
-    let contractOwner
-    const addresses = []
+	let diamondCutFacet
+	let diamondLoupeFacet
+	let tokenList
+	let library
+	let accounts
+	let contractOwner
+	let bepUsdt
+	let bepUsdc
 
-    const symbol4 = "0xABCD7374737472696e6700000000000000000000000000000000000000000000";
-    const symbol2 = "0xABCD7374737972696e6700000000000000000000000000000000000000000000";
-   
-    const comit_NONE = "0x94557374737472696e6700000000000000000000000000000000000000000000";
-    const comit_TWOWEEKS = "0x78629858A2529819179178879ABD797997979AD97987979AC7979797979797DF";
-    const comit_ONEMONTH = "0x54567858A2529819179178879ABD797997979AD97987979AC7979797979797DF";
-    const comit_THREEMONTHS = "0x78639858A2529819179178879ABD797997979AD97987979AC7979797979797DF";
+	let rets
+	const addresses = []
+
+	const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+	const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
+	const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+	const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+	const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
+	const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
+	const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
+	
+	const comit_NONE = utils.formatBytes32String("comit_NONE");
+	const comit_TWOWEEKS = utils.formatBytes32String("comit_TWOWEEKS");
+	const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
+	const comit_THREEMONTHS = utils.formatBytes32String("comit_THREEMONTHS");
 
     before(async function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
         await deployOpenFacets(diamondAddress)
-        await addMarkets(diamondAddress)
-        // const diamond = await ethers.getContractAt('OpenDiamond', "0xEF1a30678f7d205d310bADBA8dfA4B122B0Fb24b")
-        // diamondAddress = diamond.address
+        const rets = await addMarkets(diamondAddress)
         diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
         diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
 
         tokenList = await ethers.getContractAt('TokenList', diamondAddress)
         library = await ethers.getContractAt('LibDiamond', diamondAddress)
 
-        const Mock = await ethers.getContractFactory('MockBep20')
-        bep20 = await Mock.deploy()
-        await bep20.deployed()
+		bepUsdt = await ethers.getContractAt('tUSDT', rets['tUsdtAddress'])
+		bepUsdc = await ethers.getContractAt('tUSDC', rets['tUsdcAddress'])
     })
 
     it("check deployed", async () => {
@@ -73,69 +79,99 @@ describe("===== TokenList Test =====", function () {
     })
 
     it("isMarketSupport at empty", async () => {
-        await expect(tokenList.isMarketSupported(symbol2)).to.be.revertedWith("ERROR: Unsupported market");
+        expect(await tokenList.isMarketSupported(symbolUsdt)).to.be.equal(true)
+    })
+
+    it("Reset Primary market by removing markets", async () => {
+        await expect(tokenList.connect(contractOwner).removeMarketSupport(symbolUsdt)).to.emit(library, "MarketSupportRemoved")
+        await expect(tokenList.connect(contractOwner).removeMarketSupport(symbolUsdc)).to.emit(library, "MarketSupportRemoved")
+        await expect(tokenList.connect(contractOwner).removeMarketSupport(symbolBtc)).to.emit(library, "MarketSupportRemoved")
+        await expect(tokenList.connect(contractOwner).removeMarketSupport(symbolWBNB)).to.emit(library, "MarketSupportRemoved")
+
+        await expect(tokenList.isMarketSupported(symbolUsdt)).to.be.revertedWith("ERROR: Unsupported market")
+        await expect(tokenList.isMarketSupported(symbolUsdc)).to.be.revertedWith("ERROR: Unsupported market")
+        await expect(tokenList.isMarketSupported(symbolBtc)).to.be.revertedWith("ERROR: Unsupported market")
+        await expect(tokenList.isMarketSupported(symbolWBNB)).to.be.revertedWith("ERROR: Unsupported market")
+
     })
 
     it("Add token to tokenList", async () => {
-        console.log("tokenList = ", tokenList.address);
         await expect(tokenList.connect(contractOwner).addMarketSupport(
-            symbol4, 
+            symbolUsdt, 
             18, 
-            bep20.address, 
+            bepUsdt.address, 
             1,
             {gasLimit: 250000}
         )).to.emit(library, "MarketSupportAdded")
-        expect(await tokenList.isMarketSupported(symbol4)).to.be.equal(true);
+        expect(await tokenList.isMarketSupported(symbolUsdt)).to.be.equal(true);
 
-        console.log("symbol4 = ", symbol4);
-        console.log("bep = ", bep20.address);
+    })
 
-        // await expect(tokenList.connect(accounts[1]).addMarketSupport(
-        //     symbol2, 18, bep20.address, 1, {gasLimit: 240000}
-        // )).to.be.revertedWith("Only an admin can call this function");
+    it("Reset Secondary market by removing secondary markets", async () => {
+        await expect(tokenList.connect(contractOwner).removeMarket2Support(symbolUsdt)).to.emit(library, "Market2Removed")
+        await expect(tokenList.connect(contractOwner).removeMarket2Support(symbolUsdc)).to.emit(library, "Market2Removed")
+        await expect(tokenList.connect(contractOwner).removeMarket2Support(symbolSxp)).to.emit(library, "Market2Removed")
+        await expect(tokenList.connect(contractOwner).removeMarket2Support(symbolCAKE)).to.emit(library, "Market2Removed")
+
+        await expect(tokenList.isMarket2Supported(symbolUsdt)).to.be.revertedWith("Secondary Token is not supported")
+        await expect(tokenList.isMarket2Supported(symbolUsdc)).to.be.revertedWith("Secondary Token is not supported")
+        await expect(tokenList.isMarket2Supported(symbolSxp)).to.be.revertedWith("Secondary Token is not supported")
+        await expect(tokenList.isMarket2Supported(symbolCAKE)).to.be.revertedWith("Secondary Token is not supported")
+
+    })
+
+    it("Add secondary market to tokenList", async () => {
+        await expect(tokenList.connect(contractOwner).addMarket2Support(
+            symbolUsdt, 
+            18, 
+            bepUsdt.address, 
+            {gasLimit: 250000}
+        )).to.emit(library, "Market2Added")
+        expect(await tokenList.isMarket2Supported(symbolUsdt)).to.be.equal(true);
+    })
+
+    it("Secondary market test", async () => {
+        await tokenList.connect(contractOwner).addMarket2Support(symbolUsdc, 18, bepUsdc.address);
+        expect(await tokenList.isMarket2Supported(symbolUsdc)).to.equal(true)
+        expect(await tokenList.getMarket2Address(symbolUsdc)).to.equal(bepUsdc.address)
+        expect(await tokenList.getMarket2Decimal(symbolUsdc)).to.equal(18)
+        await tokenList.connect(contractOwner).removeMarket2Support(symbolUsdc)
+        await expect(tokenList.isMarket2Supported(symbolUsdc)).to.revertedWith("Secondary Token is not supported")
     })
 
     it("getMarketAddress", async() => {
-        console.log("getmarketaddress = ", await tokenList.getMarketAddress(symbol4));
-        expect(await tokenList.getMarketAddress(symbol4)).to.be.equal(bep20.address)
+        expect(await tokenList.getMarketAddress(symbolUsdt)).to.be.equal(bepUsdt.address)
     })
 
     it("getMarketDecimal", async () => {
-        expect(await tokenList.getMarketDecimal(symbol4)).to.be.equal(18)
+        expect(await tokenList.getMarketDecimal(symbolUsdt)).to.be.equal(18)
     })
 
     it("remove market in tokenList", async () => {
-        await tokenList.connect(contractOwner).removeMarketSupport(symbol4);
-        await expect(tokenList.isMarketSupported(symbol4)).to.be.revertedWith("ERROR: Unsupported market")
+        await tokenList.connect(contractOwner).removeMarketSupport(symbolUsdt);
+        await expect(tokenList.isMarketSupported(symbolUsdt)).to.be.revertedWith("ERROR: Unsupported market")
     })
 
     it("minAmountCheck", async () => {
         await tokenList.connect(contractOwner).addMarketSupport(
-            symbol4, 
+            symbolUsdt, 
             18, 
-            bep20.address, 
+            bepUsdt.address, 
             1,
             {gasLimit: 250000}
         )
 
-        await tokenList.minAmountCheck(symbol4, 20);
-        await expect(tokenList.minAmountCheck(symbol4, 17)).to.be.revertedWith("ERROR: Less than minimum deposit")
+        await tokenList.minAmountCheck(symbolUsdt, 20);
+        await expect(tokenList.minAmountCheck(symbolUsdt, 17)).to.be.revertedWith("ERROR: Less than minimum deposit")
     })
 
     it("updateMarketSupport", async () => {
-        expect(await tokenList.connect(contractOwner).updateMarketSupport(symbol4, 28, bep20.address, {gasLimit: 250000}))
+        expect(await tokenList.connect(contractOwner).updateMarketSupport(symbolUsdt, 28, bepUsdt.address, {gasLimit: 250000}))
             .to.emit(library, "MarketSupportUpdated")
     })
 
-    it("Market 2", async () => {
-        await tokenList.connect(contractOwner).addMarket2Support(symbol2, 18, bep20.address);
-        expect(await tokenList.isMarket2Supported(symbol2)).to.equal(true)
-
-        expect(await tokenList.getMarket2Address(symbol2)).to.equal(bep20.address)
-
-        expect(await tokenList.getMarket2Decimal(symbol2)).to.equal(18)
-
-        await tokenList.connect(contractOwner).removeMarket2Support(symbol2)
-        await expect(tokenList.isMarket2Supported(symbol2)).to.revertedWith("Secondary Token is not supported")
+    it("Pause contract", async () => {
+        await tokenList.connect(contractOwner).pauseTokenList()
+        await expect(tokenList.connect(contractOwner).pauseTokenList()).revertedWith("Paused status")
     })
 })

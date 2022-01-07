@@ -94,11 +94,11 @@ contract Comptroller is Pausable, IComptroller {
 		return LibDiamond._updateApr(_commitment, _apr);
 	}
 
-	function calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) external view override returns (uint, uint){
+	function calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) external view override returns (uint, uint, uint){
     	return LibDiamond._calcAPR(_commitment, oldLengthAccruedInterest, oldTime, aggregateInterest);
 	}
 
-	function calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) external view override returns (uint, uint) {
+	function calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) external view override returns (uint, uint, uint) {
 		return LibDiamond._calcAPY(_commitment, oldLengthAccruedYield, oldTime, aggregateYield);
 	}
 
