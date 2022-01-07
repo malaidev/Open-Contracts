@@ -2,8 +2,6 @@
 
 <!-- [![Test](https://github.com/0xHashstack/Open-contracts/actions/workflows/test.yml/badge.svg)](https://github.com/0xHashstack/Open-contracts/actions/workflows/test.yml) -->
 
-
-
 In this repository, you will find the latest smart contracts enabling Open protocol.
 
 ------
