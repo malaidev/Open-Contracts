@@ -619,7 +619,7 @@ library LibDiamond {
 		return true;
 	}
 
-	function _calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view returns (uint, uint) {
+	function _calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view returns (uint, uint, uint) {
 		LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
 		
 		LibDiamond.APR storage apr = ds.indAPRRecords[_commitment];
@@ -658,10 +658,10 @@ library LibDiamond {
 		}
 		oldLengthAccruedInterest = apr.time.length;
 		oldTime = block.timestamp;
-		return (oldLengthAccruedInterest, oldTime);
+		return (oldLengthAccruedInterest, oldTime, aggregateInterest);
 	}
 
-	function _calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal view returns (uint, uint) {
+	function _calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal view returns (uint, uint, uint) {
 		DiamondStorage storage ds = diamondStorage(); 
 		APY storage apy = ds.indAPYRecords[_commitment];
 
@@ -702,7 +702,7 @@ library LibDiamond {
 		oldLengthAccruedYield = apy.time.length;
 		oldTime = block.timestamp;
 
-		return (oldLengthAccruedYield, oldTime);
+		return (oldLengthAccruedYield, oldTime, aggregateYield);
 	}
 
 	function _getReserveFactor() internal view returns (uint) {
@@ -855,7 +855,7 @@ library LibDiamond {
 		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
 		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
 
-		_calcAPY(_commitment, yield.oldLengthAccruedYield, yield.oldTime, aggregateYield);
+		(yield.oldLengthAccruedYield, yield.oldTime, aggregateYield) = _calcAPY(_commitment, yield.oldLengthAccruedYield, yield.oldTime, aggregateYield);
 
 		aggregateYield *= deposit.amount;
 
@@ -1269,7 +1269,7 @@ library LibDiamond {
 		uint256 aggregateYield;
 		uint256 num = collateral.id-1;
 		
-		_calcAPY(_commitment, cYield.oldLengthAccruedYield, cYield.oldTime, aggregateYield);
+		(cYield.oldLengthAccruedYield, cYield.oldTime, aggregateYield) = _calcAPY(_commitment, cYield.oldLengthAccruedYield, cYield.oldTime, aggregateYield);
 
 		aggregateYield *= collateral.amount;
 
@@ -1337,7 +1337,7 @@ library LibDiamond {
 		uint256 oldLengthAccruedInterest;
 		uint256 oldTime;
 
-		(oldLengthAccruedInterest, oldTime) = _calcAPR(
+		(oldLengthAccruedInterest, oldTime, aggregateYield) = _calcAPR(
 			ds.indLoanRecords[_account][_loanMarket][_commitment].commitment, 
 			ds.indAccruedAPR[_account][_loanMarket][_commitment].oldLengthAccruedInterest,
 			ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime, 

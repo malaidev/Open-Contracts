@@ -122,7 +122,7 @@ describe("===== Comptroller Test =====", function () {
         await comptroller.connect(contractOwner).updateAPY(comit_TWOWEEKS, 55, {gasLimit: 250000});
         console.log("Before: LenIntereset = ", oldLenAccruedInterest, " oldTime = ", oldTime, " aggregateIntereset = ", aggregateInterest);
         const rets = await comptroller.calcAPY(comit_NONE, oldLenAccruedInterest, oldTime, aggregateInterest);
-        console.log("After: LenIntereset = ", rets[0], " oldTime = ", rets[1], " aggregateIntereset = ", aggregateInterest);
+        console.log("After: LenIntereset = ", rets[0], " oldTime = ", rets[1], " aggregateIntereset = ", rets[2]);
     })
 
     it("Calc APR", async () => {
