@@ -2058,8 +2058,8 @@ library LibDiamond {
         DiamondStorage storage ds = diamondStorage();
         address previousOwner = ds.contractOwner;
         ds.contractOwner = _newOwner;
-		  ds.superAdmin = keccak256("AccessRegistry.admin");
-		  _addAdminRole(keccak256("AccessRegistry.admin"), _newOwner);
+		  ds.superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8; //keccak256("AccessRegistry.admin");
+		  _addAdminRole(0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8, _newOwner);
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
