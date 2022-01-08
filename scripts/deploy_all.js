@@ -11,7 +11,6 @@ async function main() {
 async function deployDiamond() {
     const accounts = await ethers.getSigners()
     const contractOwner = await accounts[0]
-    const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     console.log(`contractOwner ${contractOwner.address}`)
 
     // deploy DiamondCutFacet
@@ -23,7 +22,7 @@ async function deployDiamond() {
 
     // deploy Diamond
     const Diamond = await ethers.getContractFactory('OpenDiamond')
-    const diamond = await Diamond.deploy(admin_, diamondCutFacet.address)
+    const diamond = await Diamond.deploy(contractOwner.address, diamondCutFacet.address)
     await diamond.deployed()
     console.log('Diamond deployed:', diamond.address)
 
