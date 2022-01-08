@@ -27,4 +27,11 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: npm install
     - run: npx hardhat compile
-    - run: npx hardhat test
+    - run: npx hardhat test tests/accessregistryTest.js
+    - run: npx hardhat test tests/comptrollerTest.js
+    - run: npx hardhat test tests/depositTest.js
+    - run: npx hardhat test tests/diamondTest.js
+    - run: npx hardhat test tests/loanTest.js
+    - run: npx hardhat test tests/tokenlistTest.js
+
+
