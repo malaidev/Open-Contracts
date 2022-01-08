@@ -140,14 +140,14 @@ library SafeMath {
 }
 
 
-contract tCake  is Context, IBEP20 {
+contract tSxp  is Context, IBEP20 {
   using SafeMath for uint256;
 
   mapping (address => uint256) private _balances;
 
   mapping (address => mapping (address => uint256)) private _allowances;
 
-  address admintCake;
+  address admintSxp;
   uint256 private _totalSupply;
   uint8 private _decimals;
   string private _symbol;
@@ -157,13 +157,13 @@ contract tCake  is Context, IBEP20 {
   event Approval(address indexed owner, address indexed spender, uint256 value);
 
   constructor(address admin_) {
-    admintCake = admin_;
-    _name = "CAKE";
-    _symbol = "Cake.t";
+    admintSxp = admin_;
+    _name = "SXP";
+    _symbol = "SXP.t";
     _decimals = 18;
     _totalSupply = 10000000000000000000000000000;
     // _balances[msg.sender] = _totalSupply;
-    _mint(admintCake, 5000000000000000000000000000);
+    _mint(admintSxp, 5000000000000000000000000000);
 
     emit Transfer(address(0), msg.sender, _totalSupply);
   }
@@ -172,7 +172,7 @@ contract tCake  is Context, IBEP20 {
    * @dev Returns the bep token owner.
    */
   function getOwner() external view returns (address) {
-    return admintCake;
+    return admintSxp;
   }
 
   /**
@@ -197,21 +197,21 @@ contract tCake  is Context, IBEP20 {
   }
 
   /**
-   * @dev See {CAKE-totalSupply}.
+   * @dev See {SXP-totalSupply}.
    */
   function totalSupply() external view returns (uint256) {
     return _totalSupply;
   }
 
   /**
-   * @dev See {CAKE-balanceOf}.
+   * @dev See {SXP-balanceOf}.
    */
   function balanceOf(address account) external view returns (uint256) {
     return _balances[account];
   }
 
   /**
-   * @dev See {CAKE-transfer}.
+   * @dev See {SXP-transfer}.
    *
    * Requirements:
    *
@@ -224,14 +224,14 @@ contract tCake  is Context, IBEP20 {
   }
 
   /**
-   * @dev See {CAKE-allowance}.
+   * @dev See {SXP-allowance}.
    */
   function allowance(address owner, address spender) external view override returns (uint256) {
     return _allowances[owner][spender];
   }
 
   /**
-   * @dev See {CAKE-approve}.
+   * @dev See {SXP-approve}.
    *
    * Requirements:
    *
@@ -249,10 +249,10 @@ contract tCake  is Context, IBEP20 {
   }
 
   /**
-   * @dev See {CAKE-transferFrom}.
+   * @dev See {SXP-transferFrom}.
    *
    * Emits an {Approval} event indicating the updated allowance. This is not
-   * required by the EIP. See the note at the beginning of {CAKE};
+   * required by the EIP. See the note at the beginning of {SXP};
    *
    * Requirements:
    * - `sender` and `recipient` cannot be the zero address.
@@ -262,7 +262,7 @@ contract tCake  is Context, IBEP20 {
    */
   function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
     _transfer(sender, recipient, amount);
-    _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "CAKE: transfer amount exceeds allowance"));
+    _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "SXP: transfer amount exceeds allowance"));
     return true;
   }
 
@@ -270,7 +270,7 @@ contract tCake  is Context, IBEP20 {
    * @dev Atomically increases the allowance granted to `spender` by the caller.
    *
    * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {CAKE-approve}.
+   * problems described in {SXP-approve}.
    *
    * Emits an {Approval} event indicating the updated allowance.
    *
@@ -287,7 +287,7 @@ contract tCake  is Context, IBEP20 {
    * @dev Atomically decreases the allowance granted to `spender` by the caller.
    *
    * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {CAKE-approve}.
+   * problems described in {SXP-approve}.
    *
    * Emits an {Approval} event indicating the updated allowance.
    *
@@ -298,7 +298,7 @@ contract tCake  is Context, IBEP20 {
    * `subtractedValue`.
    */
   function decreaseAllowance(address spender, uint256 subtractedValue) public override returns (bool) {
-    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "CAKE: decreased allowance below zero"));
+    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "SXP: decreased allowance below zero"));
     return true;
   }
 
@@ -334,10 +334,10 @@ contract tCake  is Context, IBEP20 {
    * - `sender` must have a balance of at least `amount`.
    */
   function _transfer(address sender, address recipient, uint256 amount) internal {
-    require(sender != address(0), "CAKE: transfer from the zero address");
-    require(recipient != address(0), "CAKE: transfer to the zero address");
+    require(sender != address(0), "SXP: transfer from the zero address");
+    require(recipient != address(0), "SXP: transfer to the zero address");
 
-    _balances[sender] = _balances[sender].sub(amount, "CAKE: transfer amount exceeds balance");
+    _balances[sender] = _balances[sender].sub(amount, "SXP: transfer amount exceeds balance");
     _balances[recipient] = _balances[recipient].add(amount);
     emit Transfer(sender, recipient, amount);
   }
@@ -352,8 +352,8 @@ contract tCake  is Context, IBEP20 {
    * - `to` cannot be the zero address.
    */
   function _mint(address account, uint256 amount) internal {
-    require(account != address(0), "CAKE: mint to the zero address");
-    require(account == admintCake, "Only Admin can mint");
+    require(account != address(0), "SXP: mint to the zero address");
+    require(account == admintSxp, "Only Admin can mint");
     _totalSupply = _totalSupply.add(amount);
     _balances[account] = _balances[account].add(amount);
     emit Transfer(address(0), account, amount);
@@ -371,9 +371,9 @@ contract tCake  is Context, IBEP20 {
    * - `account` must have at least `amount` tokens.
    */
   function _burn(address account, uint256 amount) internal {
-    require(account != address(0), "CAKE: burn from the zero address");
+    require(account != address(0), "SXP: burn from the zero address");
 
-    _balances[account] = _balances[account].sub(amount, "CAKE: burn amount exceeds balance");
+    _balances[account] = _balances[account].sub(amount, "SXP: burn amount exceeds balance");
     _totalSupply = _totalSupply.sub(amount);
     emit Transfer(account, address(0), amount);
   }
@@ -392,8 +392,8 @@ contract tCake  is Context, IBEP20 {
    * - `spender` cannot be the zero address.
    */
   function _approve(address owner, address spender, uint256 amount) internal {
-    require(owner != address(0), "CAKE: approve from the zero address");
-    require(spender != address(0), "CAKE: approve to the zero address");
+    require(owner != address(0), "SXP: approve from the zero address");
+    require(spender != address(0), "SXP: approve to the zero address");
 
     _allowances[owner][spender] = amount;
     emit Approval(owner, spender, amount);
@@ -407,6 +407,6 @@ contract tCake  is Context, IBEP20 {
    */
   function _burnFrom(address account, uint256 amount) internal {
     _burn(account, amount);
-    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "CAKE: burn amount exceeds allowance"));
+    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "SXP: burn amount exceeds allowance"));
   }
 }
