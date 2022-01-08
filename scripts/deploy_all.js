@@ -322,7 +322,7 @@ async function deploySxpInd() {
 }
 
 if (require.main === module) {
-    deploySxpInd()
+    main()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)
