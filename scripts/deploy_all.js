@@ -214,6 +214,8 @@ async function addMarkets(diamondAddress) {
         1, 
         { gasLimit: 800000 }
     )
+    console.log("tusdt added");
+
 
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolUsdc,
@@ -240,6 +242,8 @@ async function addMarkets(diamondAddress) {
         1,
         { gasLimit: 800000 }
     )
+    console.log("wbnb added");
+
     
     console.log("addMarket2");
     await tokenList.connect(contractOwner).addMarket2Support(

@@ -161,9 +161,9 @@ contract tCake  is Context, IBEP20 {
     _name = "CAKE";
     _symbol = "CAKE.t";
     _decimals = 18;
-    _totalSupply = 10000000000000000000000000000;
+    _totalSupply = 2600000000000000000000000000;
     // _balances[msg.sender] = _totalSupply;
-    _mint(admintCake, 5000000000000000000000000000);
+    _mint(admintCake, 10000000000000000000000000);
 
     emit Transfer(address(0), msg.sender, _totalSupply);
   }
