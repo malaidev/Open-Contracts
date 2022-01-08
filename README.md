@@ -1,10 +1,11 @@
+[![Slither tests](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)     [![Unit tests](https://github.com/0xHashstack/Open-contracts/actions/workflows/main.yml/badge.svg)](https://github.com/0xHashstack/Open-contracts/actions/workflows/main.yml)
 
+<!-- [![Test](https://github.com/0xHashstack/Open-contracts/actions/workflows/test.yml/badge.svg)](https://github.com/0xHashstack/Open-contracts/actions/workflows/test.yml) -->
 
 In this repository, you will find the latest smart contracts enabling Open protocol.
 
 ------
 
-[![Static Analysis](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)
 
 ### Deployment Guide
 
