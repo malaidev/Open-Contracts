@@ -163,7 +163,7 @@ contract tSxp  is Context, IBEP20 {
     _decimals = 18;
     _totalSupply = 2600000000000000000000000000;
     // _balances[msg.sender] = _totalSupply;
-    _mint(admintCake, 50000000000000000000000000);
+    _mint(admintSxp, 30000000000000000000000000);
 
     emit Transfer(address(0), msg.sender, _totalSupply);
   }
