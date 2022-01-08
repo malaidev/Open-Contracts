@@ -291,6 +291,36 @@ async function addMarkets(diamondAddress) {
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress}
 }
 
+async function deploySxpInd() {
+    const accounts = await ethers.getSigners()
+    const contractOwner = accounts[0]
+    const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+    const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
+    const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+    const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+    const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
+    const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
+    const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
+   
+    const tokenlist = await ethers.getContractAt("TokenList", "0xAA5381caF774a92d38ADD5eb5F4c6e26c3939C62")
+
+    const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
+    const tSxp = await ethers.getContractFactory('tSxp')
+    const tsxp = await tSxp.deploy(admin_)
+    await tsxp.deployed()
+    const tSxpAddress = tsxp.address
+    console.log("tSxp deployed: ", tsxp.address)
+
+    await tokenlist.connect(contractOwner).removeMarket2Support(symbolSxp)
+
+    await tokenlist.connect(contractOwner).addMarket2Support(
+        symbolSxp,
+        8,
+        tsxp.address,
+        { gasLimit: 800000 }
+    )
+}
+
 if (require.main === module) {
     main()
       .then(() => process.exit(0))
