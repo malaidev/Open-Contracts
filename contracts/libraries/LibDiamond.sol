@@ -1993,10 +1993,9 @@ library LibDiamond {
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {
-		retPrice = 200;
-		// DiamondStorage storage ds = diamondStorage();
-		// require(ds.priceData[_requestId].price != 0, "No fetched price");
-		// retPrice = ds.priceData[_requestId].price;
+		DiamondStorage storage ds = diamondStorage();
+		require(ds.priceData[_requestId].price != 0, "No fetched price");
+		retPrice = ds.priceData[_requestId].price;
 	}
 
 	function _fairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) internal {
