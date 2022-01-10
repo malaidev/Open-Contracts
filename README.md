@@ -6,8 +6,6 @@ In this repository, you will find the latest smart contracts enabling Open proto
 
 [![Static Analysis](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)
 
-Open protocol's codebased is governed by the Business Source License[Read more](https://github.com/0xHashstack/Open-contracts/blob/release-v0.1.2/LICENSE.md)
-
 ### Deployment Guide
 
 This is a complete deployment guide on how you can deploy contracts by yourself. Initially we are deploying on Binance smart chain testnet, 
@@ -50,3 +48,4 @@ node scripts/sample-script.js
 npx hardhat help
 ```
 
+Open protocol's source code is secured by Business Source License [Read more](https://github.com/0xHashstack/Open-contracts/blob/release-v0.1.2/LICENSE.md)
