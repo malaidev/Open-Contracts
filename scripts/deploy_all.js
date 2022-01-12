@@ -176,7 +176,8 @@ async function addMarkets(diamondAddress) {
     const tBTC = await ethers.getContractFactory('tBTC')
     
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
-    const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
+    // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
+    const admin_ = contractOwner.address;
     const tbtc = await tBTC.deploy(admin_)
     await tbtc.deployed()
     const tBtcAddress = tbtc.address
@@ -244,7 +245,6 @@ async function addMarkets(diamondAddress) {
     )
     console.log("wbnb added");
 
-    
     console.log("addMarket2");
     await tokenList.connect(contractOwner).addMarket2Support(
         symbolUsdt,
@@ -321,8 +321,67 @@ async function deploySxpInd() {
     )
 }
 
+async function modifyMarketMinAmount() {
+    const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+    const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
+    const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+    const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+    const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
+    const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
+    const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
+    
+    const accounts = await ethers.getSigners()
+    const contractOwner = accounts[0]
+    
+    const diamondAddress = "0xAA5381caF774a92d38ADD5eb5F4c6e26c3939C62";
+    const tokenlist = await ethers.getContractAt("TokenList", diamondAddress)
+
+    await tokenlist.connect(contractOwner).removeMarket2Support(symbolUsdt)
+    await tokenlist.connect(contractOwner).removeMarket2Support(symbolUsdc)
+    await tokenlist.connect(contractOwner).removeMarket2Support(symbolBtc)
+    await tokenlist.connect(contractOwner).removeMarket2Support(symbolWBNB)
+
+    await tokenList.connect(contractOwner).addMarketSupport(
+        symbolUsdt,
+        18,
+        tusdt.address, // USDT.t
+        100*10**18, 
+        { gasLimit: 800000 }
+    )
+    console.log("tusdt added");
+
+
+    await tokenList.connect(contractOwner).addMarketSupport(
+        symbolUsdc,
+        18,
+        tusdc.address, // USDC.t
+        100*10**18, 
+        { gasLimit: 800000 }
+    ) 
+    console.log("tusdc added");
+
+    await tokenList.connect(contractOwner).addMarketSupport(
+        symbolBtc,
+        8,
+        tbtc.address, // BTC.t
+        1000000, 
+        { gasLimit: 800000 }
+    )
+    console.log("tbtc added");
+
+    await tokenList.connect(contractOwner).addMarketSupport(
+        symbolWBNB,
+        18,
+        '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+        25*10*16,
+        { gasLimit: 800000 }
+    )
+    console.log("wbnb added");
+
+}
+
 if (require.main === module) {
-    main()
+    modifyMarketMinAmount()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)

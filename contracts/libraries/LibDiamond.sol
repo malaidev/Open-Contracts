@@ -297,9 +297,9 @@ library LibDiamond {
 // =========== Comptroller events ================
 
 // =========== Deposit events ===========
-	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
-	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
-	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commmitment,uint256 indexed amount);
+	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
+	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
+	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
 	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
 	
 // =========== Loan events ===============
@@ -395,7 +395,7 @@ library LibDiamond {
         
         marketData.market = _market;
         marketData.tokenAddress = tokenAddress_;
-        marketData.minAmount = _amount*_decimals;
+        marketData.minAmount = _amount; // not multiply decmial for amount < 1
         marketData.decimals = _decimals;
         
         ds.pMarkets.push(_market);
@@ -1404,6 +1404,8 @@ library LibDiamond {
 		uint256 collateralAmount = collateral.amount - (deductibleInterest.accruedInterest + cYield.accruedYield);
 		_repayAmount += _swap(collateral.market,loan.market,collateralAmount,2);
 
+		require(_repayAmount > loan.amount, "Repay Amount is smaller than loan Amount");
+
 		// Excess amount is tranferred back to the collateral record
 		uint256 _remnantAmount = _repayAmount - loan.amount;
 		collateral.amount = _swap(loan.market,collateral.market,_remnantAmount,2);
@@ -1756,6 +1758,7 @@ library LibDiamond {
 		// CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];		
 		
 		require(diamondStorage().indLoanRecords[_sender][_market][_commitment].id != 0,"ERROR: No Loan");
+		_isMarketSupported(_market);
 		
 		_accruedInterest(_sender, _market, _commitment);
 		_accruedYield(diamondStorage().loanPassbook[_sender], diamondStorage().indCollateralRecords[_sender][_market][_commitment], diamondStorage().indAccruedAPY[_sender][_market][_commitment]);
