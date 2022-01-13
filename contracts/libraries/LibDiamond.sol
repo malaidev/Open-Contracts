@@ -297,8 +297,8 @@ library LibDiamond {
 // =========== Comptroller events ================
 
 // =========== Deposit events ===========
-	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
-	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
+	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
+	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
 	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
 	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
 	
@@ -1086,18 +1086,18 @@ library LibDiamond {
 		savingsAccount.deposits.push(deposit);
 		savingsAccount.yield.push(yield);
 		_updateReservesDeposit(_market, _amount, 0);
-		emit NewDeposit(_sender, _market, _commitment, _amount);
+		emit NewDeposit(_sender, _market, _commitment, _amount, id);
 	}
 
 	function _addToDeposit(address _sender, bytes32 _market, bytes32 _commitment, uint _amount) internal authContract(DEPOSIT_ID) {
+		DiamondStorage storage ds = diamondStorage(); 
 		if (!_hasDeposit(_sender, _market, _commitment))	{
 			_createNewDeposit(_market, _commitment, _amount, _sender);
 		} 
 		
 		_processDeposit(_sender, _market, _commitment, _amount);
 		_updateReservesDeposit(_market, _amount, 0);
-
-		emit DepositAdded(_sender, _market, _commitment, _amount);
+		emit DepositAdded(_sender, _market, _commitment, _amount, ds.indDepositRecord[_sender][_market][_commitment].id);
 	}
 
     function _ensureSavingsAccount(address _account, SavingsAccount storage savingsAccount) private {
