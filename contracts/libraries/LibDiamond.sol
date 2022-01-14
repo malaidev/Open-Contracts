@@ -307,6 +307,7 @@ library LibDiamond {
 	event NewLoan(
 		address indexed account,
 		bytes32 loanMarket,
+		bytes32 commitment,
 		uint256 loanAmount,
 		bytes32 collateralMarket,
 		uint256 collateralAmount,
@@ -1745,7 +1746,7 @@ library LibDiamond {
 
 		_processNewLoan(_sender,_market,_commitment,_loanAmount,_collateralMarket,_collateralAmount);
 
-		emit NewLoan(_sender, _market, _loanAmount, _collateralMarket, _collateralAmount, ds.loanPassbook[_sender].loans.length+1);
+		emit NewLoan(_sender, _market, _commitment, _loanAmount, _collateralMarket, _collateralAmount, ds.loanPassbook[_sender].loans.length+1);
     }
 
     function _repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount, address _sender) internal authContract(LOAN_ID) {
