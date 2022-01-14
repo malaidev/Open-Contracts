@@ -283,13 +283,13 @@ library LibDiamond {
 	event Market2Added(
 		bytes32 indexed _market,
 		uint256 _decimals,
-		address indexed MarketAddress_,
+		address indexed _marketAddress,
 		uint256 indexed _timestamp
 	);
   	event Market2Updated(
 		bytes32 indexed _market,
       	uint256 _decimals,
-      	address indexed tokenAddress_,
+      	address indexed _tokenAddress,
       	uint256 indexed _timestamp
   	);
   	event Market2Removed(bytes32 indexed _market, uint256 indexed _timestamp);
@@ -306,11 +306,11 @@ library LibDiamond {
 	/// EVENTS
 	event NewLoan(
 		address indexed account,
-		bytes32 loanmarket,
-		uint256 loanamount,
-		bytes32 collateralmarket,
-		uint256 collateralamount,
-		uint256 indexed loanid
+		bytes32 loanMarket,
+		uint256 loanAmount,
+		bytes32 collateralMarket,
+		uint256 collateralAmount,
+		uint256 indexed loanId
 	);
 	event LoanRepaid(
 		address indexed account,
