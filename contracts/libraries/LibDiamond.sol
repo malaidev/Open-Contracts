@@ -305,7 +305,7 @@ library LibDiamond {
 // =========== Loan events ===============
 	/// EVENTS
 	event NewLoan(
-		address indexed _account,
+		address indexed account,
 		bytes32 loanmarket,
 		uint256 loanamount,
 		bytes32 collateralmarket,
@@ -313,41 +313,41 @@ library LibDiamond {
 		uint256 indexed loanid
 	);
 	event LoanRepaid(
-		address indexed _account,
+		address indexed account,
 		uint256 indexed id,
 		bytes32 indexed market,
 		uint256 timestamp
 	);
 	event WithdrawalProcessed(
-		address indexed _account,
+		address indexed account,
 		uint256 indexed id,
 		uint256 indexed amount,
 		bytes32 market,
 		uint256 timestamp
 	);
 	event MarketSwapped(
-		address indexed _account,
+		address indexed account,
 		uint256 indexed loanid,
 		bytes32 marketFrom,
 		bytes32 marketTo,
 		uint256 amount
 	);
 	event CollateralReleased(
-		address indexed _account,
+		address indexed account,
 		uint256 indexed amount,
 		bytes32 indexed market,
 		uint256 timestamp
 	);
 
 	event AddCollateral(
-		address indexed _account,
+		address indexed account,
 		uint256 indexed id,
 		uint256 amount,
 		uint256 timestamp
 	);
 
 	event Liquidation(
-		address indexed _account,
+		address indexed account,
 		bytes32 indexed market,
 		bytes32 indexed commitment,
 		uint256 amount,
