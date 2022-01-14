@@ -185,7 +185,7 @@ library LibDiamond {
 
     // ===========  admin addresses ===========
         bytes32 superAdmin;
-        // address superAdminAddress;
+// superAdmin address backed in function setContractOwner()
 
     // =========== TokenList state variables ===========
         bytes32 adminTokenList;
