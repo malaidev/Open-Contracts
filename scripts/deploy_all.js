@@ -290,6 +290,52 @@ async function addMarkets(diamondAddress) {
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress}
 }
 
+async function addtWBNB() {
+    const accounts = await ethers.getSigners()
+    const contractOwner = accounts[0]
+
+    const diamondAddress = "0x123De8ceb0C3a2582bd7Bcf7d885187CdE016067"
+
+    const diamond = await ethers.getContractAt('OpenDiamond', diamondAddress)
+    const tokenList = await ethers.getContractAt('TokenList', diamondAddress)
+
+    const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+    const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
+    const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+    const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+    const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
+    const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
+    const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
+   
+    const comit_NONE = "0x636f6d69745f4e4f4e4500000000000000000000000000000000000000000000";
+    const comit_TWOWEEKS = "0x636f6d69745f54574f5745454b53000000000000000000000000000000000000";
+    const comit_ONEMONTH = "0x636f6d69745f4f4e454d4f4e5448000000000000000000000000000000000000";
+    const comit_THREEMONTHS = "0x636f6d69745f54485245454d4f4e544853000000000000000000000000000000";
+
+
+    console.log("Deploy test tokens");
+    // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
+    const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
+    // const admin_ = contractOwner.address;
+    const tWBNB = await ethers.getContractFactory('tWBNB')
+    const twbnb = await tWBNB.deploy(admin_)
+    await twbnb.deployed()
+    console.log("tWBNB deployed: ", twbnb.address)
+
+    console.log("addMarket");
+
+    await tokenList.connect(contractOwner).removeMarketSupport(symbolWBNB);
+
+    await tokenList.connect(contractOwner).addMarketSupport(
+        symbolWBNB,
+        18,
+        twbnb.address,
+        1,
+        { gasLimit: 800000 }
+    )
+    console.log("wbnb added");
+}
+
 if (require.main === module) {
     main()
       .then(() => process.exit(0))
