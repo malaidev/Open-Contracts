@@ -14,7 +14,7 @@ contract Faucet {
     uint256 constant public tokenAmount3 =  5000000000000000000;
     // sends 5 tokens t.BTC
     uint256 constant public tokenAmount4 = 100000000000000000000;
-    // sends 100 tokens wBNB
+    // sends 100 tokens t.wBNB
     
     // uint256 constant public tokenAmount5 = 10000000000000000000000;
     // // sends 10,000 tokens t.USDT
