@@ -60,7 +60,6 @@ contract Loan is Pausable, ILoan {
 		price = LibDiamond._getFairPrice(_requestId);
 	}
 
-
 	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view override returns (bool) {
     	LibDiamond._collateralPointer(_account, _market, _commitment, collateralMarket, collateralAmount);
 		return true;

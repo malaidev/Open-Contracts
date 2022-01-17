@@ -35,6 +35,40 @@ async function updateDepositAddFunc() {
     // assert.sameMembers(result, getSelectors(Loan))
 
 }
+async function updateOracleAddFunc() {
+  const accounts = await ethers.getSigners()
+  const contractOwner = accounts[0]
+
+    let diamond = await ethers.getContractAt('OpenDiamond', '0x2290FD0130DbC36dbdA32Cfa24415f0fEBD7E7Fe')
+    let diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', '0x2290FD0130DbC36dbdA32Cfa24415f0fEBD7E7Fe')
+    let diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', '0x2290FD0130DbC36dbdA32Cfa24415f0fEBD7E7Fe')
+    let OracleOpen = await ethers.getContractFactory('OracleOpen')
+    let oracle = await OracleOpen.deploy()
+    await oracle.deployed()
+
+    console.log("New Oracle deployed at ", oracle.address)
+
+    console.log("Diamond address is ", diamond.address)
+    console.log("diamondCutFacet address is ", diamondCutFacet.address)
+    console.log("diamondLoupeFacet address is ", diamondLoupeFacet.address)
+    const selectors = getSelectors(deposit).get(['setFairPrice(uint, uint, bytes32, uint)'])
+
+    tx = await diamondCutFacet.diamondCut(
+        [{
+          facetAddress: oracle.address,
+          action: FacetCutAction.Add,
+          functionSelectors: selectors,
+          facetId:17
+        }],
+        ethers.constants.AddressZero, '0x', { gasLimit: 800000 })
+      receipt = await tx.wait()
+      if (!receipt.status) {
+        throw Error(`Diamond upgrade failed: ${tx.hash}`)
+      }
+    // result = await diamondLoupeFacet.facetFunctionSelectors(deposit)
+    // assert.sameMembers(result, getSelectors(Loan))
+
+}
 
 async function testCallUpgrade() {
   const accounts = await ethers.getSigners()
@@ -42,7 +76,7 @@ async function testCallUpgrade() {
   const diamond = await ethers.getContractAt('OpenDiamond', '0x2290FD0130DbC36dbdA32Cfa24415f0fEBD7E7Fe')
     const diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', '0x2290FD0130DbC36dbdA32Cfa24415f0fEBD7E7Fe')
     const diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', '0x2290FD0130DbC36dbdA32Cfa24415f0fEBD7E7Fe')
-    const deposit = await ethers.getContractAt('Deposit', '0x2290FD0130DbC36dbdA32Cfa24415f0fEBD7E7Fe')
+    const oracle = await ethers.getContractAt('Deposit', '0x2290FD0130DbC36dbdA32Cfa24415f0fEBD7E7Fe')
 
     const retUp = await deposit.upgradeTestAccount(contractOwner.address);
   // const retUp = await deposit.upgradeTest(contractOwner.address);
@@ -51,7 +85,7 @@ async function testCallUpgrade() {
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-updateDepositAddFunc()
+updateOracleAddFunc()
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error);

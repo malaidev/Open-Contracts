@@ -21,6 +21,10 @@ contract OracleOpen is Pausable, IOracleOpen {
         return LibDiamond._getFairPrice(_requestId);
     }
 
+    function setFairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) external {
+        LibDiamond._fairPrice(_requestId, _fPrice, _market, _amount);
+    }
+
     function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {
         LibDiamond._liquidation(account, loanId);
         return true;
