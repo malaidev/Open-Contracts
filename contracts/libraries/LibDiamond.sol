@@ -596,7 +596,6 @@ library LibDiamond {
 		APY storage apyUpdate = ds.indAPYRecords[_commitment];
 
 		// if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
-
 		apyUpdate.commitment = _commitment;
 		apyUpdate.time.push(block.timestamp);
 		apyUpdate.apyChanges.push(_apy);
@@ -637,24 +636,24 @@ library LibDiamond {
 			if (apr.time[index] < time) {
 				uint256 newIndex = index + 1;
 				// Convert the aprChanges to the lowest unit value.
-				aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
+				aggregateInterest = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
 			
 				for (uint256 i = newIndex; i < apr.aprChanges.length; i++) {
 					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateInterest += (timeDiff*apr.aprChanges[newIndex] / 100)*365/(100*1000);
+					aggregateInterest += (timeDiff*apr.aprChanges[newIndex] / 10000)*365/(100*1000);
 				}
 			}
 			else if (apr.time[index] == time) {
 				for (uint256 i = index; i < apr.aprChanges.length; i++) {
 					uint256 timeDiff = apr.time[i + 1] - apr.time[i];
-					aggregateInterest += (timeDiff*apr.aprChanges[index] / 100)*365/(100*1000);
+					aggregateInterest += (timeDiff*apr.aprChanges[index] / 10000)*365/(100*1000);
 				}
 			}
 		} else if (apr.time.length == oldLengthAccruedInterest && block.timestamp > oldLengthAccruedInterest) {
 			if (apr.time[index] < time || apr.time[index] == time) {
-				aggregateInterest += (block.timestamp - time)*apr.aprChanges[index]/100;
+				aggregateInterest += (block.timestamp - time)*apr.aprChanges[index]/10000;
 				// Convert the aprChanges to the lowest unit value.
-				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
+				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
 			}
 		}
 		oldLengthAccruedInterest = apr.time.length;
@@ -677,24 +676,24 @@ library LibDiamond {
 			if (apy.time[index] < time) {
 				uint256 newIndex = index + 1;
 				// Convert the aprChanges to the lowest unit value.
-				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index])/100)*365/(100*1000);
+				aggregateYield = (((apy.time[newIndex] - time) *apy.apyChanges[index])/10000)*365/(100*1000);
 			
 				for (uint256 i = newIndex; i < apy.apyChanges.length; i++) {
 					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-					aggregateYield += (timeDiff*apy.apyChanges[newIndex] / 100)*365/(100*1000);
+					aggregateYield += (timeDiff*apy.apyChanges[newIndex] / 10000)*365/(100*1000);
 				}
 			}
 			else if (apy.time[index] == time) {
 				for (uint256 i = index; i < apy.apyChanges.length; i++) {
 					uint256 timeDiff = apy.time[i + 1] - apy.time[i];
-					aggregateYield += (timeDiff*apy.apyChanges[index] / 100)*365/(100*1000);
+					aggregateYield += (timeDiff*apy.apyChanges[index] / 10000)*365/(100*1000);
 				}
 			}
 		} else if (apy.time.length == oldLengthAccruedYield && block.timestamp > oldLengthAccruedYield) {
 			if (apy.time[index] < time || apy.time[index] == time) {
-				aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/100;
+				aggregateYield += (block.timestamp - time)*apy.apyChanges[index]/10000;
 				// Convert the aprChanges to the lowest unit value.
-				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/100)*365/(100*1000);
+				// aggregateYield = (((apr.time[newIndex] - time) *apr.aprChanges[index])/10000)*365/(100*1000);
 			}
 		}
 		oldLengthAccruedYield = apy.time.length;
@@ -1094,8 +1093,8 @@ library LibDiamond {
 		DiamondStorage storage ds = diamondStorage(); 
 		if (!_hasDeposit(_sender, _market, _commitment))	{
 			_createNewDeposit(_market, _commitment, _amount, _sender);
-		} 
-		
+			return;
+		}
 		_processDeposit(_sender, _market, _commitment, _amount);
 		_updateReservesDeposit(_market, _amount, 0);
 		emit DepositAdded(_sender, _market, _commitment, _amount, ds.indDepositRecord[_sender][_market][_commitment].id);

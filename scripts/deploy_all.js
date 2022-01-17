@@ -160,24 +160,23 @@ async function addMarkets(diamondAddress) {
     await comptroller.connect(contractOwner).setCommitment(comit_THREEMONTHS);
     
     console.log("updateAPY begin");
-    await comptroller.connect(contractOwner).updateAPY(comit_NONE, 6);
-    await comptroller.connect(contractOwner).updateAPY(comit_TWOWEEKS, 16);
-    await comptroller.connect(contractOwner).updateAPY(comit_ONEMONTH, 13);
-    await comptroller.connect(contractOwner).updateAPY(comit_THREEMONTHS, 10);
+    await comptroller.connect(contractOwner).updateAPY(comit_NONE, 780);
+    await comptroller.connect(contractOwner).updateAPY(comit_TWOWEEKS, 1000);
+    await comptroller.connect(contractOwner).updateAPY(comit_ONEMONTH, 1500);
+    await comptroller.connect(contractOwner).updateAPY(comit_THREEMONTHS, 1800);
 
     console.log("updateAPR");
-    await comptroller.connect(contractOwner).updateAPR(comit_NONE, 15);
-    await comptroller.connect(contractOwner).updateAPR(comit_TWOWEEKS, 15);
-    await comptroller.connect(contractOwner).updateAPR(comit_ONEMONTH, 18);
-    await comptroller.connect(contractOwner).updateAPR(comit_THREEMONTHS, 18);
+    await comptroller.connect(contractOwner).updateAPR(comit_NONE, 1800);
+    await comptroller.connect(contractOwner).updateAPR(comit_TWOWEEKS, 1800);
+    await comptroller.connect(contractOwner).updateAPR(comit_ONEMONTH, 1500);
+    await comptroller.connect(contractOwner).updateAPR(comit_THREEMONTHS, 1500);
 
 
     console.log("Deploy test tokens");
-    const tBTC = await ethers.getContractFactory('tBTC')
-    
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     const admin_ = contractOwner.address;
+    const tBTC = await ethers.getContractFactory('tBTC')
     const tbtc = await tBTC.deploy(admin_)
     await tbtc.deployed()
     const tBtcAddress = tbtc.address
@@ -212,7 +211,7 @@ async function addMarkets(diamondAddress) {
         symbolUsdt,
         18,
         tusdt.address, // USDT.t
-        1, 
+        100, 
         { gasLimit: 800000 }
     )
     console.log("tusdt added");
@@ -222,7 +221,7 @@ async function addMarkets(diamondAddress) {
         symbolUsdc,
         18,
         tusdc.address, // USDC.t
-        1, 
+        100, 
         { gasLimit: 800000 }
     ) 
     console.log("tusdc added");
@@ -291,97 +290,8 @@ async function addMarkets(diamondAddress) {
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress}
 }
 
-async function deploySxpInd() {
-    const accounts = await ethers.getSigners()
-    const contractOwner = accounts[0]
-    const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
-    const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
-    const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
-    const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
-    const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
-    const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
-    const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
-   
-    const tokenlist = await ethers.getContractAt("TokenList", "0xAA5381caF774a92d38ADD5eb5F4c6e26c3939C62")
-
-    const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
-    const tSxp = await ethers.getContractFactory('tSxp')
-    const tsxp = await tSxp.deploy(admin_)
-    await tsxp.deployed()
-    const tSxpAddress = tsxp.address
-    console.log("tSxp deployed: ", tsxp.address)
-
-    await tokenlist.connect(contractOwner).removeMarket2Support(symbolSxp)
-
-    await tokenlist.connect(contractOwner).addMarket2Support(
-        symbolSxp,
-        8,
-        tsxp.address,
-        { gasLimit: 800000 }
-    )
-}
-
-async function modifyMarketMinAmount() {
-    const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
-    const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
-    const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
-    const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
-    const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
-    const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
-    const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
-    
-    const accounts = await ethers.getSigners()
-    const contractOwner = accounts[0]
-    
-    const diamondAddress = "0xAA5381caF774a92d38ADD5eb5F4c6e26c3939C62";
-    const tokenlist = await ethers.getContractAt("TokenList", diamondAddress)
-
-    await tokenlist.connect(contractOwner).removeMarket2Support(symbolUsdt)
-    await tokenlist.connect(contractOwner).removeMarket2Support(symbolUsdc)
-    await tokenlist.connect(contractOwner).removeMarket2Support(symbolBtc)
-    await tokenlist.connect(contractOwner).removeMarket2Support(symbolWBNB)
-
-    await tokenList.connect(contractOwner).addMarketSupport(
-        symbolUsdt,
-        18,
-        tusdt.address, // USDT.t
-        100*10**18, 
-        { gasLimit: 800000 }
-    )
-    console.log("tusdt added");
-
-
-    await tokenList.connect(contractOwner).addMarketSupport(
-        symbolUsdc,
-        18,
-        tusdc.address, // USDC.t
-        100*10**18, 
-        { gasLimit: 800000 }
-    ) 
-    console.log("tusdc added");
-
-    await tokenList.connect(contractOwner).addMarketSupport(
-        symbolBtc,
-        8,
-        tbtc.address, // BTC.t
-        1000000, 
-        { gasLimit: 800000 }
-    )
-    console.log("tbtc added");
-
-    await tokenList.connect(contractOwner).addMarketSupport(
-        symbolWBNB,
-        18,
-        '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
-        25*10*16,
-        { gasLimit: 800000 }
-    )
-    console.log("wbnb added");
-
-}
-
 if (require.main === module) {
-    modifyMarketMinAmount()
+    main()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)
