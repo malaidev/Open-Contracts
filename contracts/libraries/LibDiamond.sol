@@ -176,10 +176,8 @@ library LibDiamond {
         mapping(bytes4 => FacetAddressAndSelectorPosition) facetAddressAndSelectorPosition;
         bytes4[] selectors;
         //  Function selectors with the ABI of a contract provide enough information about functions to be useful for user-interface software.
-	mapping(bytes4 => bool) supportedInterfaces;
-        // owner of the contract
-        address contractOwner;
-		// address reserveAddress;
+		mapping(bytes4 => bool) supportedInterfaces;
+        address contractOwner; // owner of the contract
         IBEP20 token;
 
     // ===========  admin addresses ===========
@@ -249,8 +247,6 @@ library LibDiamond {
         IBEP20 loanToken;
         IBEP20 collateralToken;
         IBEP20 withdrawToken;
-
-        ILoan.STATE state;
 
         // STRUCT Mapping
         mapping(address => LoanAccount) loanPassbook;
