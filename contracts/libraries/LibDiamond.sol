@@ -18,7 +18,6 @@ import "../interfaces/IAugustusSwapper.sol";
 import "../interfaces/IPancakeRouter01.sol";
 
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
-import "hardhat/console.sol";
 
 library LibDiamond {
     using Address for address;
