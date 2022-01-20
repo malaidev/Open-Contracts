@@ -23,7 +23,7 @@ import "hardhat/console.sol";
 library LibDiamond {
     using Address for address;
 
-    bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.hashstack.diamond.storage");
+    bytes32 constant DIAMOND_STORAGE_POSITION = 0xa7513e6e63bb532f9771966eae24bd3160885bc35e57313effe2e8bf1f822b24;
 	uint8 constant TOKENLIST_ID = 10;
 	uint8 constant COMPTROLLER_ID = 11;
 	// uint8 constant LIQUIDATOR_ID = 12;
