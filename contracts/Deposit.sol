@@ -70,15 +70,15 @@ contract Deposit is Pausable, IDeposit{
 		return true;
 	}
 
-	function createDeposit(
-		bytes32 _market,
-		bytes32 _commitment,
-		uint256 _amount
-	) external override nonReentrant() returns (bool) {
+	// function createDeposit(
+	// 	bytes32 _market,
+	// 	bytes32 _commitment,
+	// 	uint256 _amount
+	// ) external override nonReentrant() returns (bool) {
 		
-		LibDiamond._createNewDeposit(_market,_commitment, _amount, msg.sender);
-		return true;
-	}
+	// 	LibDiamond._createNewDeposit(_market,_commitment, _amount, msg.sender);
+	// 	return true;
+	// }
 
 	function withdrawDeposit (
 		bytes32 _market, 
