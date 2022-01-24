@@ -1,5 +1,6 @@
 const { keccak256 } = require('@ethersproject/keccak256')
-const { utils, ethers } = require('hardhat')
+const { ethers } = require('hardhat')
+const utils = require('ethers').utils
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 
 async function main() {
@@ -336,8 +337,14 @@ async function addtWBNB() {
     console.log("wbnb added");
 }
 
+async function testMe() {
+    const formBytes = "0x2e2e2f686172646861742e636f6e6669672e6a73000000000000000000000000";
+    const info = utils.parseBytes32String(formBytes);
+    console.log(info);
+}
+
 if (require.main === module) {
-    main()
+    testMe()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)

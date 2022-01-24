@@ -181,8 +181,7 @@ library LibDiamond {
         IBEP20 token;
 
     // ===========  admin addresses ===========
-        bytes32 superAdmin;
-// superAdmin address backed in function setContractOwner()
+        bytes32 superAdmin; // superAdmin address backed in function setContractOwner()
 
     // =========== TokenList state variables ===========
         bytes32 adminTokenList;
