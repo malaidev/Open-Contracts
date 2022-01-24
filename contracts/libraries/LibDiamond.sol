@@ -1043,7 +1043,7 @@ library LibDiamond {
 		
 		_processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
 		_updateReservesDeposit(_market, _amount, 0);
-		emit NewDeposit(_sender, _market, _commitment, _amount, id);
+		emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id);
 	}
 
 	function _addToDeposit(address _sender, bytes32 _market, bytes32 _commitment, uint _amount) internal authContract(DEPOSIT_ID) {
