@@ -1042,43 +1042,6 @@ library LibDiamond {
 		ds.token.transferFrom(_sender, ds.contractOwner, _amount);
 		
 		_processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
-
-		uint id;
-
-		if (savingsAccount.deposits.length == 0) {
-			id = 1;
-		} else {
-			id = savingsAccount.deposits.length + 1;
-		}
-		
-		yield.id = id;
-		yield.market = _market;
-
-		if (_commitment != _getCommitment(0)) {
-			// yield.id = id;
-			// yield.market = _market;
-			yield.oldLengthAccruedYield = _getApyTimeLength(_commitment);
-			yield.oldTime = block.timestamp;
-			yield.accruedYield = 0;
-			yield.isTimelockApplicable = true;
-			yield.isTimelockActivated=  false;
-			yield.timelockValidity = 86400;
-			yield.activationTime = 0;
-
-		} else if (_commitment == _getCommitment(0)) {
-			// yield.id=  id;
-			// yield.market=_market;
-			yield.oldLengthAccruedYield = _getApyTimeLength(_commitment);
-			yield.oldTime = block.timestamp;
-			yield.accruedYield = 0;
-			yield.isTimelockApplicable = false;
-			yield.isTimelockActivated=  true;
-			yield.timelockValidity = 0;
-			yield.activationTime = 0;
-		}
-
-		savingsAccount.deposits.push(deposit);
-		savingsAccount.yield.push(yield);
 		_updateReservesDeposit(_market, _amount, 0);
 		emit NewDeposit(_sender, _market, _commitment, _amount, id);
 	}
