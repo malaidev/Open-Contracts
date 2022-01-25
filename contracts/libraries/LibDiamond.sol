@@ -1314,9 +1314,9 @@ library LibDiamond {
 		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
 		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
-		emit FairPriceCall(ds.requestEventId++, _collateralMarket, _amount);
-		emit FairPriceCall(ds.requestEventId++, _market, _amount);
-		emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);		
+		// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _amount);
+		// emit FairPriceCall(ds.requestEventId++, _market, _amount);
+		// emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);		
 		// _quantifyAmount(loanState.currentMarket, _amount);
 		require(_amount <= loanState.currentAmount, "ERROR: Exceeds available loan");
 		
@@ -1569,8 +1569,8 @@ library LibDiamond {
     ) internal {
         DiamondStorage storage ds = diamondStorage();
 
-		emit FairPriceCall(ds.requestEventId++, _market, _loanAmount);
-		emit FairPriceCall(ds.requestEventId++, _collateralMarket, _collateralAmount);
+		// emit FairPriceCall(ds.requestEventId++, _market, _loanAmount);
+		// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _collateralAmount);
 
         uint256 loanByCollateral;
         uint256 amount = _avblMarketReserves(_market) - _loanAmount ;
@@ -1875,8 +1875,8 @@ library LibDiamond {
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_market][_commitment];
 		// CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
 
-		emit FairPriceCall(ds.requestEventId++, collateral.market, collateral.amount);
-		emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);
+		// emit FairPriceCall(ds.requestEventId++, collateral.market, collateral.amount);
+		// emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);
 
 		require(loan.id == _id, "ERROR: id mismatch");
 
