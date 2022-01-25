@@ -244,8 +244,8 @@ library LibDiamond {
 		bytes32 adminLoan1;
 		address adminLoan1Address;
         IBEP20 loanToken;
-        IBEP20 collateralToken;
         IBEP20 withdrawToken;
+        IBEP20 collateralToken;
 
         // STRUCT Mapping
         mapping(address => LoanAccount) loanPassbook;
@@ -1095,9 +1095,9 @@ library LibDiamond {
 // =========== Loan Functions ===========
     function _updateReservesLoan(bytes32 _market, uint256 _amount, uint256 _num) private {
         DiamondStorage storage ds = diamondStorage(); 
-		if (_num == 0)	{
+		if (_num == 0) {
 			ds.marketReservesLoan[_market] += _amount;
-		} else if (_num == 1)	{
+		} else if (_num == 1) {
 			ds.marketReservesLoan[_market] -= _amount;
 		}
 	}
@@ -1177,6 +1177,7 @@ library LibDiamond {
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
 		_isMarketSupported(_market);
+		require(ds.marketReservesLoan[collateral.market] >= collateral.amount, "Not enough fund in reserve");
 		//Below are checked in _collateralPointer
 
 		// _hasLoanAccount(_account);
@@ -1566,9 +1567,7 @@ library LibDiamond {
         bytes32 _collateralMarket,
         uint256 _loanAmount,
         uint256 _collateralAmount
-    ) internal {
-        DiamondStorage storage ds = diamondStorage();
-
+    ) internal view{
 		// emit FairPriceCall(ds.requestEventId++, _market, _loanAmount);
 		// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _collateralAmount);
 
@@ -1580,11 +1579,11 @@ library LibDiamond {
         uint256 usdCollateral = (_getLatestPrice(_collateralMarket)) * _collateralAmount;
 
         require(amount > 0, "ERROR: Loan exceeds reserves");
-        require(_marketReserves(_market) - amount >= rF, "ERROR: Minimum reserve exeception");
+        require(_marketReserves(_market) >= rF + amount, "ERROR: Minimum reserve exeception");
         require (usdLoan/usdCollateral <=3, "ERROR: Exceeds permissible CDR");
 
         // calculating cdrPermissible.
-        if (_marketReserves(_market) - amount >= 3*_marketReserves(_market)/4)    {
+        if (_marketReserves(_market) >= amount + 3*_marketReserves(_market)/4)    {
             loanByCollateral = 3;
         } else     {
             loanByCollateral = 2;
@@ -1694,6 +1693,7 @@ library LibDiamond {
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 
 		require(loan.id == 0, "ERROR: Active loan");
+		require(ds.collateralToken.balanceOf(_sender) >= _collateralAmount, "Insufficient fund of sender");
 
 		ds.collateralToken.approveFrom(_sender, address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(_sender, ds.contractOwner, _collateralAmount);

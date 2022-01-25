@@ -207,7 +207,7 @@ contract tWBNB  is Context, IBEP20 {
   /**
    * @dev See {WBNB-balanceOf}.
    */
-  function balanceOf(address account) external view returns (uint256) {
+  function balanceOf(address account) external view override returns (uint256) {
     return _balances[account];
   }
 
