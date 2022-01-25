@@ -1275,8 +1275,8 @@ library LibDiamond {
 	function _accruedInterest(address _account, bytes32 _loanMarket, bytes32 _commitment) private /*authContract(LOAN_ID)*/ {
         DiamondStorage storage ds = diamondStorage(); 
 
-		emit FairPriceCall(ds.requestEventId++, _loanMarket, ds.indLoanRecords[_account][_loanMarket][_commitment].amount);
-		emit FairPriceCall(ds.requestEventId++, ds.indCollateralRecords[_account][_loanMarket][_commitment].market, ds.indCollateralRecords[_account][_loanMarket][_commitment].amount);
+		// emit FairPriceCall(ds.requestEventId++, _loanMarket, ds.indLoanRecords[_account][_loanMarket][_commitment].amount);
+		// emit FairPriceCall(ds.requestEventId++, ds.indCollateralRecords[_account][_loanMarket][_commitment].market, ds.indCollateralRecords[_account][_loanMarket][_commitment].amount);
 
 		// LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
@@ -1296,8 +1296,8 @@ library LibDiamond {
 			ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime, 
 			aggregateYield);
 
-		deductibleUSDValue = ((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * _getFairPrice(ds.requestEventId - 2)) * aggregateYield;
-		ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest += deductibleUSDValue / _getFairPrice(ds.requestEventId - 1);
+		deductibleUSDValue = ((ds.indLoanRecords[_account][_loanMarket][_commitment].amount) * _getLatestPrice(_loanMarket)) * aggregateYield;
+		ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest += deductibleUSDValue / _getLatestPrice(ds.indCollateralRecords[_account][_loanMarket][_commitment].market);
 		ds.indAccruedAPR[_account][_loanMarket][_commitment].oldLengthAccruedInterest = oldLengthAccruedInterest;
 		ds.indAccruedAPR[_account][_loanMarket][_commitment].oldTime = oldTime;
 
@@ -1324,9 +1324,9 @@ library LibDiamond {
 		uint256 collateralAvbl = collateral.amount - ds.indAccruedAPR[_sender][_market][_commitment].accruedInterest;
 
 		// fetch usdPrices
-		uint256 usdCollateral = _getFairPrice(ds.requestEventId - 3);
-		uint256 usdLoan = _getFairPrice(ds.requestEventId - 2);
-		uint256 usdLoanCurrent = _getFairPrice(ds.requestEventId - 1);
+		uint256 usdCollateral = _getLatestPrice(_collateralMarket);
+		uint256 usdLoan = _getLatestPrice(_market);
+		uint256 usdLoanCurrent = _getLatestPrice(loanState.currentMarket);
 
 		// Quantification of the assets
 		// uint256 cAmount = usdCollateral*collateral.amount;
@@ -1576,8 +1576,8 @@ library LibDiamond {
         uint256 amount = _avblMarketReserves(_market) - _loanAmount ;
         uint rF = _getReserveFactor()* _marketReserves(_market);
 
-        uint256 usdLoan = (_getFairPrice(ds.requestEventId - 2)) * _loanAmount;
-        uint256 usdCollateral = (_getFairPrice(ds.requestEventId - 1)) * _collateralAmount;
+        uint256 usdLoan = (_getLatestPrice(_market)) * _loanAmount;
+        uint256 usdCollateral = (_getLatestPrice(_collateralMarket)) * _collateralAmount;
 
         require(amount > 0, "ERROR: Loan exceeds reserves");
         require(_marketReserves(_market) - amount >= rF, "ERROR: Minimum reserve exeception");
@@ -1892,13 +1892,11 @@ library LibDiamond {
 		delete ds.loanPassbook[_account].accruedAPR[loan.id - 1];
 		delete ds.loanPassbook[_account].accruedAPY[loan.id - 1];
 
-		// Convert to USD.
-		uint256 cAmount = _getFairPrice(ds.requestEventId - 2) * collateral.amount;
-		uint256 lAmountCurrent = _getFairPrice(ds.requestEventId - 1) * loanState.currentAmount;
+		uint256 cAmount = _getLatestPrice(collateral.market)*collateral.amount;
+		uint256 lAmountCurrent = _getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
 		// convert collateral & loanCurrent into loanActual
 		uint256 _repaymentAmount = _swap(collateral.market, loan.market, cAmount, 2);
 		_repaymentAmount += _swap(loanState.currentMarket, loan.market, lAmountCurrent, 1);
-		// uint256 _remnantAmount = _repaymentAmount - lAmountCurrent;
 
 		delete ds.indLoanState[_account][_market][_commitment];
 		delete ds.indLoanRecords[_account][_market][_commitment];
