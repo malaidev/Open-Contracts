@@ -1688,6 +1688,7 @@ library LibDiamond {
 		address _sender
     ) internal authContract(LOAN1_ID) {
         DiamondStorage storage ds = diamondStorage(); 
+		require(_avblMarketReserves(_market) > _loanAmount, "ERROR: Borrow amount exceeds reserves");
         _preLoanRequestProcess(_market,_loanAmount,_collateralMarket,_collateralAmount);
 
 		// LoanAccount storage loanAccount = ds.loanPassbook[_sender];
