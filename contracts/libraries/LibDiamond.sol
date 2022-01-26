@@ -1675,8 +1675,6 @@ library LibDiamond {
 		emit MarketSwapped(_sender,loan.id,_market,_swapMarket, loan.amount);
     }
 
-	
-
     function _loanRequest(
         bytes32 _market,
 		bytes32 _commitment,
@@ -1946,6 +1944,7 @@ library LibDiamond {
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
         DiamondStorage storage ds = diamondStorage();
+		require(ds.pairAddress[_market] != address(0), "Invalid pair address given");
 		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
         return uint256(price);
 	}

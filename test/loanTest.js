@@ -70,6 +70,7 @@ describe("===== Loan Test =====", function () {
 		oracle = await ethers.getContractAt('OracleOpen', diamondAddress)
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 
+		console.log(deposit.address)
 		bepUsdt = await ethers.getContractAt('tUSDT', rets['tUsdtAddress'])
 		bepBtc = await ethers.getContractAt('tBTC', rets['tBtcAddress'])
 		bepUsdc = await ethers.getContractAt('tUSDC', rets['tUsdcAddress'])
@@ -86,12 +87,15 @@ describe("===== Loan Test =====", function () {
 
 	it("Check is market support", async () => {
 		expect (await tokenList.isMarketSupported(symbolUsdt)).to.equal(true)
+		expect (await tokenList.isMarketSupported(symbolBtc)).to.equal(true)
+		expect (await tokenList.isMarketSupported(symbolUsdc)).to.equal(true)
+		console.log(await tokenList.getMarketAddress(symbolBtc))
 	})
 
 	it("Check createDeposit", async () => {
-		const depositAmount = 200;
+		const depositAmount = 10000000;
 
-		await expect(deposit.connect(accounts[1]).createDeposit(symbolUsdt, comit_ONEMONTH, depositAmount, {gasLimit: 5000000}))
+		await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdt, comit_ONEMONTH, depositAmount, {gasLimit: 5000000}))
 		.to.emit(library, "NewDeposit")
 
 		const reserve = await deposit.avblReservesDeposit(symbolUsdt);
@@ -102,7 +106,7 @@ describe("===== Loan Test =====", function () {
 	})
 
 	it("Check borrow", async () => {
-		await expect(loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 100, symbolUsdt, 50, {gasLimit: 5000000}))
+		await expect(loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 1000000, symbolUsdt, 500000, {gasLimit: 5000000}))
 				.to.emit(library, "NewLoan");
 	})
 
