@@ -1695,6 +1695,7 @@ library LibDiamond {
 
 		require(loan.id == 0, "ERROR: Active loan");
 		require(ds.collateralToken.balanceOf(_sender) >= _collateralAmount, "Insufficient fund of sender");
+		require(_avblMarketReserves(_market) > _loanAmount, "ERROR: Borrow amount exceeds reserves");
 
 		ds.collateralToken.approveFrom(_sender, address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(_sender, ds.contractOwner, _collateralAmount);
