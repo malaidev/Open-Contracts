@@ -1944,7 +1944,7 @@ library LibDiamond {
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
         DiamondStorage storage ds = diamondStorage();
-		require(ds.pairAddress[_market] != address(0), "Invalid pair address given");
+		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
 		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
         return uint256(price);
 	}
