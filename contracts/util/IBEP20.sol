@@ -9,4 +9,5 @@ interface IBEP20 {
     function decreaseAllowance(address _spender, uint256 _value) external returns(bool);
     function transferFrom(address _from,address _to,uint256 _value) external returns (bool);
     function pauseState() external view returns(string memory);
+    function balanceOf(address account) external view returns (uint256);
 }

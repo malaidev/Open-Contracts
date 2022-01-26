@@ -206,7 +206,7 @@ contract tSxp  is Context, IBEP20 {
   /**
    * @dev See {SXP-balanceOf}.
    */
-  function balanceOf(address account) external view returns (uint256) {
+  function balanceOf(address account) external view override returns (uint256) {
     return _balances[account];
   }
 

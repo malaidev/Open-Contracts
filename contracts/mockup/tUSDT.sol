@@ -206,7 +206,7 @@ contract tUSDT  is Context, IBEP20 {
   /**
    * @dev See {USD-Tether-balanceOf}.
    */
-  function balanceOf(address account) external view returns (uint256) {
+  function balanceOf(address account) external view override returns (uint256) {
     return _balances[account];
   }
 

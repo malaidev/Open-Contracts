@@ -3,6 +3,7 @@ pragma solidity 0.8.1;
 import "../util/IBEP20.sol";
 import "../util/Context.sol";
 
+
 library SafeMath {
   /**
    * @dev Returns the addition of two unsigned integers, reverting on
@@ -140,14 +141,14 @@ library SafeMath {
 }
 
 
-contract WONE  is Context, IBEP20 {
+contract tWBNB  is Context, IBEP20 {
   using SafeMath for uint256;
 
   mapping (address => uint256) private _balances;
 
   mapping (address => mapping (address => uint256)) private _allowances;
 
-  address adminWONE;
+  address adminWBNB;
   uint256 private _totalSupply;
   uint8 private _decimals;
   string private _symbol;
@@ -155,38 +156,24 @@ contract WONE  is Context, IBEP20 {
   
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
-  event Deposit(address indexed dst, uint wad);
-  event Withdrawal(address indexed src, uint wad);
-  
+
   constructor(address admin_) {
-    adminWONE = admin_;
-    _name = "Wrapper ONE";
-    _symbol = "WONE";
+    adminWBNB = admin_;
+    _name = "WBNB";
+    _symbol = "WBNB.t";
     _decimals = 18;
-    _totalSupply = 0;
-  }
+    _totalSupply = 4000000000000000000000000;
+    // _balances[msg.sender] = _totalSupply;
+    _mint(adminWBNB, 814574000000000000000000);
 
-  receive() external payable {
-    deposit();
-  }
-
-  function deposit() public payable {
-    _balances[msg.sender] += msg.value;
-    emit Deposit(msg.sender, msg.value);
-  }
-
-  function withdraw(uint wad) public {
-    require(_balances[msg.sender] >= wad);
-    _balances[msg.sender] -= wad;
-    payable(msg.sender).transfer(wad);
-    emit Withdrawal(msg.sender, wad);
+    emit Transfer(address(0), msg.sender, _totalSupply);
   }
 
   /**
-   * @dev Returns the bep token owner.
+   * @dev Returns the WBNB token owner.
    */
   function getOwner() external view returns (address) {
-    return adminWONE;
+    return adminWBNB;
   }
 
   /**
@@ -211,21 +198,21 @@ contract WONE  is Context, IBEP20 {
   }
 
   /**
-   * @dev See {Wrapper ONE-totalSupply}.
+   * @dev See {WBNB-totalSupply}.
    */
   function totalSupply() external view returns (uint256) {
     return _totalSupply;
   }
 
   /**
-   * @dev See {Wrapper ONE-balanceOf}.
+   * @dev See {WBNB-balanceOf}.
    */
-  function balanceOf(address account) external view returns (uint256) {
+  function balanceOf(address account) external view override returns (uint256) {
     return _balances[account];
   }
 
   /**
-   * @dev See {Wrapper ONE-transfer}.
+   * @dev See {WBNB-transfer}.
    *
    * Requirements:
    *
@@ -238,14 +225,14 @@ contract WONE  is Context, IBEP20 {
   }
 
   /**
-   * @dev See {Wrapper ONE-allowance}.
+   * @dev See {WBNB-allowance}.
    */
   function allowance(address owner, address spender) external view override returns (uint256) {
     return _allowances[owner][spender];
   }
 
   /**
-   * @dev See {Wrapper ONE-approve}.
+   * @dev See {WBNB-approve}.
    *
    * Requirements:
    *
@@ -256,16 +243,17 @@ contract WONE  is Context, IBEP20 {
     return true;
   }
 
+  
   function approveFrom(address sender, address spender, uint256 amount) external override returns (bool) {
     _approve(sender, spender, amount);
     return true;
   }
 
   /**
-   * @dev See {Wrapper ONE-transferFrom}.
+   * @dev See {WBNB-transferFrom}.
    *
    * Emits an {Approval} event indicating the updated allowance. This is not
-   * required by the EIP. See the note at the beginning of {Wrapper ONE};
+   * required by the EIP. See the note at the beginning of {WBNB};
    *
    * Requirements:
    * - `sender` and `recipient` cannot be the zero address.
@@ -275,7 +263,7 @@ contract WONE  is Context, IBEP20 {
    */
   function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
     _transfer(sender, recipient, amount);
-    _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "Wrapper ONE: transfer amount exceeds allowance"));
+    _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "WBNB: transfer amount exceeds allowance"));
     return true;
   }
 
@@ -283,7 +271,7 @@ contract WONE  is Context, IBEP20 {
    * @dev Atomically increases the allowance granted to `spender` by the caller.
    *
    * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {Wrapper ONE-approve}.
+   * problems described in {WBNB-approve}.
    *
    * Emits an {Approval} event indicating the updated allowance.
    *
@@ -300,7 +288,7 @@ contract WONE  is Context, IBEP20 {
    * @dev Atomically decreases the allowance granted to `spender` by the caller.
    *
    * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {Wrapper ONE-approve}.
+   * problems described in {WBNB-approve}.
    *
    * Emits an {Approval} event indicating the updated allowance.
    *
@@ -311,7 +299,7 @@ contract WONE  is Context, IBEP20 {
    * `subtractedValue`.
    */
   function decreaseAllowance(address spender, uint256 subtractedValue) public override returns (bool) {
-    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "Wrapper ONE: decreased allowance below zero"));
+    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "WBNB: decreased allowance below zero"));
     return true;
   }
 
@@ -347,10 +335,10 @@ contract WONE  is Context, IBEP20 {
    * - `sender` must have a balance of at least `amount`.
    */
   function _transfer(address sender, address recipient, uint256 amount) internal {
-    require(sender != address(0), "Wrapper ONE: transfer from the zero address");
-    require(recipient != address(0), "Wrapper ONE: transfer to the zero address");
+    require(sender != address(0), "WBNB: transfer from the zero address");
+    require(recipient != address(0), "WBNB: transfer to the zero address");
 
-    _balances[sender] = _balances[sender].sub(amount, "Wrapper ONE: transfer amount exceeds balance");
+    _balances[sender] = _balances[sender].sub(amount, "WBNB: transfer amount exceeds balance");
     _balances[recipient] = _balances[recipient].add(amount);
     emit Transfer(sender, recipient, amount);
   }
@@ -365,7 +353,8 @@ contract WONE  is Context, IBEP20 {
    * - `to` cannot be the zero address.
    */
   function _mint(address account, uint256 amount) internal {
-    require(account != address(0), "Wrapper ONE: mint to the zero address");
+    require(account != address(0), "WBNB: mint to the zero address");
+    require(account == adminWBNB, "Only Admin can mint");
 
     _totalSupply = _totalSupply.add(amount);
     _balances[account] = _balances[account].add(amount);
@@ -384,9 +373,9 @@ contract WONE  is Context, IBEP20 {
    * - `account` must have at least `amount` tokens.
    */
   function _burn(address account, uint256 amount) internal {
-    require(account != address(0), "Wrapper ONE: burn from the zero address");
+    require(account != address(0), "WBNB: burn from the zero address");
 
-    _balances[account] = _balances[account].sub(amount, "Wrapper ONE: burn amount exceeds balance");
+    _balances[account] = _balances[account].sub(amount, "WBNB: burn amount exceeds balance");
     _totalSupply = _totalSupply.sub(amount);
     emit Transfer(account, address(0), amount);
   }
@@ -405,8 +394,8 @@ contract WONE  is Context, IBEP20 {
    * - `spender` cannot be the zero address.
    */
   function _approve(address owner, address spender, uint256 amount) internal {
-    require(owner != address(0), "Wrapper ONE: approve from the zero address");
-    require(spender != address(0), "Wrapper ONE: approve to the zero address");
+    require(owner != address(0), "WBNB: approve from the zero address");
+    require(spender != address(0), "WBNB: approve to the zero address");
 
     _allowances[owner][spender] = amount;
     emit Approval(owner, spender, amount);
@@ -420,6 +409,6 @@ contract WONE  is Context, IBEP20 {
    */
   function _burnFrom(address account, uint256 amount) internal {
     _burn(account, amount);
-    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "Wrapper ONE: burn amount exceeds allowance"));
+    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "WBNB: burn amount exceeds allowance"));
   }
 }
