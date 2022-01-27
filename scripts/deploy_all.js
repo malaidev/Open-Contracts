@@ -509,7 +509,7 @@ async function addtWBNB() {
 }
 
 if (require.main === module) {
-    addtWBNB()
+    main()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)
