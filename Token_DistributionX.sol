@@ -13,10 +13,10 @@ contract Faucet {
     ERC20 public btcInstance;
     ERC20 public wBnbInstance;
 
-    uint256 constant public usdtAmount = 10000000000000000000000; // sends 10,000 tokens USDT. 18 decimals.
-    uint256 constant public usdcAmount = 10000000000000000000000; // sends 10,000 tokens USDC. 18 decimals.
-    uint256 constant public btcAmount =               500000000; // sends 5 tokens BTC, 8 decimals.
-    uint256 constant public wBnbAmount =   100000000000000000000; // sends 100 tokens wBNB. 18 decimals.
+    // uint256 constant public usdtAmount = 10000000000000000000000; // sends 10,000 tokens USDT. 18 decimals.
+    // uint256 constant public usdcAmount = 10000000000000000000000; // sends 10,000 tokens USDC. 18 decimals.
+    // uint256 constant public btcAmount =               500000000; // sends 5 tokens BTC, 8 decimals.
+    // uint256 constant public wBnbAmount =   100000000000000000000; // sends 100 tokens wBNB. 18 decimals.
 
     bool isReentrant = false;
 
@@ -35,10 +35,10 @@ contract Faucet {
     // ERC20 public token5;
 
     constructor(address tUSDT, address tUSDC, address tBTC, address tBNB) {
-        _updateTokens(usdtInstance, tUSDT, usdtAmount);
-        _updateTokens(usdcInstance, tUSDC, usdcAmount);
-        _updateTokens(btcInstance, tBTC, btcAmount);
-        _updateTokens(wBnbInstance, tBNB, wBnbAmount);   
+        _updateTokens(usdtInstance, tUSDT, 10000000000000000000000);
+        _updateTokens(usdcInstance, tUSDC, 10000000000000000000000);
+        _updateTokens(btcInstance, tBTC, 500000000);
+        _updateTokens(wBnbInstance, tBNB, 100000000000000000000);   
     }
 
     function _updateTokens(ERC20 _tokenInstance, address _token,uint _amount) private {
