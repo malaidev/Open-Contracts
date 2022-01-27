@@ -48,4 +48,4 @@ node scripts/sample-script.js
 npx hardhat help
 ```
 
-Open protocol's source code is secured by Business Source License [Read more](https://github.com/0xHashstack/Open-contracts/blob/release-v0.1.2/LICENSE.md)
+Open protocol's source code is secured under Business Source License [Read more](https://github.com/0xHashstack/Open-contracts/blob/release-v0.1.2/LICENSE.md)
