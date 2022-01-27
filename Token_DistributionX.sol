@@ -69,9 +69,9 @@ contract Faucet {
     }
 
     modifier nonReentrant() {
-		require(isReentrant == false, "Re-entrant alert!");
-		isReentrant = true;
-		_;
-		isReentrant = false;
-	}
+        require(isReentrant == false, "Re-entrant alert!");
+        isReentrant = true;
+        _;
+        isReentrant = false;
+    }
 }
