@@ -1051,6 +1051,10 @@ library LibDiamond {
 			_createNewDeposit(_market, _commitment, _amount, _sender);
 			return;
 		}
+		
+		ds.token.approveFrom(_sender, address(this), _amount);
+		ds.token.transferFrom(_sender, ds.contractOwner, _amount);
+
 		_processDeposit(_sender, _market, _commitment, _amount);
 		_updateReservesDeposit(_market, _amount, 0);
 		emit DepositAdded(_sender, _market, _commitment, _amount, ds.indDepositRecord[_sender][_market][_commitment].id);
@@ -1691,7 +1695,6 @@ library LibDiamond {
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 
 		require(loan.id == 0, "ERROR: Active loan");
-		require(_avblMarketReserves(_market) > _loanAmount, "ERROR: Borrow amount exceeds reserves");
 
 		ds.collateralToken.approveFrom(_sender, address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(_sender, ds.contractOwner, _collateralAmount);

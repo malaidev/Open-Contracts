@@ -376,6 +376,8 @@ async function addMarkets(diamondAddress) {
     const tCakeAddress = "0x498D69f8ddf475E21C3d036F0bf0C6Ef82FEF2Ea";
     // console.log("tCake deployed: ", tcake.address)
 
+     
+
     console.log("addMarket");
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolUsdt,
@@ -408,7 +410,7 @@ async function addMarkets(diamondAddress) {
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolWBNB,
         18,
-        '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+        '0x359A0A7DffEa6B95a436d5E558d20EC8972EbC4B',
         1,
         { gasLimit: 800000 }
     )
@@ -446,7 +448,7 @@ async function addMarkets(diamondAddress) {
     await tokenList.connect(contractOwner).addMarket2Support(
         symbolWBNB,
         18,
-        '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+        '0x359A0A7DffEa6B95a436d5E558d20EC8972EbC4B',
         { gasLimit: 800000 }
     )
 
@@ -487,10 +489,10 @@ async function addtWBNB() {
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     // const admin_ = contractOwner.address;
-    const tWBNB = await ethers.getContractFactory('tWBNB')
-    const twbnb = await tWBNB.deploy(admin_)
-    await twbnb.deployed()
-    console.log("tWBNB deployed: ", twbnb.address)
+    // const tWBNB = await ethers.getContractFactory('tWBNB')
+    // const twbnb = await tWBNB.deploy(admin_)
+    // await twbnb.deployed()
+    // console.log("tWBNB deployed: ", twbnb.address)
 
     console.log("addMarket");
 
@@ -499,7 +501,7 @@ async function addtWBNB() {
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolWBNB,
         18,
-        twbnb.address,
+        "0x359A0A7DffEa6B95a436d5E558d20EC8972EbC4B",
         1,
         { gasLimit: 800000 }
     )
@@ -507,7 +509,7 @@ async function addtWBNB() {
 }
 
 if (require.main === module) {
-    main()
+    addtWBNB()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)
