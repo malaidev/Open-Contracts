@@ -8,7 +8,7 @@ pragma solidity 0.8.1;
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
 
 library LibDiamond {
-    bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage");
+    bytes32 constant DIAMOND_STORAGE_POSITION = 0xa7513e6e63bb532f9771966eae24bd3160885bc35e57313effe2e8bf1f822b24;
 
     struct FacetAddressAndSelectorPosition {
         address facetAddress;
