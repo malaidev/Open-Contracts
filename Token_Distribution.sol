@@ -7,14 +7,23 @@ interface ERC20 {
 }
 
 contract Faucet {
-    uint256 constant public tokenAmount1 = 10000000000000000000000;
-    // sends 10,000 tokens USDT.t
-    uint256 constant public tokenAmount2 = 10000000000000000000000;
-    // sends 10,000 tokens USDC.t
-    uint256 constant public tokenAmount3 =               500000000;
-    // sends 5 tokens BTC.t, 8 decimals
-    uint256 constant public tokenAmount4 =   100000000000000000000;
-    // sends 100 tokens wBNB.t
+    uint256 constant public tokenAmount1 =  1000000000000000000000;
+    // sends 10,00 tokens USDT.t
+    uint256 constant public tokenAmount2 =  1000000000000000000000;
+    // sends 1000 tokens USDC.t
+    uint256 constant public tokenAmount3 =     100000000;
+    // sends 1 tokens BTC.t, 8 decimals
+    uint256 constant public tokenAmount4 =    10000000000000000000;
+    // sends 10 tokens wBNB.t
+    
+    // uint256 constant public tokenAmount1 = 10000000000000000000000;
+    // // sends 10,000 tokens USDT.t
+    // uint256 constant public tokenAmount2 = 10000000000000000000000;
+    // // sends 10,000 tokens USDC.t
+    // uint256 constant public tokenAmount3 =     500000000;
+    // // sends 5 tokens BTC.t, 8 decimals
+    // uint256 constant public tokenAmount4 = 100000000000000000000;
+    // // sends 100 tokens wBNB.t
     
     // uint256 constant public tokenAmount5 = 10000000000000000000000;
     // // sends 10,000 tokens t.USDT
@@ -22,10 +31,11 @@ contract Faucet {
     // can access only after 3 days 
 
     // Events
-    event ConfirmTransaction1(address indexed sender, string message);
-    event ConfirmTransaction2(address indexed sender, string message);
-    event ConfirmTransaction3(address indexed sender, string message);
-    event ConfirmTransaction4(address indexed sender, string message);
+    // event ConfirmTransaction1(address indexed _from, address indexed _tokenInstance1, uint _tokenAmount1);
+    event ConfirmTransaction1(address indexed account, string message);
+    event ConfirmTransaction2(address indexed account, string message);
+    event ConfirmTransaction3(address indexed account, string message);
+    event ConfirmTransaction4(address indexed account, string message);
 
     ERC20 public tokenInstance1;
     ERC20 public tokenInstance2;
