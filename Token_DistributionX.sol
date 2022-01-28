@@ -47,8 +47,8 @@ contract Faucet {
 
         ERC20 tokenInstance = tokens[_index];
         TokenData storage td = _mapper[tokenInstance];
-        
-        require (td.unlockTime <= block.timestamp, "ERROR: Active wait time of 3 days");
+
+        require (td.unlockTime <= block.timestamp, "ERROR: Wait time is applicabel");
 
         tokenInstance.transfer(msg.sender, td.amount);
         td.unlockTime = block.timestamp + waitTime;
