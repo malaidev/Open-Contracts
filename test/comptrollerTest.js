@@ -13,7 +13,6 @@ const {
 const { assert } = require('chai')
 
 const {deployDiamond}= require('../scripts/deploy_all.js')
-const {deployOpenFacets}= require('../scripts/deploy_all.js')
 const {addMarkets}= require('../scripts/deploy_all.js')
 
 describe("===== Comptroller Test =====", function () {
@@ -56,7 +55,6 @@ describe("===== Comptroller Test =====", function () {
 		console.log("account1 is ", accounts[1].address)
 		
 		diamondAddress = await deployDiamond()
-		await deployOpenFacets(diamondAddress)
 		rets = await addMarkets(diamondAddress)
 
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)

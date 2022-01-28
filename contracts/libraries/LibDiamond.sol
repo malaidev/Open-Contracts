@@ -33,7 +33,7 @@ library LibDiamond {
 	uint8 constant DEPOSIT_ID = 17; 
 	uint8 constant ACCESSREGISTRY_ID = 18;
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
-	address constant WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
+	// address constant WBNB = 0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd;
 
     struct FacetAddressAndSelectorPosition {
         address facetAddress;
@@ -178,6 +178,7 @@ library LibDiamond {
         //  Function selectors with the ABI of a contract provide enough information about functions to be useful for user-interface software.
 		mapping(bytes4 => bool) supportedInterfaces;
         address contractOwner; // owner of the contract
+		address reserveAddress;
         IBEP20 token;
 
     // ===========  admin addresses ===========
@@ -731,17 +732,18 @@ library LibDiamond {
 		IBEP20(addrFromMarket).transferFrom(msg.sender, address(this), _fromAmount);
         IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
+		//WBNB as other test tokens
         address[] memory path;
-        if (addrFromMarket == WBNB || addrToMarket == WBNB) {
+//        if (addrFromMarket == WBNB || addrToMarket == WBNB) {
             path = new address[](2);
             path[0] = addrFromMarket;
             path[1] = addrToMarket;
-        } else {
-            path = new address[](3);
-            path[0] = addrFromMarket;
-            path[1] = WBNB;
-            path[2] = addrToMarket;
-        }
+        // } else {
+        //     path = new address[](3);
+        //     path[0] = addrFromMarket;
+        //     path[1] = WBNB;
+        //     path[2] = addrToMarket;
+        // }
 
         IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(
             _fromAmount,
@@ -759,16 +761,16 @@ library LibDiamond {
         uint _amountIn
     ) private view returns (uint) {
         address[] memory path;
-        if (_tokenIn == WBNB || _tokenOut == WBNB) {
+//        if (_tokenIn == WBNB || _tokenOut == WBNB) {
             path = new address[](2);
             path[0] = _tokenIn;
             path[1] = _tokenOut;
-        } else {
-            path = new address[](3);
-            path[0] = _tokenIn;
-            path[1] = WBNB;
-            path[2] = _tokenOut;
-        }
+        // } else {
+        //     path = new address[](3);
+        //     path[0] = _tokenIn;
+        //     path[1] = WBNB;
+        //     path[2] = _tokenOut;
+        // }
 
         // same length as path
         uint[] memory amountOutMins = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
@@ -827,8 +829,8 @@ library LibDiamond {
 		}
 		/// Transfer funds to the user's wallet.
 		ds.token = IBEP20(_connectMarket(_market));
-		ds.token.approveFrom(ds.contractOwner, address(this), _amount);
-		ds.token.transferFrom(ds.contractOwner, _account, _amount);
+		ds.token.approveFrom(ds.reserveAddress, address(this), _amount);
+		ds.token.transferFrom(ds.reserveAddress, _account, _amount);
 
 		_updateReservesDeposit(_market, _amount, 1);
 		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);
@@ -1037,8 +1039,9 @@ library LibDiamond {
 		_preDepositProcess(_market, _amount);
 		
 		_ensureSavingsAccount(_sender,savingsAccount);
+
 		ds.token.approveFrom(_sender, address(this), _amount);
-		ds.token.transferFrom(_sender, ds.contractOwner, _amount);
+		ds.token.transferFrom(_sender, ds.reserveAddress, _amount);
 		
 		_processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
 		_updateReservesDeposit(_market, _amount, 0);
@@ -1047,13 +1050,16 @@ library LibDiamond {
 
 	function _addToDeposit(address _sender, bytes32 _market, bytes32 _commitment, uint _amount) internal authContract(DEPOSIT_ID) {
 		DiamondStorage storage ds = diamondStorage(); 
+
+		_isMarketSupported(_market);
+
 		if (!_hasDeposit(_sender, _market, _commitment))	{
 			_createNewDeposit(_market, _commitment, _amount, _sender);
 			return;
 		}
 		
 		ds.token.approveFrom(_sender, address(this), _amount);
-		ds.token.transferFrom(_sender, ds.contractOwner, _amount);
+		ds.token.transferFrom(_sender, ds.reserveAddress, _amount);
 
 		_processDeposit(_sender, _market, _commitment, _amount);
 		_updateReservesDeposit(_market, _amount, 0);
@@ -1613,7 +1619,7 @@ library LibDiamond {
 		ds.collateralToken = IBEP20(_connectMarket(_collateralMarket));
 		// _quantifyAmount(_collateralMarket, _collateralAmount);
 		ds.collateralToken.approveFrom(_sender, address(this), _collateralAmount);
-		ds.collateralToken.transferFrom(_sender, ds.contractOwner, _collateralAmount);
+		ds.collateralToken.transferFrom(_sender, ds.reserveAddress, _collateralAmount);
 		_updateReservesLoan(_collateralMarket, _collateralAmount, 0);
 		
 		_addCollateralAmount(loanAccount, collateral, _collateralAmount, loan.id-1);
@@ -1695,9 +1701,9 @@ library LibDiamond {
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 
 		require(loan.id == 0, "ERROR: Active loan");
-
 		ds.collateralToken.approveFrom(_sender, address(this), _collateralAmount);
-		ds.collateralToken.transferFrom(_sender, ds.contractOwner, _collateralAmount);
+		ds.collateralToken.transferFrom(_sender, ds.reserveAddress, _collateralAmount);
+
 		_updateReservesLoan(_collateralMarket,_collateralAmount, 0);
 		_ensureLoanAccount(_sender);
 
@@ -1767,8 +1773,8 @@ library LibDiamond {
 				}
 
 				_updateDebtRecords(diamondStorage().loanPassbook[_sender],diamondStorage().indLoanRecords[_sender][_market][_commitment],diamondStorage().indLoanState[_sender][_market][_commitment],diamondStorage().indCollateralRecords[_sender][_market][_commitment]/*, deductibleInterest, cYield*/);
-				diamondStorage().loanToken.approveFrom(diamondStorage().contractOwner, address(this), _remnantAmount);
-				diamondStorage().loanToken.transferFrom(diamondStorage().contractOwner, diamondStorage().loanPassbook[_sender].account, _remnantAmount);
+				diamondStorage().loanToken.approveFrom(diamondStorage().reserveAddress, address(this), _remnantAmount);
+				diamondStorage().loanToken.transferFrom(diamondStorage().reserveAddress, diamondStorage().loanPassbook[_sender].account, _remnantAmount);
 
 				emit LoanRepaid(_sender, diamondStorage().indLoanRecords[_sender][_market][_commitment].id, diamondStorage().indLoanRecords[_sender][_market][_commitment].market, block.timestamp);
 				
@@ -1804,8 +1810,8 @@ library LibDiamond {
 				
 				if (_repayAmount > diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
 					_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
-					diamondStorage().loanToken.approveFrom(diamondStorage().contractOwner, address(this), _remnantAmount);
-					diamondStorage().loanToken.transferFrom(diamondStorage().contractOwner, diamondStorage().loanPassbook[_sender].account, _remnantAmount);
+					diamondStorage().loanToken.approveFrom(diamondStorage().reserveAddress, address(this), _remnantAmount);
+					diamondStorage().loanToken.transferFrom(diamondStorage().reserveAddress, diamondStorage().loanPassbook[_sender].account, _remnantAmount);
 				} else if (_repayAmount <= diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
 					
 					_repayAmount += _swap(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,_market,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount, 1);
@@ -1922,8 +1928,8 @@ library LibDiamond {
 
 		_collateralPointer(_account,_market,_commitment, collateralMarket, collateralAmount);
 		ds.token = IBEP20(_connectMarket(collateralMarket));
-		ds.token.approveFrom(ds.contractOwner, address(this), collateralAmount);
-        ds.token.transferFrom(ds.contractOwner, _account, collateralAmount);
+		ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
+        ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
 	}
 
 	function _transferAnyBEP20(address _token, address _sender, address _recipient, uint256 _value) internal authContract(RESERVE_ID) {
@@ -2017,6 +2023,11 @@ library LibDiamond {
 		  _addAdminRole(0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8, _newOwner);
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
+
+	function setReserveAddress(address _reserve) internal {
+		DiamondStorage storage ds = diamondStorage();
+		ds.reserveAddress = _reserve;
+	}
 
 	function _addFairPriceAddress(bytes32 _market, address _address) internal {
         DiamondStorage storage ds = diamondStorage();

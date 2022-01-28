@@ -12,7 +12,6 @@ const {
 const { assert } = require('chai')
 
 const {deployDiamond}= require('../scripts/deploy_all.js')
-const {deployOpenFacets}= require('../scripts/deploy_all.js')
 const {addMarkets}= require('../scripts/deploy_all.js')
 
 describe("===== Deposit Test =====", function () {
@@ -54,7 +53,6 @@ describe("===== Deposit Test =====", function () {
 		console.log("account1 is ", accounts[1].address)
 		
 		diamondAddress = await deployDiamond()
-		await deployOpenFacets(diamondAddress)
 		rets = await addMarkets(diamondAddress)
 
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
@@ -104,21 +102,18 @@ describe("===== Deposit Test =====", function () {
     // //     console.log("deposit balance is", await tusdt.balanceOf(deposit.address))
     // // })
 
-    // it("Check createDeposit", async () => {
-    //     const depositAmount = 300;
+    it("Check createDeposit", async () => {
+        const depositAmount = 300;
         
-    //     // await expect(deposit.connect(contractOwner).createDeposit(symbolUsdt, comit_TWOWEEKS, depositAmount, {gasLimit: 5000000}))
-    //     // .to.emit(deposit, "NewDeposit")
+        await expect(deposit.connect(contractOwner).addToDeposit(symbolWBNB, comit_TWOWEEKS, depositAmount, {gasLimit: 5000000}))
+        .to.emit(library, "NewDeposit")
 
-    //     console.log("Before deposit balance is ", await bep20.balanceOf(deposit.address));
+        await expect(deposit.connect(contractOwner).addToDeposit(symbolUsdt, comit_NONE, depositAmount, {gasLimit: 5000000}))
+        .to.emit(library, "NewDeposit")
 
-
-    //     await expect(deposit.connect(contractOwner).createDeposit(symbolUsdt, comit_NONE, depositAmount, {gasLimit: 5000000}))
-    //     .to.emit(library, "NewDeposit")
-
-    //     const reserve = await deposit.avblReservesDeposit(symbolUsdt);
-    //     console.log("Reserve amount is ", reserve)
-    // }) 
+        const reserve = await deposit.avblReservesDeposit(symbolUsdt);
+        console.log("Reserve amount is ", reserve)
+    }) 
 
     // it("Check is created", async () => {
     //     expect(await deposit.hasDeposit(symbolUsdt, comit_NONE)).to.equal(true)

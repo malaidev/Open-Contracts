@@ -21,9 +21,37 @@ async function deployDiamond() {
 
     console.log('DiamondCutFacet deployed:', diamondCutFacet.address)
 
+    console.log("Begin deploying facets");
+    const OpenNames = [
+        'TokenList',
+        'Comptroller',
+        'Liquidator',
+        'Reserve',
+        'OracleOpen',
+        'Loan',
+        'Loan1',
+        'Deposit',
+        'AccessRegistry'
+    ]
+    const opencut = []
+    let facetId = 10;
+    for (const FacetName of OpenNames) {
+        const Facet = await ethers.getContractFactory(FacetName)
+        const facet = await Facet.deploy()
+        await facet.deployed()
+        console.log(`${FacetName} deployed: ${facet.address}`)
+        opencut.push({
+            facetAddress: facet.address,
+            action: FacetCutAction.Add,
+            functionSelectors: getSelectors(facet),
+            facetId :facetId
+        })
+        facetId ++;
+    }
+
     // deploy Diamond
     const Diamond = await ethers.getContractFactory('OpenDiamond')
-    const diamond = await Diamond.deploy(contractOwner.address, diamondCutFacet.address)
+    const diamond = await Diamond.deploy(contractOwner.address, diamondCutFacet.address, opencut[3]['facetAddress'])
     await diamond.deployed()
     console.log('Diamond deployed:', diamond.address)
 
@@ -71,44 +99,6 @@ async function deployDiamond() {
     }
 
     console.log('Completed diamond cut')
-
-    return diamond.address
-}
-
-async function deployOpenFacets(diamondAddress) {
-    const accounts = await ethers.getSigners()
-    const contractOwner = accounts[0]
-    console.log(" ==== Begin deployOpenFacets === ");
-    diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
-    diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
-
-    console.log("Begin deploying facets");
-    const OpenNames = [
-        'TokenList',
-        'Comptroller',
-        'Liquidator',
-        'Reserve',
-        'OracleOpen',
-        'Loan',
-        'Loan1',
-        'Deposit',
-        'AccessRegistry'
-    ]
-    const opencut = []
-    let facetId = 10;
-    for (const FacetName of OpenNames) {
-        const Facet = await ethers.getContractFactory(FacetName)
-        const facet = await Facet.deploy()
-        await facet.deployed()
-        console.log(`${FacetName} deployed: ${facet.address}`)
-        opencut.push({
-            facetAddress: facet.address,
-            action: FacetCutAction.Add,
-            functionSelectors: getSelectors(facet),
-            facetId :facetId
-        })
-        facetId ++;
-    }
 
     console.log("Begin diamondcut facets");
 
@@ -207,6 +197,12 @@ async function deployOpenFacets(diamondAddress) {
 //     const tCakeAddress = tcake.address;
 //     // console.log("tCake deployed: ", tcake.address)
 
+//     const tWBNB = await ethers.getContractFactory('tWBNB')
+//     const twbnb = await tWBNB.deploy(admin_)
+//     await twbnb.deployed()
+//     console.log("tWBNB deployed: ", twbnb.address)
+//     const tWBNBAddress = twbnb.address
+
 //     console.log("addMarket");
 //     await tokenList.connect(contractOwner).addMarketSupport(
 //         symbolUsdt,
@@ -239,7 +235,7 @@ async function deployOpenFacets(diamondAddress) {
 //     await tokenList.connect(contractOwner).addMarketSupport(
 //         symbolWBNB,
 //         18,
-//         '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+//         tWBNBAddress,
 //         1,
 //         { gasLimit: 800000 }
 //     )
@@ -277,7 +273,7 @@ async function deployOpenFacets(diamondAddress) {
 //     await tokenList.connect(contractOwner).addMarket2Support(
 //         symbolWBNB,
 //         18,
-//         '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+//         tWBNBAddress,
 //         { gasLimit: 800000 }
 //     )
 
@@ -415,40 +411,11 @@ async function addMarkets(diamondAddress) {
         { gasLimit: 800000 }
     )
     console.log("wbnb added");
-
     console.log("addMarket2");
-    await tokenList.connect(contractOwner).addMarket2Support(
-        symbolUsdt,
-        18,
-        tUsdtAddress, // USDT.t
-        { gasLimit: 800000 }
-    )
-
-    await tokenList.connect(contractOwner).addMarket2Support(
-        symbolUsdc,
-        18,
-        tUsdcAddress, // USDC.t
-        { gasLimit: 800000 }
-    ) 
-
-    await tokenList.connect(contractOwner).addMarket2Support(
-        symbolBtc,
-        8,
-        tBtcAddress, // BTC.t
-        { gasLimit: 800000 }
-    )
-
     await tokenList.connect(contractOwner).addMarket2Support(
         symbolSxp,
         8,
         tSxpAddress,
-        { gasLimit: 800000 }
-    )
-
-    await tokenList.connect(contractOwner).addMarket2Support(
-        symbolWBNB,
-        18,
-        '0x359A0A7DffEa6B95a436d5E558d20EC8972EbC4B',
         { gasLimit: 800000 }
     )
 
@@ -517,5 +484,4 @@ if (require.main === module) {
       })
 }
 exports.deployDiamond = deployDiamond
-exports.deployOpenFacets = deployOpenFacets
 exports.addMarkets = addMarkets

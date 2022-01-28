@@ -11,7 +11,6 @@ const {
 const { assert } = require('chai')
 
 const {deployDiamond}= require('../scripts/deploy_all.js')
-const {deployOpenFacets}= require('../scripts/deploy_all.js')
 const {addMarkets}= require('../scripts/deploy_all.js')
 
 describe("===== Chainlink Test =====", function () {
@@ -38,7 +37,6 @@ describe("===== Chainlink Test =====", function () {
         accounts = await ethers.getSigners()
         contractOwner = accounts[0]
         diamondAddress = await deployDiamond()
-        await deployOpenFacets(diamondAddress)
         await addMarkets(diamondAddress)
         // const Diamond = await ethers.getContractFactory("OpenDiamond")
         // diamond = await Diamond.attach("0xEF1a30678f7d205d310bADBA8dfA4B122B0Fb24b")

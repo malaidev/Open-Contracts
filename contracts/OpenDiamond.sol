@@ -7,8 +7,9 @@ import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
 
 contract OpenDiamond {
 
-    constructor(address _contractOwner, address _diamondCutFacet) payable {        
+    constructor(address _contractOwner, address _diamondCutFacet, address reserveAddress) payable {        
         LibDiamond.setContractOwner(_contractOwner);
+        LibDiamond.setReserveAddress(reserveAddress);
         // Add the diamondCut external function from the diamondCutFacet
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
         bytes4[] memory functionSelectors = new bytes4[](1);
