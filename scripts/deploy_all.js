@@ -5,7 +5,6 @@ const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 
 async function main() {
     const diamondAddress = await deployDiamond();
-    await deployOpenFacets(diamondAddress)
     await addMarkets(diamondAddress)
 }
 
@@ -16,44 +15,10 @@ async function deployDiamond() {
 
     // deploy DiamondCutFacet
     const DiamondCutFacet = await ethers.getContractFactory('DiamondCutFacet')
-    const diamondCutFacet = await DiamondCutFacet.deploy()
+    let diamondCutFacet = await DiamondCutFacet.deploy()
     await diamondCutFacet.deployed()
 
     console.log('DiamondCutFacet deployed:', diamondCutFacet.address)
-
-    console.log("Begin deploying facets");
-    const OpenNames = [
-        'TokenList',
-        'Comptroller',
-        'Liquidator',
-        'Reserve',
-        'OracleOpen',
-        'Loan',
-        'Loan1',
-        'Deposit',
-        'AccessRegistry'
-    ]
-    const opencut = []
-    let facetId = 10;
-    for (const FacetName of OpenNames) {
-        const Facet = await ethers.getContractFactory(FacetName)
-        const facet = await Facet.deploy()
-        await facet.deployed()
-        console.log(`${FacetName} deployed: ${facet.address}`)
-        opencut.push({
-            facetAddress: facet.address,
-            action: FacetCutAction.Add,
-            functionSelectors: getSelectors(facet),
-            facetId :facetId
-        })
-        facetId ++;
-    }
-
-    // deploy Diamond
-    const Diamond = await ethers.getContractFactory('OpenDiamond')
-    const diamond = await Diamond.deploy(contractOwner.address, diamondCutFacet.address, opencut[3]['facetAddress'])
-    await diamond.deployed()
-    console.log('Diamond deployed:', diamond.address)
 
     // deploy DiamondInit
     // DiamondInit provides a function that is called when the diamond is upgraded to initialize state variables
@@ -83,6 +48,43 @@ async function deployDiamond() {
         })
     }
 
+    console.log("Begin deploying facets");
+    const OpenNames = [
+        'TokenList',
+        'Comptroller',
+        'Liquidator',
+        'Reserve',
+        'OracleOpen',
+        'Loan',
+        'Loan1',
+        'Deposit',
+        'AccessRegistry'
+    ]
+    const opencut = []
+    let facetId = 10;
+    for (const FacetName of OpenNames) {
+        const Facet = await ethers.getContractFactory(FacetName)
+        const facet = await Facet.deploy()
+        await facet.deployed()
+        console.log(`${FacetName} deployed: ${facet.address}`)
+        opencut.push({
+            facetAddress: facet.address,
+            action: FacetCutAction.Add,
+            functionSelectors: getSelectors(facet),
+            facetId :facetId
+        })
+        facetId ++;
+    }
+
+    console.log("Begin diamondcut facets");
+    
+     // deploy Diamond
+     const Diamond = await ethers.getContractFactory('OpenDiamond')
+     const diamond = await Diamond.deploy(contractOwner.address, diamondCutFacet.address, opencut[3]["facetAddress"])
+     await diamond.deployed()
+     console.log('Diamond deployed:', diamond.address)
+
+
     // upgrade diamond with facets
     console.log('')
     // console.log('Diamond Cut:', cut)
@@ -99,6 +101,58 @@ async function deployDiamond() {
     }
 
     console.log('Completed diamond cut')
+
+    console.log("Begin diamondcut facets");
+
+    diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamond.address)
+
+    tx = await diamondCutFacet.diamondCut(
+        opencut, ethers.constants.AddressZero, '0x', { gasLimit: 8000000 }
+    )
+    receipt = await tx.wait()
+
+
+    if (!receipt.status) {
+        throw Error(`Diamond upgrade failed: ${tx.hash}`)
+    }
+
+    return diamond.address
+}
+
+async function deployOpenFacets(diamondAddress) {
+    const accounts = await ethers.getSigners()
+    const contractOwner = accounts[0]
+    console.log(" ==== Begin deployOpenFacets === ");
+    diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
+    diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
+
+    console.log("Begin deploying facets");
+    const OpenNames = [
+        'TokenList',
+        'Comptroller',
+        'Liquidator',
+        'Reserve',
+        'OracleOpen',
+        'Loan',
+        'Loan1',
+        'Deposit',
+        'AccessRegistry'
+    ]
+    const opencut = []
+    let facetId = 10;
+    for (const FacetName of OpenNames) {
+        const Facet = await ethers.getContractFactory(FacetName)
+        const facet = await Facet.deploy()
+        await facet.deployed()
+        console.log(`${FacetName} deployed: ${facet.address}`)
+        opencut.push({
+            facetAddress: facet.address,
+            action: FacetCutAction.Add,
+            functionSelectors: getSelectors(facet),
+            facetId :facetId
+        })
+        facetId ++;
+    }
 
     console.log("Begin diamondcut facets");
 
@@ -484,4 +538,5 @@ if (require.main === module) {
       })
 }
 exports.deployDiamond = deployDiamond
+exports.deployOpenFacets = deployOpenFacets
 exports.addMarkets = addMarkets
