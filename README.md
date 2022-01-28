@@ -15,7 +15,7 @@ the [faucet](https://testnet.binance.org/faucet-smart).
 Open your terminal and follow the steps
 
 ```
-$ git clone -b review https://github.com/0xHashstack/Open-protocol
+$ git clone -b development https://github.com/0xHashstack/Open-protocol
 ```
 After the repository is cloned
 
