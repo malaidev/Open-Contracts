@@ -1,143 +1,146 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
+import "../util/Address.sol";
+
 struct FacetAddressAndSelectorPosition {
-        address facetAddress;
-        uint16 selectorPosition;
-		uint8 facetId;
-    }
+    address facetAddress;
+    uint16 selectorPosition;
+    uint8 facetId;
+}
 
 // =========== TokenList structs ===========
-    struct MarketData {
-        bytes32 market;
-        address tokenAddress;
-        uint256 decimals;
-        uint256 chainId;
-        uint minAmount;
-    }
-    
-// =========== Comptroller structs ===========
-    /// @notice each APY or APR struct holds the recorded changes in interest data & the
-	/// corresponding time for a particular commitment type.
-		struct APY  {
-			bytes32 commitment; 
-			uint[] time; // ledger of time when the APY changes were made.
-			uint[] apyChanges; // ledger of APY changes.
-		}
+struct MarketData {
+    bytes32 market;
+    address tokenAddress;
+    uint256 decimals;
+    uint256 chainId;
+    uint minAmount;
+}
 
-		struct APR  {
-			bytes32 commitment; // validity
-			uint[] time; // ledger of time when the APR changes were made.
-			uint[] aprChanges; // Per block.timestamp APR is tabulated in here.
-		}
+// =========== Comptroller structs ===========
+/// @notice each APY or APR struct holds the recorded changes in interest data & the
+/// corresponding time for a particular commitment type.
+    struct APY  {
+        bytes32 commitment; 
+        uint[] time; // ledger of time when the APY changes were made.
+        uint[] apyChanges; // ledger of APY changes.
+    }
+
+    struct APR  {
+        bytes32 commitment; // validity
+        uint[] time; // ledger of time when the APR changes were made.
+        uint[] aprChanges; // Per block.timestamp APR is tabulated in here.
+    }
 
 // =========== Deposit structs ===========
-    struct SavingsAccount {
-        uint accOpenTime;
-        address account; 
-        DepositRecords[] deposits;
-        YieldLedger[] yield;
-    }
+struct SavingsAccount {
+    uint accOpenTime;
+    address account; 
+    DepositRecords[] deposits;
+    YieldLedger[] yield;
+}
 
-    struct DepositRecords   {
-        uint id;
-        bytes32 market;
-        bytes32 commitment;
-        uint amount;
-        uint lastUpdate;
-		bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-        bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-        uint timelockValidity; // timelock duration
-        uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
-    }
+struct DepositRecords   {
+    uint id;
+    bytes32 market;
+    bytes32 commitment;
+    uint amount;
+    uint lastUpdate;
+    bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+    bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+    uint timelockValidity; // timelock duration
+    uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
+}
 
-    struct YieldLedger    {
-        uint id;
-        bytes32 market; //_market this yield is calculated for
-        uint oldLengthAccruedYield; // length of the APY time array.
-        uint oldTime; // last recorded block num. This is when this struct is lastly updated.
-        uint accruedYield; // accruedYield in 
-        bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-        bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
-        uint timelockValidity; // timelock duration
-        uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
-    }
+struct YieldLedger    {
+    uint id;
+    bytes32 market; //_market this yield is calculated for
+    uint oldLengthAccruedYield; // length of the APY time array.
+    uint oldTime; // last recorded block num. This is when this struct is lastly updated.
+    uint accruedYield; // accruedYield in 
+    bool isTimelockApplicable; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+    bool isTimelockActivated; // is timelockApplicalbe or not. Except the flexible deposits, the timelock is applicabel on all the deposits.
+    uint timelockValidity; // timelock duration
+    uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
+}
 // =========== Loan structs ===========
-    struct LoanAccount {
-		uint256 accOpenTime;
-		address account;
-		LoanRecords[] loans; // 2 types of loans. 3 markets intially. So, a maximum o f6 records.
-		CollateralRecords[] collaterals;
-		DeductibleInterest[] accruedAPR;
-		CollateralYield[] accruedAPY;
-		LoanState[] loanState;
-	}
-	struct LoanRecords {
-		uint256 id;
-		bytes32 market;
-		bytes32 commitment;
-		uint256 amount;
-		bool isSwapped; //true or false. Update when a loan is swapped
-		uint256 lastUpdate; // block.timestamp
-	}
+struct LoanAccount {
+    uint256 accOpenTime;
+    address account;
+    LoanRecords[] loans; // 2 types of loans. 3 markets intially. So, a maximum o f6 records.
+    CollateralRecords[] collaterals;
+    DeductibleInterest[] accruedAPR;
+    CollateralYield[] accruedAPY;
+    LoanState[] loanState;
+}
+struct LoanRecords {
+    uint256 id;
+    bytes32 market;
+    bytes32 commitment;
+    uint256 amount;
+    bool isSwapped; //true or false. Update when a loan is swapped
+    uint256 lastUpdate; // block.timestamp
+}
 
-	struct LoanState {
-		uint256 id; // loan.id
-		bytes32 loanMarket;
-		uint256 actualLoanAmount;
-		bytes32 currentMarket;
-		uint256 currentAmount;
-		ILoan.STATE state;
-	}
-	struct CollateralRecords {
-		uint256 id;
-		bytes32 market;
-		bytes32 commitment;
-		uint256 amount;
-		bool isCollateralisedDeposit;
-		uint256 timelockValidity;
-		bool isTimelockActivated; // timelock duration
-		uint256 activationTime; // blocknumber when yield withdrawal request was placed.
-	}
+struct LoanState {
+    uint256 id; // loan.id
+    bytes32 loanMarket;
+    uint256 actualLoanAmount;
+    bytes32 currentMarket;
+    uint256 currentAmount;
+    ILoan.STATE state;
+}
+struct CollateralRecords {
+    uint256 id;
+    bytes32 market;
+    bytes32 commitment;
+    uint256 amount;
+    bool isCollateralisedDeposit;
+    uint256 timelockValidity;
+    bool isTimelockActivated; // timelock duration
+    uint256 activationTime; // blocknumber when yield withdrawal request was placed.
+}
 
-	struct CollateralYield {
-		uint256 id;
-		bytes32 market;
-		bytes32 commitment;
-		uint256 oldLengthAccruedYield; // length of the APY time array.
-		uint256 oldTime; // last recorded block num
-		uint256 accruedYield; // accruedYield in
-	}
+struct CollateralYield {
+    uint256 id;
+    bytes32 market;
+    bytes32 commitment;
+    uint256 oldLengthAccruedYield; // length of the APY time array.
+    uint256 oldTime; // last recorded block num
+    uint256 accruedYield; // accruedYield in
+}
 
-	// DeductibleInterest stores the amount_ of interest deducted.
-	struct DeductibleInterest {
-		uint256 id; // Id of the loan the interest is being deducted for.
-		bytes32 market; // market_ this yield is calculated for
-		uint256 oldLengthAccruedInterest; // length of the APY time array.
-		uint256 oldTime; // length of the APY time array.
-		uint256 accruedInterest;
-	}
+// DeductibleInterest stores the amount_ of interest deducted.
+struct DeductibleInterest {
+    uint256 id; // Id of the loan the interest is being deducted for.
+    bytes32 market; // market_ this yield is calculated for
+    uint256 oldLengthAccruedInterest; // length of the APY time array.
+    uint256 oldTime; // length of the APY time array.
+    uint256 accruedInterest;
+}
 
 // =========== OracleOpen structs =============
-	struct PriceData {
-		bytes32 market;
-		uint amount;
-		uint price;
-	}
+struct PriceData {
+    bytes32 market;
+    uint amount;
+    uint price;
+}
 
 // =========== AccessRegistry structs =============
-    struct RoleData {
-        mapping(address => bool) _members;
-        bytes32 _role;
-    }
+struct RoleData {
+    mapping(address => bool) _members;
+    bytes32 _role;
+}
 
-    struct AdminRoleData {
-        mapping(address => bool) _adminMembers;
-        bytes32 _adminRole;
-    }
+struct AdminRoleData {
+    mapping(address => bool) _adminMembers;
+    bytes32 _adminRole;
+}
 
 struct AppStorage {
-    mapping(bytes4 => FacetAddressAndSelectorPosition) facetAddressAndSelectorPosition;
+    // function selector => facet address and selector position in selectors array
+        mapping(bytes4 => FacetAddressAndSelectorPosition) facetAddressAndSelectorPosition;
         bytes4[] selectors;
         //  Function selectors with the ABI of a contract provide enough information about functions to be useful for user-interface software.
 		mapping(bytes4 => bool) supportedInterfaces;
