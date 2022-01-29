@@ -16,7 +16,7 @@ contract DiamondInit {
 
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
-    function init(address account) external {
+    function init(address account, address reserveAddr) external {
         // adding ERC165 data
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
@@ -25,5 +25,6 @@ contract DiamondInit {
         s.superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8; //keccak256("AccessRegistry.admin");
         s.superAdminAddress = account;
         s._adminRoles[s.superAdmin]._adminMembers[account] = true;
+        s.reserveAddress = reserveAddr;
     }
 }

@@ -20,15 +20,6 @@ async function deployDiamond() {
 
     console.log('DiamondCutFacet deployed:', diamondCutFacet.address)
 
-    // deploy DiamondInit
-    // DiamondInit provides a function that is called when the diamond is upgraded to initialize state variables
-    // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
-    const DiamondInit = await ethers.getContractFactory('DiamondInit')
-    const diamondInit = await DiamondInit.deploy()
-    await diamondInit.deployed()
-    console.log('DiamondInit deployed:', diamondInit.address)
-
-    diamondInit.init(contractOwner.address)
 
     // deploy facets
     console.log('')
@@ -79,10 +70,18 @@ async function deployDiamond() {
     }
 
     console.log("Begin diamondcut facets");
-    
-     // deploy Diamond
+
+    // deploy DiamondInit
+    // DiamondInit provides a function that is called when the diamond is upgraded to initialize state variables
+    // Read about how the diamondCut function works here: https://eips.ethereum.org/EIPS/eip-2535#addingreplacingremoving-functions
+    const DiamondInit = await ethers.getContractFactory('DiamondInit')
+    const diamondInit = await DiamondInit.deploy()
+    await diamondInit.deployed()
+    console.log('DiamondInit deployed:', diamondInit.address)
+
+    // deploy Diamond
      const Diamond = await ethers.getContractFactory('OpenDiamond')
-     const diamond = await Diamond.deploy(contractOwner.address, diamondCutFacet.address, opencut[3]["facetAddress"])
+     const diamond = await Diamond.deploy(contractOwner.address, diamondCutFacet.address)
      await diamond.deployed()
      console.log('Diamond deployed:', diamond.address)
 
@@ -93,8 +92,13 @@ async function deployDiamond() {
     const diamondCut = await ethers.getContractAt('IDiamondCut', diamond.address)
     let tx
     let receipt
+    let args = []
+    args.push(contractOwner.address)
+    args.push(opencut[3]["facetAddress"])
+    console.log(args)
     // call to init function
-    let functionCall = diamondInit.interface.encodeFunctionData('init')
+    let functionCall = diamondInit.interface.encodeFunctionData('init', args)
+    console.log("functionCall is ", functionCall)
     tx = await diamondCut.diamondCut(cut, diamondInit.address, functionCall)
     console.log('Diamond cut tx: ', tx.hash)
     receipt = await tx.wait()
