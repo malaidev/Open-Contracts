@@ -3,7 +3,7 @@ pragma solidity 0.8.1;
 
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
-
+import "hardhat/console.sol";
 
 contract Loan1 is Pausable, ILoan1 {
 
@@ -76,6 +76,7 @@ contract Loan1 is Pausable, ILoan1 {
 
     modifier authLoan1() {
     	AppStorage storage ds = LibOpen.diamondStorage(); 
+		console.log("superadminaddress is %s", ds.superAdminAddress);
 		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoan1, ds.adminLoan1Address), "Admin role does not exist.");
 
 		_;
