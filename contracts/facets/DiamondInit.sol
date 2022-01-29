@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
+import {AppStorage} from "./libraries/AppStorage.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
 import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
@@ -11,6 +12,7 @@ import "hardhat/console.sol";
 // of your diamond. Add parameters to the init funciton if you need to.
 
 contract DiamondInit {    
+    AppStorage internal s;
 
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
@@ -20,11 +22,7 @@ contract DiamondInit {
         ds.supportedInterfaces[type(IDiamondCut).interfaceId] = true;
         ds.supportedInterfaces[type(IDiamondLoupe).interfaceId] = true;
 
-        // add your own state variables 
-        // EIP-2535 specifies that the `diamondCut` function takes two optional 
-        // arguments: address _init and bytes calldata _calldata
-        // These arguments are used to execute an arbitrary function using delegatecall
-        // in order to set state variables in the diamond during deployment or an upgrade
-        // More info here: https://eips.ethereum.org/EIPS/eip-2535#diamond-interface 
+        s.superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8; //keccak256("AccessRegistry.admin");
+        s._adminRoles[superAdmin]._adminMembers[account] = true;
     }
 }

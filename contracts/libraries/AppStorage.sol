@@ -2,12 +2,8 @@
 pragma solidity 0.8.1;
 
 import "../util/Address.sol";
-
-struct FacetAddressAndSelectorPosition {
-    address facetAddress;
-    uint16 selectorPosition;
-    uint8 facetId;
-}
+import "../interfaces/ILoan.sol";
+import "../util/IBEP20.sol";
 
 // =========== TokenList structs ===========
 struct MarketData {
@@ -139,13 +135,8 @@ struct AdminRoleData {
 }
 
 struct AppStorage {
-    // function selector => facet address and selector position in selectors array
-        mapping(bytes4 => FacetAddressAndSelectorPosition) facetAddressAndSelectorPosition;
-        bytes4[] selectors;
-        //  Function selectors with the ABI of a contract provide enough information about functions to be useful for user-interface software.
-		mapping(bytes4 => bool) supportedInterfaces;
-        address contractOwner; // owner of the contract
-        IBEP20 token;
+    
+    IBEP20 token;
 
     // ===========  admin addresses ===========
         bytes32 superAdmin; // superAdmin address backed in function setContractOwner()
