@@ -1,26 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import "./util/Pausable.sol";
-import "./libraries/LibDiamond.sol";
+import "../util/Pausable.sol";
+import "../libraries/LibOpen.sol";
 
 
 contract Reserve is Pausable, IReserve {
 
     constructor() {
-    	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+    	// AppStorage storage ds = LibOpen.diamondStorage(); 
         // ds.adminReserveAddress = msg.sender;
         // ds.reserve = IReserve(msg.sender);
     }
     
     receive() external payable {
-    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-        payable(ds.contractOwner).transfer(_msgValue());
+    	AppStorage storage ds = LibOpen.diamondStorage(); 
+        payable(ds.superAdminAddress).transfer(_msgValue());
     }
     
     fallback() external payable {
-    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-        payable(ds.contractOwner).transfer(_msgValue());
+    	AppStorage storage ds = LibOpen.diamondStorage(); 
+        payable(ds.superAdminAddress).transfer(_msgValue());
     }
 
     function transferAnyBEP20(
@@ -28,7 +28,7 @@ contract Reserve is Pausable, IReserve {
         address _recipient,
         uint256 _value) external override nonReentrant returns(bool)   
     {
-    	LibDiamond._transferAnyBEP20(_token, msg.sender, _recipient, _value);
+    	LibOpen._transferAnyBEP20(_token, msg.sender, _recipient, _value);
         return true;
     }
 
@@ -40,26 +40,26 @@ contract Reserve is Pausable, IReserve {
     // }
 
     function avblMarketReserves(bytes32 _market) external view override returns (uint) {
-        return LibDiamond._avblMarketReserves(_market);
+        return LibOpen._avblMarketReserves(_market);
     }
 
     function marketReserves(bytes32 _market) external view override returns(uint)	{
-        return LibDiamond._marketReserves(_market);
+        return LibOpen._marketReserves(_market);
     }
 	
 	function marketUtilisation(bytes32 _market) external view override returns(uint)	{
-		return LibDiamond._marketUtilisation(_market);
+		return LibOpen._marketUtilisation(_market);
 	}
 
     function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override returns (bool){
-        LibDiamond._collateralTransfer(_account, _market, _commitment);
+        LibOpen._collateralTransfer(_account, _market, _commitment);
         return true;
     }
 
     modifier authReserve()  {
-    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+    	AppStorage storage ds = LibOpen.diamondStorage(); 
 
-        require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminReserve, ds.adminReserveAddress), "Admin role does not exist.");
+        require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminReserve, ds.adminReserveAddress), "Admin role does not exist.");
 
         _;
     }

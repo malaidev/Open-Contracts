@@ -1,25 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import "./util/Pausable.sol";
-import "./libraries/LibDiamond.sol";
-
+import "../util/Pausable.sol";
+import "../libraries/LibOpen.sol";
 
 contract Loan is Pausable, ILoan {
 	
 	constructor() {
-    	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+    	// AppStorage storage ds = LibOpen.diamondStorage(); 
 		// ds.adminLoanAddress = msg.sender;
 		// ds.loan = ILoan(msg.sender);
 	}
 
 	// receive() external payable {
-    // 	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
 	// 	 payable(ds.contractOwner).transfer(_msgValue());
 	// }
 	
 	// fallback() external payable {
-    // 	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
 	// 	payable(ds.contractOwner).transfer(_msgValue());
 	// }
 
@@ -31,7 +30,7 @@ contract Loan is Pausable, ILoan {
 		bytes32 _commitment,
 		bytes32 _swapMarket
 	) external override nonReentrant() returns (bool) {
-		LibDiamond._swapLoan(msg.sender, _market, _commitment, _swapMarket);
+		LibOpen._swapLoan(msg.sender, _market, _commitment, _swapMarket);
 		return true;
 	}
 
@@ -42,26 +41,26 @@ contract Loan is Pausable, ILoan {
 		bytes32 _market
 	) external override nonReentrant() returns (bool) {
 		uint256 _swappedAmount;
-		LibDiamond._swapToLoan(msg.sender, _swapMarket,_commitment, _market, _swappedAmount);
+		LibOpen._swapToLoan(msg.sender, _swapMarket,_commitment, _market, _swappedAmount);
 		return true;
 	}
 
 	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
-		LibDiamond._withdrawCollateral(msg.sender, _market, _commitment);
+		LibOpen._withdrawCollateral(msg.sender, _market, _commitment);
 		return true;
 	}
 
 	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external override returns (bool success) {
-		LibDiamond._repayLoan(_market, _commitment, _repayAmount, msg.sender);
+		LibOpen._repayLoan(_market, _commitment, _repayAmount, msg.sender);
 		return true;
 	}
 
     function getFairPriceLoan(uint _requestId) external view override returns (uint price){
-		price = LibDiamond._getFairPrice(_requestId);
+		price = LibOpen._getFairPrice(_requestId);
 	}
 
 	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view override returns (bool) {
-    	LibDiamond._collateralPointer(_account, _market, _commitment, collateralMarket, collateralAmount);
+    	LibOpen._collateralPointer(_account, _market, _commitment, collateralMarket, collateralAmount);
 		return true;
 	}
 
@@ -78,8 +77,8 @@ contract Loan is Pausable, ILoan {
 	}
 
 	modifier authLoan() {
-    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminLoan, ds.adminLoanAddress), "Admin role does not exist.");
+    	AppStorage storage ds = LibOpen.diamondStorage();
+		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoan, ds.adminLoanAddress), "Admin role does not exist.");
 		_;
 	}
 }

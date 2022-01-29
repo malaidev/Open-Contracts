@@ -1,28 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import "./util/Pausable.sol";
-import "./libraries/LibDiamond.sol";
+import "../util/Pausable.sol";
+import "../libraries/LibOpen.sol";
 
 
 contract Loan1 is Pausable, ILoan1 {
 
 	constructor() {
-    	// LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+    	// AppStorage storage ds = LibOpen.diamondStorage(); 
 		// ds.adminLoan1Address = msg.sender;
 		// ds.loan1 = ILoan1(msg.sender);
 	}
 
     function hasLoanAccount(address _account) external view override returns (bool) {
-		return LibDiamond._hasLoanAccount(_account);
+		return LibOpen._hasLoanAccount(_account);
 	}
 
 			function avblReservesLoan(bytes32 _market) external view override returns(uint) {
-		return LibDiamond._avblReservesLoan(_market);
+		return LibOpen._avblReservesLoan(_market);
 	}
 
 	function utilisedReservesLoan(bytes32 _market) external view override returns(uint) {
-    	return LibDiamond._utilisedReservesLoan(_market);
+    	return LibOpen._utilisedReservesLoan(_market);
 	}
 
 	function loanRequest(
@@ -32,7 +32,7 @@ contract Loan1 is Pausable, ILoan1 {
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) external override nonReentrant() returns (bool) {
-		LibDiamond._loanRequest(
+		LibOpen._loanRequest(
 			_market,
 			_commitment,
 			_loanAmount,
@@ -49,17 +49,17 @@ contract Loan1 is Pausable, ILoan1 {
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) external override returns (bool) {
-		LibDiamond._addCollateral(_market, _commitment, _collateralMarket, _collateralAmount, msg.sender);
+		LibOpen._addCollateral(_market, _commitment, _collateralMarket, _collateralAmount, msg.sender);
 		return true;
 	}
 
 	function liquidation(address _account, uint256 _id) external override nonReentrant() authLoan1() returns (bool success) {
-		LibDiamond._liquidation(_account, _id);
+		LibOpen._liquidation(_account, _id);
 		return true;
 	}
 	
 	function permissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) external override returns (bool success) {
-		return LibDiamond._permissibleWithdrawal(_market, _commitment, _collateralMarket, _amount, msg.sender);
+		return LibOpen._permissibleWithdrawal(_market, _commitment, _collateralMarket, _amount, msg.sender);
 	}
 	
 	function pauseLoan1() external override authLoan1() nonReentrant() {
@@ -75,8 +75,8 @@ contract Loan1 is Pausable, ILoan1 {
 	}
 
     modifier authLoan1() {
-    	LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
-		require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner) || LibDiamond._hasAdminRole(ds.adminLoan1, ds.adminLoan1Address), "Admin role does not exist.");
+    	AppStorage storage ds = LibOpen.diamondStorage(); 
+		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoan1, ds.adminLoan1Address), "Admin role does not exist.");
 
 		_;
 	}

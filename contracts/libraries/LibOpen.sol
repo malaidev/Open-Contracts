@@ -3,8 +3,23 @@ pragma solidity 0.8.1;
 pragma experimental ABIEncoderV2;
 
 import "./AppStorage.sol";
+import "../util/Address.sol";
+import "../util/IBEP20.sol";
+import "../interfaces/ITokenList.sol";
+import "../interfaces/IComptroller.sol";
+import "../interfaces/ILiquidator.sol";
+import "../interfaces/IDeposit.sol";
+import "../interfaces/IReserve.sol";
+import "../interfaces/ILoan.sol";
+import "../interfaces/ILoan1.sol";
+import "../interfaces/IOracleOpen.sol";
+import "../interfaces/IAccessRegistry.sol";
+import "../interfaces/AggregatorV3Interface.sol";
+import "../interfaces/IAugustusSwapper.sol";
+import "../interfaces/IPancakeRouter01.sol";
 
 library LibOpen {
+    using Address for address;
 
     uint8 constant TOKENLIST_ID = 10;
 	uint8 constant COMPTROLLER_ID = 11;
@@ -15,7 +30,6 @@ library LibOpen {
 	uint8 constant LOAN1_ID = 16;
 	uint8 constant DEPOSIT_ID = 17; 
 	uint8 constant ACCESSREGISTRY_ID = 18;
-	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 
 event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -137,25 +151,24 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		return ds.pairAddresses[_market];
 	}
 
+	function setReserveAddress(address _reserve) internal {
+		AppStorage storage ds = diamondStorage();
+		ds.reserveAddress = _reserve;
+	}
+
     function diamondStorage() internal pure returns (AppStorage storage ds) {
         assembly {
             ds.slot := 0
         }
     }
 
-    modifier authContract(uint _facetId) {
-		require(_facetId == diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId || 
-				diamondStorage().facetAddressAndSelectorPosition[msg.sig].facetId == 0, "Not permitted");
-		_;
-	}
-
     function _isMarketSupported(bytes32  _market) internal view {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
 	}
 
     function _addMarketSupport( bytes32 _market,uint256 _decimals,address tokenAddress_, uint _amount) internal authContract(TOKENLIST_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         MarketData storage marketData = ds.indMarketData[_market];
         
         marketData.market = _market;
@@ -170,7 +183,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
     }
 
     function _removeMarketSupport(bytes32 _market) internal authContract(TOKENLIST_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 
         ds.tokenSupportCheck[_market] = false;
         delete ds.indMarketData[_market];
@@ -195,7 +208,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
         address tokenAddress_
     ) internal authContract(TOKENLIST_ID) 
     {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 
         MarketData storage marketData = ds.indMarketData[_market];
 
@@ -208,23 +221,23 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
     }
 
 	function _getMarketAddress(bytes32 _market) internal view returns (address) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
     	return ds.indMarketData[_market].tokenAddress;
 	}
 
 	function _getMarketDecimal(bytes32 _market) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
     	return ds.indMarketData[_market].decimals;
 	}
 
 	function _minAmountCheck(bytes32 _market, uint _amount) internal view {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		MarketData memory marketData = ds.indMarketData[_market];
 		require(marketData.minAmount <= _amount, "ERROR: Less than minimum deposit");
 	}
 
 	// function _quantifyAmount(bytes32 _market, uint _amount) internal view returns (uint amount) {
-	// 	DiamondStorage storage ds = diamondStorage(); 
+	// 	AppStorage storage ds = diamondStorage(); 
 	//     MarketData memory marketData = ds.indMarketData[_market];
     // 	amount = _amount * marketData.decimals;
 	// }
@@ -234,12 +247,12 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _getMarket2Address(bytes32 _market) internal view returns (address) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
     	return ds.indMarket2Data[_market].tokenAddress;
 	}
 
     function _addMarket2Support( bytes32 _market,uint256 _decimals,address tokenAddress_) internal authContract(TOKENLIST_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         MarketData storage marketData = ds.indMarket2Data[_market];
         
         marketData.market = _market;
@@ -253,7 +266,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
     }
 
     function _removeMarket2Support(bytes32 _market) internal authContract(TOKENLIST_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         ds.token2SupportCheck[_market] = false;
         delete ds.indMarket2Data[_market];
 
@@ -275,7 +288,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
         uint256 _decimals,
         address tokenAddress_
     ) internal authContract(TOKENLIST_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         MarketData storage marketData = ds.indMarket2Data[_market];
 
         marketData.market = _market;
@@ -287,12 +300,12 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
     }
 
 	function _getMarket2Decimal(bytes32 _market) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage();
+		AppStorage storage ds = diamondStorage();
 	    return ds.indMarket2Data[_market].decimals;
 	}
 
     function _connectMarket(bytes32 _market) private view returns (address addr) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         MarketData memory marketData = ds.indMarketData[_market];
 		addr = marketData.tokenAddress;
     }
@@ -300,63 +313,63 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 // =========== Comptroller Functions ===========
 
 	function _getAPR(bytes32 _commitment) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPRRecords[_commitment].aprChanges[ds.indAPRRecords[_commitment].aprChanges.length - 1];
 	}
 
 	function _getAPRInd(bytes32 _commitment, uint _index) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPRRecords[_commitment].aprChanges[_index];
 	}
 
 	function _getAPY(bytes32 _commitment) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPYRecords[_commitment].apyChanges[ds.indAPYRecords[_commitment].apyChanges.length - 1];
 	}
 
 	function _getAPYInd(bytes32 _commitment, uint _index) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPYRecords[_commitment].apyChanges[_index];
 	}
 
 	function _getApytime(bytes32 _commitment, uint _index) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPYRecords[_commitment].time[_index];
 	}
 
 	function _getAprtime(bytes32 _commitment, uint _index) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPRRecords[_commitment].time[_index];
 	}
 
 	function _getApyLastTime(bytes32 _commitment) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPYRecords[_commitment].time[ds.indAPYRecords[_commitment].time.length - 1];
 	}
 
 	function _getAprLastTime(bytes32 _commitment) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPRRecords[_commitment].time[ds.indAPRRecords[_commitment].time.length - 1];
 	}
 
 	function _getApyTimeLength(bytes32 _commitment) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPYRecords[_commitment].time.length;
 	}
 
 	function _getAprTimeLength(bytes32 _commitment) internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.indAPRRecords[_commitment].time.length;
 	}
 
 	function _getCommitment(uint _index) internal view returns (bytes32) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		require(_index < ds.commitment.length, "Commitment Index out of range");
 		return ds.commitment[_index];
 	}
 
     function _updateApy(bytes32 _commitment, uint _apy) internal authContract(COMPTROLLER_ID) returns (bool) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		APY storage apyUpdate = ds.indAPYRecords[_commitment];
 
 		// if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
@@ -367,12 +380,12 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _setCommitment(bytes32 _commitment) internal authContract(COMPTROLLER_ID) {
-		DiamondStorage storage ds = diamondStorage();
+		AppStorage storage ds = diamondStorage();
 		ds.commitment.push(_commitment);
 	}
 	
 	function _updateApr(bytes32 _commitment, uint _apr) internal authContract(COMPTROLLER_ID) returns (bool) {
-        DiamondStorage storage ds = diamondStorage();
+        AppStorage storage ds = diamondStorage();
 		APR storage aprUpdate = ds.indAPRRecords[_commitment];
 
 		if(aprUpdate.time.length != aprUpdate.aprChanges.length) return false;
@@ -384,9 +397,9 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view returns (uint, uint, uint) {
-		LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		
-		LibDiamond.APR storage apr = ds.indAPRRecords[_commitment];
+		APR storage apr = ds.indAPRRecords[_commitment];
 
 		require(oldLengthAccruedInterest > 0, "oldLengthAccruedInterest is 0");
 
@@ -426,7 +439,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) internal view returns (uint, uint, uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		APY storage apy = ds.indAPYRecords[_commitment];
 
 		require(oldLengthAccruedYield>0, "ERROR : oldLengthAccruedYield < 1");
@@ -467,7 +480,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _getReserveFactor() internal view returns (uint) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		return ds.reserveFactor;
 	}
 // =========== Liquidator Functions ===========
@@ -553,34 +566,34 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 
 // =========== Deposit Functions ===========
     function _hasDeposit(address _account, bytes32 _market, bytes32 _commitment) internal view returns(bool ret) {
-        DiamondStorage storage ds = diamondStorage();
+        AppStorage storage ds = diamondStorage();
 		ret = ds.indDepositRecord[_account][_market][_commitment].id != 0;
 		// require (ds.indDepositRecord[_account][_market][_commitment].id != 0, "ERROR: No deposit");
 		// return true;
 	}
 
     function _avblReservesDeposit(bytes32 _market) internal view returns (uint) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         return ds.marketReservesDeposit[_market];
     }
 
     function _utilisedReservesDeposit(bytes32 _market) internal view returns (uint) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		return ds.marketUtilisationDeposit[_market];
     }
 
     function _avblReservesLoan(bytes32 _market) internal view returns (uint) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		return ds.marketReservesLoan[_market];
     }
 
     function _utilisedReservesLoan(bytes32 _market) internal view returns (uint) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		return ds.marketUtilisationLoan[_market];
     }
 
     function _withdrawDeposit(address _account, bytes32 _market, bytes32 _commitment, uint _amount, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		
 		_hasAccount(_account);// checks if user has savings account 
 		_isMarketSupported(_market);
@@ -607,7 +620,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
     function _accruedYield(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		
 		_hasDeposit(_account, _market, _commitment);
 
@@ -631,7 +644,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		uint256 _amount
 		// SavingsAccount memory savingsAccount
 	) private {
-    	DiamondStorage storage ds = diamondStorage(); 
+    	AppStorage storage ds = diamondStorage(); 
 
 		_isMarketSupported(_market);
 		ds.token = IBEP20(_connectMarket(_market));
@@ -699,7 +712,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		bytes32 _commitment,
 		uint256 _amount
 	) internal authContract(DEPOSIT_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
 		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
 		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
@@ -721,7 +734,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _hasAccount(address _account) internal view {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		require(ds.savingsPassbook[_account].accOpenTime!=0, "ERROR: No savings account");
 	}
 
@@ -730,7 +743,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
     function _accountBalance(address _account, bytes32 _market, bytes32 _commitment, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) returns (uint) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 
 		uint _savingsBalance;
 		
@@ -752,7 +765,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _updateSavingsBalance(address _account, bytes32 _market, bytes32 _commitment, uint _amount, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 
 		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
 		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
@@ -791,7 +804,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
     function _updateReservesDeposit(bytes32 _market, uint _amount, uint _num) internal authContract(DEPOSIT_ID) {
-        DiamondStorage storage ds = diamondStorage();
+        AppStorage storage ds = diamondStorage();
 		if (_num == 0)	{
 			ds.marketReservesDeposit[_market] += _amount;
 		} else if (_num == 1)	{
@@ -800,7 +813,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
     function _createNewDeposit(bytes32 _market,bytes32 _commitment,uint256 _amount, address _sender) internal authContract(DEPOSIT_ID) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 
 		SavingsAccount storage savingsAccount = ds.savingsPassbook[_sender];
 		DepositRecords storage deposit = ds.indDepositRecord[_sender][_market][_commitment];
@@ -819,7 +832,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _addToDeposit(address _sender, bytes32 _market, bytes32 _commitment, uint _amount) internal authContract(DEPOSIT_ID) {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 
 		_isMarketSupported(_market);
 
@@ -846,7 +859,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _convertYield(address _account, bytes32 _market, bytes32 _commitment, uint _amount) internal authContract(DEPOSIT_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 
 		_hasAccount(_account);
 
@@ -873,7 +886,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 
 // =========== Loan Functions ===========
     function _updateReservesLoan(bytes32 _market, uint256 _amount, uint256 _num) private {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		if (_num == 0) {
 			ds.marketReservesLoan[_market] += _amount;
 		} else if (_num == 1) {
@@ -882,7 +895,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _updateUtilisationLoan(bytes32 _market, uint256 _amount, uint256 _num) private {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		if (_num == 0)	{
 			ds.marketUtilisationLoan[_market] += _amount;
 		} else if (_num == 1)	{
@@ -908,7 +921,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		bytes32 _market,
 		uint256 _swappedAmount
 	) private returns (bool success){
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		_hasLoanAccount(_account);
 		
 		_isMarketSupported(_market);
@@ -949,7 +962,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
     function _withdrawCollateral(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
 		// LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
@@ -980,7 +993,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) internal view {
-		DiamondStorage storage ds = diamondStorage(); 
+		AppStorage storage ds = diamondStorage(); 
 		
 		_hasLoanAccount(_account);
 
@@ -1011,7 +1024,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _updateDebtRecords(LoanAccount storage loanAccount,LoanRecords storage loan, LoanState storage loanState, CollateralRecords storage collateral/*, DeductibleInterest storage deductibleInterest, CollateralYield storage cYield*/) private {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		uint256 num = loan.id - 1;
 		bytes32 _market = loan.market;
 
@@ -1053,7 +1066,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _accruedInterest(address _account, bytes32 _loanMarket, bytes32 _commitment) private /*authContract(LOAN_ID)*/ {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 
 		// emit FairPriceCall(ds.requestEventId++, _loanMarket, ds.indLoanRecords[_account][_loanMarket][_commitment].amount);
 		// emit FairPriceCall(ds.requestEventId++, ds.indCollateralRecords[_account][_loanMarket][_commitment].market, ds.indCollateralRecords[_account][_loanMarket][_commitment].amount);
@@ -1089,7 +1102,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
     function _checkPermissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private /*authContract(LOAN_ID)*/ {
 
 		
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
@@ -1132,7 +1145,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		DeductibleInterest storage deductibleInterest,
 		CollateralYield storage cYield
 	) private {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		
 		bytes32 _commitment = loan.commitment;
 		uint256 num = loan.id - 1;
@@ -1198,7 +1211,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) private {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		require(
 			_loanAmount != 0 && _collateralAmount != 0,
 			"Loan or collateral cannot be zero"
@@ -1230,7 +1243,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) private {
-        DiamondStorage storage ds = diamondStorage();
+        AppStorage storage ds = diamondStorage();
 		// uint256 id;
 
 		LoanAccount storage loanAccount = ds.loanPassbook[_account];
@@ -1333,7 +1346,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 	}
 
 	function _ensureLoanAccount(address _account) private {
-        DiamondStorage storage ds = diamondStorage();
+        AppStorage storage ds = diamondStorage();
 		LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		if (loanAccount.accOpenTime == 0) {
 			loanAccount.accOpenTime = block.timestamp;
@@ -1377,7 +1390,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		uint256 _collateralAmount,
 		address _sender
     ) internal authContract(LOAN1_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         LoanAccount storage loanAccount = ds.loanPassbook[_sender];
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
@@ -1416,7 +1429,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		bytes32 _commitment,
 		bytes32 _swapMarket
     ) internal authContract(LOAN_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         _hasLoanAccount(_sender);
 		
 		_isMarketSupported(_market);
@@ -1463,7 +1476,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		uint256 _collateralAmount,
 		address _sender
     ) internal authContract(LOAN1_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 		require(_avblMarketReserves(_market) > _loanAmount, "ERROR: Borrow amount exceeds reserves");
         _preLoanRequestProcess(_market,_loanAmount,_collateralMarket,_collateralAmount);
 
@@ -1483,7 +1496,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
     }
 
     function _repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount, address _sender) internal authContract(LOAN_ID) {
-        // DiamondStorage storage ds = diamondStorage(); 
+        // AppStorage storage ds = diamondStorage(); 
         _hasLoanAccount(_sender);
 		// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
 		// LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
@@ -1619,13 +1632,13 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
     }
 
     function _hasLoanAccount(address _account) internal view returns (bool) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         require(ds.loanPassbook[_account].accOpenTime !=0, "ERROR: No Loan Account");
 		return true;
     }
 
     function _permissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) internal authContract(LOAN1_ID) returns (bool success) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         _hasLoanAccount(_sender);
 
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
@@ -1642,7 +1655,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
     }
 
     function _liquidation(address _account, uint256 _id) internal authContract(LOAN1_ID){
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
 		bytes32 _market = ds.loanPassbook[_account].loans[_id-1].market;
 
@@ -1691,7 +1704,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 
 // =========== Reserve Functions =====================
 	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(RESERVE_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
 
 		bytes32 collateralMarket;
         uint collateralAmount;
@@ -1722,20 +1735,20 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-        DiamondStorage storage ds = diamondStorage();
+        AppStorage storage ds = diamondStorage();
 		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
 		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
         return uint256(price);
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {
-		DiamondStorage storage ds = diamondStorage();
+		AppStorage storage ds = diamondStorage();
 		require(ds.priceData[_requestId].price != 0, "No fetched price");
 		retPrice = ds.priceData[_requestId].price;
 	}
 
 	function _fairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) internal {
-		DiamondStorage storage ds = diamondStorage();
+		AppStorage storage ds = diamondStorage();
 		PriceData storage newPrice = ds.priceData[_requestId];
 		newPrice.market = _market;
 		newPrice.amount = _amount;
@@ -1744,36 +1757,43 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 
 // =========== AccessRegistry Functions =================
     function _hasRole(bytes32 role, address account) internal view returns (bool) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         return ds._roles[role]._members[account];
     }
 
     function _addRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         ds._roles[role]._members[account] = true;
         emit RoleGranted(role, account, msg.sender);
     }
     
     function _revokeRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         ds._roles[role]._members[account] = false;
         emit RoleRevoked(role, account, msg.sender);
     }
 
     function _hasAdminRole(bytes32 role, address account) internal view returns (bool) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         return ds._adminRoles[role]._adminMembers[account];
     }
 
     function _addAdminRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         ds._adminRoles[role]._adminMembers[account] = true;
         emit AdminRoleDataGranted(role, account, msg.sender);
     }
 
     function _revokeAdmin(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-        DiamondStorage storage ds = diamondStorage(); 
+        AppStorage storage ds = diamondStorage(); 
         ds._adminRoles[role]._adminMembers[account] = false;
         emit AdminRoleDataRevoked(role, account, msg.sender);
     }
+
+	modifier authContract(uint _facetId) {
+		require(_facetId == diamondStorage().facetIndex[msg.sig] || 
+				diamondStorage().facetIndex[msg.sig] == 0, "Not permitted function call");
+		_;
+	}
+
 }

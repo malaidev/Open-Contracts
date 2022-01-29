@@ -3,50 +3,49 @@ pragma solidity 0.8.1;
 import "../util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "../libraries/LibOpen.sol";
-import "../libraries/AppStorage.sol";
 
 contract AccessRegistry is Pausable, IAccessRegistry {
     
     constructor() {
-    	// AppStorage storage ds = AppStorage(); 
+    	// AppStorage storage ds = LibOpen.diamondStorage(); 
         // ds.superAdmin = keccak256("AccessRegistry.admin");
-        // LibDiamond._addAdminRole(keccak256("AccessRegistry.admin"), ds.contractOwner);
+        // LibOpen._addAdminRole(keccak256("AccessRegistry.admin"), ds.contractOwner);
     }
     
-    receive() external payable {
-    	AppStorage storage ds = AppStorage(); 
-        payable(ds.contractOwner).transfer(_msgValue());
-    }
+    // receive() external payable {
+    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
+    //     payable(ds.contractOwner).transfer(_msgValue());
+    // }
     
-    fallback() external payable {
-    	AppStorage storage ds = AppStorage(); 
-        payable(ds.contractOwner).transfer(_msgValue());
-    }
+    // fallback() external payable {
+    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
+    //     payable(ds.contractOwner).transfer(_msgValue());
+    // }
 
     function hasRole(bytes32 role, address account) external view override returns (bool) {
-        return LibDiamond._hasRole(role, account);
+        return LibOpen._hasRole(role, account);
     }
 
     function addRole(bytes32 role, address account) external override onlyAdmin {
 
         require(
-            !LibDiamond._hasRole(role, account),
+            !LibOpen._hasRole(role, account),
             "Role already exists. Please create a different role"
         );
-        LibDiamond._addRole(role, account);
+        LibOpen._addRole(role, account);
     }
 
     function removeRole(bytes32 role, address account) external override onlyAdmin {
-        require(LibDiamond._hasRole(role, account), "Role does not exist.");
+        require(LibOpen._hasRole(role, account), "Role does not exist.");
 
-        LibDiamond._revokeRole(role, account);
+        LibOpen._revokeRole(role, account);
     }
 
     function renounceRole(bytes32 role, address account) external override nonReentrant() {
-        require(LibDiamond._hasRole(role, account), "Role does not exist.");
+        require(LibOpen._hasRole(role, account), "Role does not exist.");
         require(_msgSender() == account, "Inadequate permissions");
 
-        LibDiamond._revokeRole(role, account);
+        LibOpen._revokeRole(role, account);
     }
 
     function transferRole(
@@ -55,12 +54,12 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         address newAccount
     ) external override nonReentrant() {
         require(
-            LibDiamond._hasRole(role, oldAccount) && _msgSender() == oldAccount,
+            LibOpen._hasRole(role, oldAccount) && _msgSender() == oldAccount,
             "Role does not exist."
         );
 
-        LibDiamond._revokeRole(role, oldAccount);
-        LibDiamond._addRole(role, newAccount);
+        LibOpen._revokeRole(role, oldAccount);
+        LibOpen._addRole(role, newAccount);
     }
 
     function hasAdminRole(bytes32 role, address account)
@@ -69,20 +68,20 @@ contract AccessRegistry is Pausable, IAccessRegistry {
         override 
         returns (bool)
     {
-        return LibDiamond._hasAdminRole(role, account);
+        return LibOpen._hasAdminRole(role, account);
     }
 
     function addAdminRole(bytes32 role, address account) external override onlyAdmin {
         require(
-            !LibDiamond._hasAdminRole(role, account),
+            !LibOpen._hasAdminRole(role, account),
             "Role already exists. Please create a different role"
         );
-        LibDiamond._addAdminRole(role, account);
+        LibOpen._addAdminRole(role, account);
     }
 
     function removeAdminRole(bytes32 role, address account) external override onlyAdmin {
-        require(LibDiamond._hasAdminRole(role, account), "Role does not exist.");
-        LibDiamond._revokeAdmin(role, account);
+        require(LibOpen._hasAdminRole(role, account), "Role does not exist.");
+        LibOpen._revokeAdmin(role, account);
     }
 
     function adminRoleTransfer(
@@ -92,24 +91,24 @@ contract AccessRegistry is Pausable, IAccessRegistry {
     ) external override onlyAdmin
     {
         require(
-            LibDiamond._hasAdminRole(role, oldAccount),
+            LibOpen._hasAdminRole(role, oldAccount),
             "Role already exists. Please create a different role"
         );
 
-        LibDiamond._revokeAdmin(role, oldAccount);
-        LibDiamond._addAdminRole(role, newAccount);
+        LibOpen._revokeAdmin(role, oldAccount);
+        LibOpen._addAdminRole(role, newAccount);
     }
 
     function adminRoleRenounce(bytes32 role, address account) external override onlyAdmin {
-        require(LibDiamond._hasAdminRole(role, account), "Role does not exist.");
+        require(LibOpen._hasAdminRole(role, account), "Role does not exist.");
         require(_msgSender() == account, "Inadequate permissions");
 
-        LibDiamond._revokeAdmin(role, account);
+        LibOpen._revokeAdmin(role, account);
     }
     
     modifier onlyAdmin {
-    	AppStorage storage ds = AppStorage();
-        require(LibDiamond._hasAdminRole(ds.superAdmin, ds.contractOwner), "Admin role does not exist.");
+    	AppStorage storage ds = LibOpen.diamondStorage();
+        require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress), "Admin role does not exist.");
         _;
     }
 
