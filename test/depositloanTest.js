@@ -21,6 +21,7 @@ describe("===== Deposit Test =====", function () {
 	let tokenList
 	let comptroller
 	let deposit
+    let loan
     let loan1
 	let oracle
     let reserve
@@ -64,6 +65,7 @@ describe("===== Deposit Test =====", function () {
 		tokenList = await ethers.getContractAt('TokenList', diamondAddress)
 		comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
 		deposit = await ethers.getContractAt("Deposit", diamondAddress)
+		loan = await ethers.getContractAt("Loan", diamondAddress)
 		loan1 = await ethers.getContractAt("Loan1", diamondAddress)
 		oracle = await ethers.getContractAt('OracleOpen', diamondAddress)
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
@@ -95,6 +97,7 @@ describe("===== Deposit Test =====", function () {
 		await expect(bepUsdt.transfer(contractOwner.address, 0x10000)).to.emit(bepUsdt, 'Transfer');
 		await expect(bepUsdt.transfer(accounts[1].address, 0x10000)).to.emit(bepUsdt, 'Transfer');
 		await expect(bepUsdc.transfer(accounts[1].address, 0x10000)).to.emit(bepUsdc, 'Transfer');
+		await expect(bepBtc.transfer(accounts[1].address, 0x10000)).to.emit(bepBtc, 'Transfer');
 		// await bepUsdt.transfer(contractOwner.address, 10000000000000);
 	})
 
@@ -131,35 +134,51 @@ describe("===== Deposit Test =====", function () {
         expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x400)
 
+        // BTC
+        await expect(deposit.connect(accounts[1]).addToDeposit(symbolBtc, comit_NONE, depositAmount, {gasLimit: 5000000}))
+            .emit(library, "NewDeposit")
+        expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfe00)
+        expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x200)
+
+        await expect(deposit.connect(accounts[1]).addToDeposit(symbolBtc, comit_NONE, depositAmount, {gasLimit: 5000000}))
+            .emit(library, "DepositAdded")
+        expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfc00)
+        expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x400)
+
     })
 
     it("Check withdraw", async () => {
-        console.log("Sender Balance before withdraw is", await bepUsdt.balanceOf(contractOwner.address))
+        await deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_NONE, 0x100, 0)
 
-        await deposit.connect(accounts[1]).withdrawDeposit(symbolUsdt, comit_NONE, 150, 0)
-
-        console.log("Sender Balance before withdraw is", await bepUsdt.balanceOf(contractOwner.address))
+        expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfd00)
+        expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x300)
 
     })
 
-    // it("Check loan", async () => {
-    //     await expect(loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 200, symbolUsdt, 100, {gasLimit: 5000000}))
-	// 		.to.emit(library, "NewLoan");
-        
-    // })
+    it("Check loan", async () => {
+        await expect(loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 0x200, symbolUsdt, 0x100, {gasLimit: 5000000}))
+			.to.emit(library, "NewLoan");
 
-    // it("Check is created", async () => {
-    //     expect(await deposit.hasDeposit(symbolUsdt, comit_NONE)).to.equal(true)
-    // })
+        expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfc00)
+        expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200)
 
-    // it("withdrawDeposit", async () => {
-    //     console.log(await bep20.balanceOf(contractOwner.address))
-    //     await deposit.connect(contractOwner).withdrawDeposit(symbolUsdt, comit_NONE, 150, 0)
-    //     console.log(await bep20.balanceOf(contractOwner.address))
-    // })
+        await expect(loan1.connect(accounts[1]).loanRequest(symbolBtc, comit_ONEMONTH, 0x200, symbolBtc, 0x100, {gasLimit: 5000000}))
+        .to.emit(library, "NewLoan");
 
-    // it("Check addToDeposit", async () => {
-    //     await expect(deposit.connect(contractOwner).addToDeposit(symbolUsdt, comit_NONE, 400, {gasLimit: 3000000}))
-    //     .to.emit(library, "DepositAdded");
-    // })
+        expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfb00)
+        expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x300)
+    })
+
+    it("Check addCollateral", async () => {
+        await expect(loan1.connect(accounts[1]).addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 0x100, {gasLimit: 5000000}))
+            .to.emit(library, "AddCollateral")
+        expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfb00)
+        expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x300)
+    })
+
+    it("Check repayLoan", async () => {
+        console.log(await reserve.avblMarketReserves(symbolUsdt))
+	    await (loan.connect(accounts[1]).repayLoan(symbolUsdt, comit_ONEMONTH, 0x100, {gasLimit: 5000000}));
+        console.log(await reserve.avblMarketReserves(symbolUsdt))
+	})
 })

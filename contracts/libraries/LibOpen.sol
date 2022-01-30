@@ -1547,7 +1547,6 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 
 			if (_repayAmount >= diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
 				_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
-
 				if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market){
 					_remnantAmount += diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
 				}
