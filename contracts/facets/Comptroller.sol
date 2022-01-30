@@ -22,17 +22,17 @@ contract Comptroller is Pausable, IComptroller {
 	event MaxWithdrawalUpdated(address indexed admin, uint indexed newFactor, uint indexed newBlockLimit, uint oldFactor, uint oldBlockLimit, uint timestamp);
 
 	constructor() {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
+    // 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 	// 	ds.comptroller = IComptroller(msg.sender);
 	}
 	
 	// receive() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
+    // 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 	// 	 payable(ds.superAdminAddress).transfer(_msgValue());
 	// }
 	
 	// fallback() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
+    // 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 	// 	payable(ds.superAdminAddress).transfer(_msgValue());
 	// }
 	
@@ -103,7 +103,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateLoanIssuanceFees(uint fees) external override authComptroller() returns(bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.loanIssuanceFees;
 		ds.loanIssuanceFees = fees;
 
@@ -112,7 +112,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateLoanClosureFees(uint fees) external override authComptroller() returns(bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.loanClosureFees;
 		ds.loanClosureFees = fees;
 
@@ -121,7 +121,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateLoanPreClosureFees(uint fees) external override authComptroller() returns(bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.loanPreClosureFees;
 		ds.loanPreClosureFees = fees;
 
@@ -134,7 +134,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateDepositPreclosureFees(uint fees) external override authComptroller() returns(bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.depositPreClosureFees;
 		ds.depositPreClosureFees = fees;
 
@@ -147,7 +147,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateWithdrawalFees(uint fees) external override authComptroller() returns(bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.depositWithdrawalFees;
 		ds.depositWithdrawalFees = fees;
 
@@ -160,7 +160,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateCollateralReleaseFees(uint fees) external override authComptroller() returns(bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.collateralReleaseFees;
 		ds.collateralReleaseFees = fees;
 
@@ -169,7 +169,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 	
 	function updateYieldConversion(uint fees) external override authComptroller() returns(bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.yieldConversionFees;
 		ds.yieldConversionFees = fees;
 
@@ -178,7 +178,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	function updateMarketSwapFees(uint fees) external override authComptroller() returns(bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.marketSwapFees;
 		ds.marketSwapFees = fees;
 
@@ -189,7 +189,7 @@ contract Comptroller is Pausable, IComptroller {
 	function updateReserveFactor(uint _reserveFactor) external override authComptroller() returns (bool) {
 	 	// implementing the barebones version for testnet. 
 		//  if cdr >= reserveFactor, 1:3 possible, else 1:2 possible.
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldReserveFactor = ds.reserveFactor;
 		ds.reserveFactor = _reserveFactor;
 		 
@@ -200,7 +200,7 @@ contract Comptroller is Pausable, IComptroller {
 // this function sets a maximum permissible amount that can be moved in a single transaction without the admin permissions.
 	function updateMaxWithdrawal(uint factor, uint blockLimit) external override authComptroller() returns(bool) {
 		
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFactor = ds.maxWithdrawalFactor; 
 		uint oldBlockLimit = blockLimit;
 
@@ -216,7 +216,7 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	modifier authComptroller() {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminComptroller, ds.adminComptrollerAddress), "Admin role does not exist.");
 		_;
 	}

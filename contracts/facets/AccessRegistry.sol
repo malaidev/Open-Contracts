@@ -7,18 +7,18 @@ import "../libraries/LibOpen.sol";
 contract AccessRegistry is Pausable, IAccessRegistry {
     
     constructor() {
-    	// AppStorage storage ds = LibOpen.diamondStorage(); 
+    	// AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         // ds.superAdmin = keccak256("AccessRegistry.admin");
         // LibOpen._addAdminRole(keccak256("AccessRegistry.admin"), ds.contractOwner);
     }
     
     // receive() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
+    // 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     //     payable(ds.contractOwner).transfer(_msgValue());
     // }
     
     // fallback() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
+    // 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     //     payable(ds.contractOwner).transfer(_msgValue());
     // }
 
@@ -107,7 +107,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
     }
     
     modifier onlyAdmin {
-    	AppStorage storage ds = LibOpen.diamondStorage();
+    	AppStorageOpen storage ds = LibOpen.diamondStorage();
         require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress), "Admin role does not exist.");
         _;
     }

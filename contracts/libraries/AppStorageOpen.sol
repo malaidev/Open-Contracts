@@ -134,7 +134,7 @@ struct AdminRoleData {
     bytes32 _adminRole;
 }
 
-struct AppStorage {
+struct AppStorageOpen {
     
     IBEP20 token;
     mapping(bytes4 => uint) facetIndex;

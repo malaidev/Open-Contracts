@@ -77,7 +77,7 @@ contract Loan is Pausable, ILoan {
 	}
 
 	modifier authLoan() {
-    	AppStorage storage ds = LibOpen.diamondStorage();
+    	AppStorageOpen storage ds = LibOpen.diamondStorage();
 		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoan, ds.adminLoanAddress), "Admin role does not exist.");
 		_;
 	}

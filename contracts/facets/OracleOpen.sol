@@ -43,7 +43,7 @@ contract OracleOpen is Pausable, IOracleOpen {
     }
 
     modifier onlyAdmin() {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminOpenOracle, ds.adminOpenOracleAddress), "Admin role does not exist.");
 
         _;

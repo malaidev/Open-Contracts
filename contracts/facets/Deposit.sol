@@ -4,7 +4,7 @@ pragma solidity 0.8.1;
 import "../util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "../libraries/LibOpen.sol";
-import { YieldLedger } from "../libraries/AppStorage.sol";
+import { YieldLedger } from "../libraries/AppStorageOpen.sol";
 
 contract Deposit is Pausable, IDeposit{
 	
@@ -41,7 +41,7 @@ contract Deposit is Pausable, IDeposit{
 	}
 
 	function hasYield(bytes32 _market, bytes32 _commitment) external view override returns (bool) {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
 		LibOpen._hasYield(yield);
 		return true;
@@ -57,7 +57,7 @@ contract Deposit is Pausable, IDeposit{
 
 	function _updateUtilisation(bytes32 _market, uint _amount, uint _num) private 
 	{
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		if (_num == 0)	{
 			ds.marketUtilisationDeposit[_market] += _amount;
 		} else if (_num == 1)	{
@@ -119,7 +119,7 @@ contract Deposit is Pausable, IDeposit{
 	}
 
 	modifier authDeposit() {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
 		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminDeposit, ds.adminDepositAddress), "Admin role does not exist.");
 		_;

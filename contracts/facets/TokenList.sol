@@ -94,7 +94,7 @@ contract TokenList is Pausable, ITokenList {
   }
 
 	modifier authTokenList() {
-    AppStorage storage ds = LibOpen.diamondStorage(); 
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminTokenList, ds.adminTokenListAddress), "Admin role does not exist.");	
 	  _;
 	}

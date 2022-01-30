@@ -14,12 +14,12 @@ contract Reserve is Pausable, IReserve {
     }
     
     receive() external payable {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         payable(ds.superAdminAddress).transfer(_msgValue());
     }
     
     fallback() external payable {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         payable(ds.superAdminAddress).transfer(_msgValue());
     }
 
@@ -57,7 +57,7 @@ contract Reserve is Pausable, IReserve {
     }
 
     modifier authReserve()  {
-    	AppStorage storage ds = LibOpen.diamondStorage(); 
+    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
         require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminReserve, ds.adminReserveAddress), "Admin role does not exist.");
 

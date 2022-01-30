@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
-import {AppStorage} from "../libraries/AppStorage.sol";
+import {AppStorageOpen} from "../libraries/AppStorageOpen.sol";
 import {LibDiamond} from "../libraries/LibDiamond.sol";
 import { IDiamondLoupe } from "../interfaces/IDiamondLoupe.sol";
 import { IDiamondCut } from "../interfaces/IDiamondCut.sol";
@@ -12,7 +12,7 @@ import "hardhat/console.sol";
 // of your diamond. Add parameters to the init funciton if you need to.
 
 contract DiamondInit {    
-    AppStorage internal s;
+    AppStorageOpen internal s;
 
     // You can add parameters to this function in order to pass in 
     // data to set your own state variables
