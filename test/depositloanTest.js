@@ -185,7 +185,7 @@ describe("===== Deposit Test =====", function () {
     it("Check withdrawCollateral", async () => {
         console.log(await bepUsdt.balanceOf(accounts[1].address))
         await expect(loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH, {gasLimit: 5000000}))
-            .emit(library, "CollateralReleased")
+            .emit(loan, "CollateralReleased")
         console.log(await bepUsdt.balanceOf(accounts[1].address))
     })
   

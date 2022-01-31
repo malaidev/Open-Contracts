@@ -20,7 +20,20 @@ contract Loan1 is Pausable, ILoan1 {
 		uint256 amount,
 		uint256 timestamp
 	);
-
+	event LoanRepaid(
+		address indexed account,
+		uint256 indexed id,
+		bytes32 indexed market,
+		uint256 timestamp
+	);
+	
+	event Liquidation(
+		address indexed account,
+		bytes32 indexed market,
+		bytes32 indexed commitment,
+		uint256 amount,
+		uint256 time
+	);
 
 	constructor() {
     	// AppStorage storage ds = LibOpen.diamondStorage(); 
@@ -222,7 +235,50 @@ contract Loan1 is Pausable, ILoan1 {
 	}
 
 	function liquidation(address _account, uint256 _id) external override nonReentrant() authLoan1() returns (bool success) {
-		LibOpen._liquidation(_account, _id);
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+        bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
+		bytes32 _market = ds.loanPassbook[_account].loans[_id-1].market;
+
+		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
+		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
+		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_market][_commitment];
+		// CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
+
+		// emit FairPriceCall(ds.requestEventId++, collateral.market, collateral.amount);
+		// emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);
+
+		require(loan.id == _id, "ERROR: id mismatch");
+
+		LibOpen._accruedInterest(_account, _market, _commitment);
+		
+		if (loan.commitment == LibOpen._getCommitment(2))
+			collateral.amount += ds.indAccruedAPY[_account][_market][_commitment].accruedYield - deductibleInterest.accruedInterest;
+		else if (loan.commitment == LibOpen._getCommitment(2))
+			collateral.amount -= deductibleInterest.accruedInterest;
+
+		delete ds.indAccruedAPY[_account][_market][_commitment];
+		delete ds.indAccruedAPR[_account][_market][_commitment];
+		delete ds.loanPassbook[_account].accruedAPR[loan.id - 1];
+		delete ds.loanPassbook[_account].accruedAPY[loan.id - 1];
+
+		uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
+		uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
+		// convert collateral & loanCurrent into loanActual
+		uint256 _repaymentAmount = LibOpen._swap(collateral.market, loan.market, cAmount, 2);
+		_repaymentAmount += LibOpen._swap(loanState.currentMarket, loan.market, lAmountCurrent, 1);
+
+		delete ds.indLoanState[_account][_market][_commitment];
+		delete ds.indLoanRecords[_account][_market][_commitment];
+		delete ds.indCollateralRecords[_account][_market][_commitment];
+
+		delete ds.loanPassbook[_account].loanState[_id - 1];
+		delete ds.loanPassbook[_account].loans[_id - 1];
+		delete ds.loanPassbook[_account].collaterals[_id - 1];
+		LibOpen._updateUtilisationLoan(loan.market, loan.amount, 1);
+
+		emit LoanRepaid(_account, _id, loan.market, block.timestamp);
+		emit Liquidation(_account,_market, _commitment, loan.amount, block.timestamp);
 		return true;
 	}
 	

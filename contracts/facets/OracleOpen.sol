@@ -25,10 +25,10 @@ contract OracleOpen is Pausable, IOracleOpen {
         LibOpen._fairPrice(_requestId, _fPrice, _market, _amount);
     }
 
-    function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {
-        LibOpen._liquidation(account, loanId);
-        return true;
-    }
+    // function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {
+    //     LibOpen._liquidation(account, loanId);
+    //     return true;
+    // }
 
     function pauseOracle() external override onlyAdmin() nonReentrant() {
        _pause();
