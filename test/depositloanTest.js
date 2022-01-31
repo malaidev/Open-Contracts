@@ -181,4 +181,13 @@ describe("===== Deposit Test =====", function () {
 	    await (loan.connect(accounts[1]).repayLoan(symbolUsdt, comit_ONEMONTH, 0x100, {gasLimit: 5000000}));
         console.log(await reserve.avblMarketReserves(symbolUsdt))
 	})
+
+    it("Check withdrawCollateral", async () => {
+        console.log(await reserve.avblMarketReserves(symbolUsdt))
+        await expect(loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH, {gasLimit: 5000000}))
+            .emit(library, "CollateralReleased")
+        console.log(await reserve.avblMarketReserves(symbolUsdt))
+    })
+
+  
 })

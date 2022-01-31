@@ -36,24 +36,6 @@ library LibOpen {
 
 event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-// =========== TokenList events ==============
-	event MarketSupportAdded(bytes32 indexed _market,uint256 _decimals,address indexed MarketAddress_,uint256 indexed _timestamp);
-	event MarketSupportUpdated(bytes32 indexed _market,uint256 _decimals,address indexed MarketAddress_,uint256 indexed _timestamp);
-	event MarketSupportRemoved(bytes32 indexed _market, uint256 indexed _timestamp);
-	event Market2Added(
-		bytes32 indexed _market,
-		uint256 _decimals,
-		address indexed _marketAddress,
-		uint256 indexed _timestamp
-	);
-  	event Market2Updated(
-		bytes32 indexed _market,
-      	uint256 _decimals,
-      	address indexed _tokenAddress,
-      	uint256 indexed _timestamp
-  	);
-  	event Market2Removed(bytes32 indexed _market, uint256 indexed _timestamp);
-
 // =========== Comptroller events ================
 
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
@@ -169,59 +151,6 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
 	}
 
-    function _addMarketSupport( bytes32 _market,uint256 _decimals,address tokenAddress_, uint _amount) internal authContract(TOKENLIST_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        MarketData storage marketData = ds.indMarketData[_market];
-        
-        marketData.market = _market;
-        marketData.tokenAddress = tokenAddress_;
-        marketData.minAmount = _amount; // not multiply decmial for amount < 1
-        marketData.decimals = _decimals;
-        
-        ds.pMarkets.push(_market);
-        ds.tokenSupportCheck[_market] = true;
-        ds.marketIndex[_market] = ds.pMarkets.length-1;
-	    emit MarketSupportAdded(_market,_decimals,tokenAddress_,block.timestamp);
-    }
-
-    function _removeMarketSupport(bytes32 _market) internal authContract(TOKENLIST_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-
-        ds.tokenSupportCheck[_market] = false;
-        delete ds.indMarketData[_market];
-        
-        if (ds.marketIndex[_market] >= ds.pMarkets.length) return;
-
-        bytes32 lastmarket = ds.pMarkets[ds.pMarkets.length - 1];
-
-        if (ds.marketIndex[lastmarket] != ds.marketIndex[_market]) {
-            ds.marketIndex[lastmarket] = ds.marketIndex[_market];
-            ds.pMarkets[ds.marketIndex[_market]] = lastmarket;
-        }
-        ds.pMarkets.pop();
-        delete ds.marketIndex[_market];
-
-    	emit MarketSupportRemoved(_market, block.timestamp);
-    }
-
-    function _updateMarketSupport(
-        bytes32 _market,
-        uint256 _decimals,
-        address tokenAddress_
-    ) internal authContract(TOKENLIST_ID) 
-    {
-        AppStorageOpen storage ds = diamondStorage(); 
-
-        MarketData storage marketData = ds.indMarketData[_market];
-
-        marketData.market = _market;
-        marketData.tokenAddress = tokenAddress_;
-        marketData.decimals = _decimals;
-
-        ds.tokenSupportCheck[_market] = true;
-	    emit MarketSupportUpdated(_market,_decimals,tokenAddress_,block.timestamp);
-    }
-
 	function _getMarketAddress(bytes32 _market) internal view returns (address) {
 		AppStorageOpen storage ds = diamondStorage(); 
     	return ds.indMarketData[_market].tokenAddress;
@@ -252,54 +181,6 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		AppStorageOpen storage ds = diamondStorage(); 
     	return ds.indMarket2Data[_market].tokenAddress;
 	}
-
-    function _addMarket2Support( bytes32 _market,uint256 _decimals,address tokenAddress_) internal authContract(TOKENLIST_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        MarketData storage marketData = ds.indMarket2Data[_market];
-        
-        marketData.market = _market;
-        marketData.tokenAddress = tokenAddress_;
-        marketData.decimals = _decimals;
-        
-        ds.sMarkets.push(_market);
-        ds.token2SupportCheck[_market] = true;
-        ds.market2Index[_market] = ds.sMarkets.length-1;
-	    emit Market2Added(_market,_decimals,tokenAddress_,block.timestamp);
-    }
-
-    function _removeMarket2Support(bytes32 _market) internal authContract(TOKENLIST_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        ds.token2SupportCheck[_market] = false;
-        delete ds.indMarket2Data[_market];
-
-        if (ds.market2Index[_market] >= ds.sMarkets.length) return;
-
-        bytes32 lastmarket = ds.sMarkets[ds.sMarkets.length - 1];
-
-        if (ds.market2Index[lastmarket] != ds.market2Index[_market]) {
-            ds.market2Index[lastmarket] = ds.market2Index[_market];
-            ds.sMarkets[ds.market2Index[_market]] = lastmarket;
-        }
-        ds.sMarkets.pop();
-        delete ds.market2Index[_market];
-	    emit Market2Removed(_market, block.timestamp);
-    }
-
-    function _updateMarket2Support(
-        bytes32 _market,
-        uint256 _decimals,
-        address tokenAddress_
-    ) internal authContract(TOKENLIST_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        MarketData storage marketData = ds.indMarket2Data[_market];
-
-        marketData.market = _market;
-        marketData.tokenAddress = tokenAddress_;
-        marketData.decimals = _decimals;
-
-        ds.token2SupportCheck[_market] = true;
-	    emit Market2Updated(_market,_decimals,tokenAddress_,block.timestamp);
-    }
 
 	function _getMarket2Decimal(bytes32 _market) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage();
@@ -978,21 +859,29 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		// if (_commitment != _getCommitment(0)) {
 		// 	require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
 		// }
-		_collateralTransfer(_account, loan.market, loan.commitment);
+
+//		_collateralTransfer(_account, loan.market, loan.commitment);
+
+        uint collateralAmount;
+
+		(, collateralAmount) = _collateralPointer(_account,_market,_commitment);
+		ds.token = IBEP20(_connectMarket(collateral.market));
+		ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
+        ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
 
 		delete ds.indCollateralRecords[_account][loan.market][loan.commitment];
 		delete ds.indLoanState[_account][loan.market][loan.commitment];
 		delete ds.indLoanRecords[_account][loan.market][loan.commitment];
 
-		delete loanAccount.loanState[loan.id-1];
-		delete loanAccount.loans[loan.id-1];		
-		delete loanAccount.collaterals[loan.id-1];
+		// delete loanAccount.loanState[loan.id-1];
+		// delete loanAccount.loans[loan.id-1];
+		// delete loanAccount.collaterals[loan.id-1];
         _updateReservesLoan(collateral.market, collateral.amount, 1);
 
 		emit CollateralReleased(_account, collateral.amount, collateral.market, block.timestamp);
 	}
 
-	function _collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) internal view {
+	function _collateralPointer(address _account, bytes32 _market, bytes32 _commitment) internal view returns (bytes32 collateralMarket, uint collateralAmount) {
 		AppStorageOpen storage ds = diamondStorage(); 
 		
 		_hasLoanAccount(_account);
@@ -1709,7 +1598,7 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		bytes32 collateralMarket;
         uint collateralAmount;
 
-		_collateralPointer(_account,_market,_commitment, collateralMarket, collateralAmount);
+		(collateralMarket, collateralAmount) = _collateralPointer(_account,_market,_commitment);
 		ds.token = IBEP20(_connectMarket(collateralMarket));
 		ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
         ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);

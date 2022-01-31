@@ -59,8 +59,8 @@ contract Loan is Pausable, ILoan {
 		price = LibOpen._getFairPrice(_requestId);
 	}
 
-	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view override returns (bool) {
-    	LibOpen._collateralPointer(_account, _market, _commitment, collateralMarket, collateralAmount);
+	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment) external view override returns (bool) {
+    	LibOpen._collateralPointer(_account, _market, _commitment);
 		return true;
 	}
 

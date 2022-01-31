@@ -4,8 +4,26 @@ pragma solidity 0.8.1;
 // import "./mockup/IMockBep20.sol";
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
+import "../libraries/AppStorageOpen.sol";
 
 contract TokenList is Pausable, ITokenList {  
+
+ 	event MarketSupportAdded(bytes32 indexed _market,uint256 _decimals,address indexed MarketAddress_,uint256 indexed _timestamp);
+	event MarketSupportUpdated(bytes32 indexed _market,uint256 _decimals,address indexed MarketAddress_,uint256 indexed _timestamp);
+	event MarketSupportRemoved(bytes32 indexed _market, uint256 indexed _timestamp);
+	event Market2Added(
+		bytes32 indexed _market,
+		uint256 _decimals,
+		address indexed _marketAddress,
+		uint256 indexed _timestamp
+	);
+  event Market2Updated(
+  bytes32 indexed _market,
+      uint256 _decimals,
+      address indexed _tokenAddress,
+      uint256 indexed _timestamp
+  );
+  event Market2Removed(bytes32 indexed _market, uint256 indexed _timestamp);
 
   constructor() {
   }
@@ -25,7 +43,18 @@ contract TokenList is Pausable, ITokenList {
   
   // ADD A NEW TOKEN SUPPORT
   function addMarketSupport(bytes32 _market,uint256 _decimals,address tokenAddress_, uint _amount) external override authTokenList() returns (bool) {
-    LibOpen._addMarketSupport(_market, _decimals, tokenAddress_, _amount);
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    MarketData storage marketData = ds.indMarketData[_market];
+    
+    marketData.market = _market;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.minAmount = _amount; // not multiply decmial for amount < 1
+    marketData.decimals = _decimals;
+    
+    ds.pMarkets.push(_market);
+    ds.tokenSupportCheck[_market] = true;
+    ds.marketIndex[_market] = ds.pMarkets.length-1;
+    emit MarketSupportAdded(_market,_decimals,tokenAddress_,block.timestamp);
     return true;
   }
 
@@ -34,12 +63,37 @@ contract TokenList is Pausable, ITokenList {
   }
 
   function removeMarketSupport(bytes32 _market) external override authTokenList() returns(bool) {
-    LibOpen._removeMarketSupport(_market);
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+
+    ds.tokenSupportCheck[_market] = false;
+    delete ds.indMarketData[_market];
+    
+    if (ds.marketIndex[_market] >= ds.pMarkets.length) return false;
+
+    bytes32 lastmarket = ds.pMarkets[ds.pMarkets.length - 1];
+
+    if (ds.marketIndex[lastmarket] != ds.marketIndex[_market]) {
+        ds.marketIndex[lastmarket] = ds.marketIndex[_market];
+        ds.pMarkets[ds.marketIndex[_market]] = lastmarket;
+    }
+    ds.pMarkets.pop();
+    delete ds.marketIndex[_market];
+
+    emit MarketSupportRemoved(_market, block.timestamp);
     return true;
   }
   
   function updateMarketSupport(bytes32 _market, uint256 _decimals,address tokenAddress_) external override authTokenList()  returns(bool){
-    LibOpen._updateMarketSupport(_market, _decimals, tokenAddress_);
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+
+    MarketData storage marketData = ds.indMarketData[_market];
+
+    marketData.market = _market;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = _decimals;
+
+    ds.tokenSupportCheck[_market] = true;
+	  emit MarketSupportUpdated(_market,_decimals,tokenAddress_,block.timestamp);
     return true;
   }
 
@@ -65,19 +119,51 @@ contract TokenList is Pausable, ITokenList {
   function addMarket2Support(bytes32 _market,uint256 _decimals,address tokenAddress_) 
     external override authTokenList returns (bool) 
   {
-    LibOpen._addMarket2Support(_market, _decimals, tokenAddress_);
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    MarketData storage marketData = ds.indMarket2Data[_market];
+    
+    marketData.market = _market;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = _decimals;
+    
+    ds.sMarkets.push(_market);
+    ds.token2SupportCheck[_market] = true;
+    ds.market2Index[_market] = ds.sMarkets.length-1;
+    emit Market2Added(_market,_decimals,tokenAddress_,block.timestamp);
     return true;
   }
 
   function removeMarket2Support(bytes32 _market) external override authTokenList returns(bool) {
-    LibOpen._removeMarket2Support(_market);
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    ds.token2SupportCheck[_market] = false;
+    delete ds.indMarket2Data[_market];
+
+    if (ds.market2Index[_market] >= ds.sMarkets.length) return false;
+
+    bytes32 lastmarket = ds.sMarkets[ds.sMarkets.length - 1];
+
+    if (ds.market2Index[lastmarket] != ds.market2Index[_market]) {
+        ds.market2Index[lastmarket] = ds.market2Index[_market];
+        ds.sMarkets[ds.market2Index[_market]] = lastmarket;
+    }
+    ds.sMarkets.pop();
+    delete ds.market2Index[_market];
+    emit Market2Removed(_market, block.timestamp);
     return true;
   }
   
   function updateMarket2Support(bytes32 _market, uint256 _decimals,address tokenAddress_) 
     external override authTokenList returns(bool)
   { 
-    LibOpen._updateMarket2Support(_market, _decimals, tokenAddress_);
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    MarketData storage marketData = ds.indMarket2Data[_market];
+
+    marketData.market = _market;
+    marketData.tokenAddress = tokenAddress_;
+    marketData.decimals = _decimals;
+
+    ds.token2SupportCheck[_market] = true;
+    emit Market2Updated(_market,_decimals,tokenAddress_,block.timestamp);
     return true;
   }
 
