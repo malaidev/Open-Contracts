@@ -436,16 +436,6 @@ library LibOpen {
 		return ds.marketUtilisationDeposit[_market];
     }
 
-    function _avblReservesLoan(bytes32 _market) internal view returns (uint) {
-        AppStorageOpen storage ds = diamondStorage(); 
-		return ds.marketReservesLoan[_market];
-    }
-
-    function _utilisedReservesLoan(bytes32 _market) internal view returns (uint) {
-        AppStorageOpen storage ds = diamondStorage(); 
-		return ds.marketUtilisationLoan[_market];
-    }
-
     function _accruedYield(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
         AppStorageOpen storage ds = diamondStorage(); 
 		
@@ -466,11 +456,7 @@ library LibOpen {
 
 	}
 
-    function _preDepositProcess(
-		bytes32 _market,
-		uint256 _amount
-		// SavingsAccount memory savingsAccount
-	) internal {
+    function _preDepositProcess(bytes32 _market,uint256 _amount) internal {
     	AppStorageOpen storage ds = diamondStorage(); 
 
 		_isMarketSupported(_market);
@@ -478,7 +464,6 @@ library LibOpen {
 		// _quantifyAmount(_market, _amount);
 		_minAmountCheck(_market, _amount);
 	}
-
 
 	function _hasAccount(address _account) internal view {
         AppStorageOpen storage ds = diamondStorage(); 
@@ -508,6 +493,17 @@ library LibOpen {
 	}
 
 // =========== Loan Functions ===========
+	
+	function _avblReservesLoan(bytes32 _market) internal view returns (uint) {
+        AppStorageOpen storage ds = diamondStorage(); 
+		return ds.marketReservesLoan[_market];
+    }
+
+    function _utilisedReservesLoan(bytes32 _market) internal view returns (uint) {
+        AppStorageOpen storage ds = diamondStorage(); 
+		return ds.marketUtilisationLoan[_market];
+    }
+
     function _updateReservesLoan(bytes32 _market, uint256 _amount, uint256 _num) private {
         AppStorageOpen storage ds = diamondStorage(); 
 		if (_num == 0) {
@@ -534,16 +530,6 @@ library LibOpen {
 		uint256 _swappedAmount
     ) internal authContract(LOAN_ID) returns (bool success)
     {
-        return _swapToLoanProcess(_account, _swapMarket, _commitment, _market, _swappedAmount);
-    }
-
-    function _swapToLoanProcess(
-		address _account,
-		bytes32 _swapMarket,
-		bytes32 _commitment,
-		bytes32 _market,
-		uint256 _swappedAmount
-	) private returns (bool success){
         AppStorageOpen storage ds = diamondStorage(); 
 		_hasLoanAccount(_account);
 		
@@ -582,7 +568,7 @@ library LibOpen {
 
 		emit MarketSwapped(_account,loan.id,_swapMarket,_market,_swappedAmount);
         success = true;
-	}
+    }
 
     function _withdrawCollateral(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
         AppStorageOpen storage ds = diamondStorage(); 
@@ -1182,7 +1168,7 @@ library LibOpen {
 					_remnantAmount += diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
 				}
 				else {
-					_swapToLoanProcess(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _commitment, _market, _swappedAmount);
+					_swapToLoan(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _commitment, _market, _swappedAmount);
 					_repayAmount += _swappedAmount;
 				}
 
@@ -1218,7 +1204,7 @@ library LibOpen {
 
 				if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market)	_repayAmount += diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
 				else if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket != _market) {
-					_swapToLoanProcess(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _commitment, _market, _swappedAmount);
+					_swapToLoan(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _commitment, _market, _swappedAmount);
 					_repayAmount += _swappedAmount;
 				}
 				
@@ -1229,7 +1215,7 @@ library LibOpen {
 				} else if (_repayAmount <= diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
 					
 					_repayAmount += _swap(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,_market,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount, 1);
-					// _repayAmount += _swapToLoanProcess(loanState.currentMarket, _commitment, _market);
+					// _repayAmount += _swapToLoan(loanState.currentMarket, _commitment, _market);
 					_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
 					diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount += _swap(diamondStorage().indLoanRecords[_sender][_market][_commitment].market,diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,_remnantAmount, 2);
 				}

@@ -59,7 +59,7 @@ contract Reserve is Pausable, IReserve {
     modifier authReserve()  {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
-        require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminReserve, ds.adminReserveAddress), "Admin role does not exist.");
+        require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminReserve, ds.adminReserveAddress), "ERROR: Not an admin");
 
         _;
     }

@@ -42,7 +42,7 @@ contract Liquidator is Pausable, ILiquidator {
 
 	modifier authLiquidator() {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLiquidator, ds.adminLiquidatorAddress), "Admin role does not exist.");
+		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLiquidator, ds.adminLiquidatorAddress), "ERROR: Not an admin");
 		_;
 	}
 }

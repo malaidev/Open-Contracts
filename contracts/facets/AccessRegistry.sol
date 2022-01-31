@@ -108,7 +108,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
     
     modifier onlyAdmin {
     	AppStorageOpen storage ds = LibOpen.diamondStorage();
-        require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress), "Admin role does not exist.");
+        require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress), "ERROR: Not an admin");
         _;
     }
 

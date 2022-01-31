@@ -325,9 +325,8 @@ contract Deposit is Pausable, IDeposit{
 	}
 
 	modifier authDeposit() {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-
-		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminDeposit, ds.adminDepositAddress), "Admin role does not exist.");
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminDeposit, ds.adminDepositAddress), "ERROR: Not an admin");
 		_;
 	}
 }

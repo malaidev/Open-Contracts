@@ -7,7 +7,7 @@ import "../libraries/AppStorageOpen.sol";
 
 contract Comptroller is Pausable, IComptroller {
 	// using Address for address;
-	
+
 	event APRupdated(address indexed admin, uint indexed newAPR, uint indexed timestamp);
 	event APYupdated(address indexed admin, uint indexed newAPY, uint indexed timestamp);
 	
@@ -235,7 +235,7 @@ contract Comptroller is Pausable, IComptroller {
 
 	modifier authComptroller() {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminComptroller, ds.adminComptrollerAddress), "Admin role does not exist.");
+		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminComptroller, ds.adminComptrollerAddress), "ERROR: Not an admin");
 		_;
 	}
 
