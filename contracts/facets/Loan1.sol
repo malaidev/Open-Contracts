@@ -35,6 +35,14 @@ contract Loan1 is Pausable, ILoan1 {
 		uint256 time
 	);
 
+	event WithdrawalProcessed(
+		address indexed account,
+		uint256 indexed id,
+		uint256 indexed amount,
+		bytes32 market,
+		uint256 timestamp
+	);
+
 	constructor() {
     	// AppStorage storage ds = LibOpen.diamondStorage(); 
 		// ds.adminLoan1Address = msg.sender;
@@ -65,7 +73,7 @@ contract Loan1 is Pausable, ILoan1 {
 		require(LibOpen._avblMarketReserves(_market) >= _loanAmount, "ERROR: Borrow amount exceeds reserves");
     preLoanRequestProcess(_market,_loanAmount,_collateralMarket,_collateralAmount);
 
-		// LoanAccount storage loanAccount = ds.loanPassbook[_sender];
+		// LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
 
 		require(loan.id == 0, "ERROR: Active loan");
@@ -186,7 +194,7 @@ contract Loan1 is Pausable, ILoan1 {
 			"Loan or collateral cannot be zero"
 		);
 
-		LibOpen._permissibleCDR(_market,_collateralMarket,_loanAmount,_collateralAmount);
+		permissibleCDR(_market,_collateralMarket,_loanAmount,_collateralAmount);
 
 		// Check for amrket support
 		LibOpen._isMarketSupported(_market);
@@ -217,7 +225,7 @@ contract Loan1 is Pausable, ILoan1 {
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_market][_commitment];
 
-		LibOpen._preAddCollateralProcess(_collateralMarket, _collateralAmount, loanAccount, loan,loanState, collateral);
+		preAddCollateralProcess(_collateralMarket, _collateralAmount, loanAccount, loan,loanState, collateral);
 
 		ds.collateralToken = IBEP20(LibOpen._connectMarket(_collateralMarket));
 		// _quantifyAmount(_collateralMarket, _collateralAmount);
@@ -228,10 +236,39 @@ contract Loan1 is Pausable, ILoan1 {
 		LibOpen._addCollateralAmount(loanAccount, collateral, _collateralAmount, loan.id-1);
 		LibOpen._accruedInterest(msg.sender, _market, _commitment);
 
-		if (collateral.isCollateralisedDeposit) LibOpen._accruedYieldSt(loanAccount, collateral, cYield);
+		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
 
 		emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
 		return true;
+	}
+
+	function permissibleCDR (
+		bytes32 _market,
+		bytes32 _collateralMarket,
+		uint256 _loanAmount,
+		uint256 _collateralAmount
+	) private view{
+	// emit FairPriceCall(ds.requestEventId++, _market, _loanAmount);
+	// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _collateralAmount);
+
+		uint256 loanByCollateral;
+		uint256 amount = LibOpen._avblMarketReserves(_market) - _loanAmount ;
+		uint rF = LibOpen._getReserveFactor()* LibOpen._marketReserves(_market);
+
+		uint256 usdLoan = (LibOpen._getLatestPrice(_market)) * _loanAmount;
+		uint256 usdCollateral = (LibOpen._getLatestPrice(_collateralMarket)) * _collateralAmount;
+
+		require(amount > 0, "ERROR: Loan exceeds reserves");
+		require(LibOpen._marketReserves(_market) >= rF + amount, "ERROR: Minimum reserve exeception");
+		require (usdLoan/usdCollateral <=3, "ERROR: Exceeds permissible CDR");
+
+		// calculating cdrPermissible.
+		if (LibOpen._marketReserves(_market) >= amount + 3*LibOpen._marketReserves(_market)/4)    {
+				loanByCollateral = 3;
+		} else     {
+				loanByCollateral = 2;
+		}
+		require (usdLoan/usdCollateral <= loanByCollateral, "ERROR: Exceeds permissible CDR");
 	}
 
 	function liquidation(address _account, uint256 _id) external override nonReentrant() authLoan1() returns (bool success) {
@@ -281,9 +318,74 @@ contract Loan1 is Pausable, ILoan1 {
 		emit Liquidation(_account,_market, _commitment, loan.amount, block.timestamp);
 		return true;
 	}
+
+	function preAddCollateralProcess(
+		bytes32 _collateralMarket,
+		uint256 _collateralAmount,
+		LoanAccount storage loanAccount,
+		LoanRecords storage loan,
+		LoanState storage loanState,
+		CollateralRecords storage collateral
+	) private view {
+		require(loanAccount.accOpenTime != 0, "ERROR: No Loan account");
+		require(loan.id != 0, "ERROR: No loan");
+		require(loanState.state == ILoan.STATE.ACTIVE, "ERROR: Inactive loan");
+		require(collateral.market == _collateralMarket, "ERROR: Mismatch collateral market");
+
+		LibOpen._isMarketSupported(_collateralMarket);
+		LibOpen._minAmountCheck(_collateralMarket, _collateralAmount);
+	}
+
 	
-	function permissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) external override returns (bool success) {
-		return LibOpen._permissibleWithdrawal(_market, _commitment, _collateralMarket, _amount, msg.sender);
+	function permissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private returns (bool success) {
+    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    LibOpen._hasLoanAccount(_sender);
+
+		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
+		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
+		
+		checkPermissibleWithdrawal(_market, _commitment, _collateralMarket, _amount, _sender);
+		
+		ds.withdrawToken = IBEP20(LibOpen._connectMarket(loanState.currentMarket));
+		ds.withdrawToken.transfer(_sender,_amount);
+
+		emit WithdrawalProcessed(_sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
+
+		success = true;
+  }
+
+	function checkPermissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private /*authContract(LOAN_ID)*/ {
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
+		LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
+		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[msg.sender][_market][_commitment];
+		// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _amount);
+		// emit FairPriceCall(ds.requestEventId++, _market, _amount);
+		// emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);		
+		// _quantifyAmount(loanState.currentMarket, _amount);
+		require(_amount <= loanState.currentAmount, "ERROR: Exceeds available loan");
+		
+		LibOpen._accruedInterest(msg.sender, _market, _commitment);
+		uint256 collateralAvbl = collateral.amount - ds.indAccruedAPR[msg.sender][_market][_commitment].accruedInterest;
+
+		// fetch usdPrices
+		uint256 usdCollateral = LibOpen._getLatestPrice(_collateralMarket);
+		uint256 usdLoan = LibOpen._getLatestPrice(_market);
+		uint256 usdLoanCurrent = LibOpen._getLatestPrice(loanState.currentMarket);
+
+		// Quantification of the assets
+		// uint256 cAmount = usdCollateral*collateral.amount;
+		// uint256 cAmountAvbl = usdCollateral*collateralAvbl;
+
+		// uint256 lAmountCurrent = usdLoanCurrent*loanState.currentAmount;
+		uint256 permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);
+
+		require(permissibleAmount > 0, "ERROR: Can not withdraw zero funds");
+		require(permissibleAmount > (_amount), "ERROR:Request exceeds funds");
+		
+		// calcualted in usdterms
+		require((usdCollateral*collateralAvbl + usdLoanCurrent*loanState.currentAmount - (_amount*usdLoanCurrent)) >= (11*(usdLoan*ds.indLoanRecords[msg.sender][_market][_commitment].amount)/10), "ERROR: Risks liquidation");
 	}
 	
 	function pauseLoan1() external override authLoan1() nonReentrant() {

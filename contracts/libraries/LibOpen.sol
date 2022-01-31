@@ -21,9 +21,9 @@ import "../interfaces/IPancakeRouter01.sol";
 import "hardhat/console.sol";
 
 library LibOpen {
-    using Address for address;
+	using Address for address;
 
-    uint8 constant TOKENLIST_ID = 10;
+	uint8 constant TOKENLIST_ID = 10;
 	uint8 constant COMPTROLLER_ID = 11;
 	// uint8 constant LIQUIDATOR_ID = 12;
 	uint8 constant RESERVE_ID = 13;
@@ -37,54 +37,43 @@ library LibOpen {
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
 	
-// =========== Loan events ===============
-	/// EVENTS
-
-	event WithdrawalProcessed(
-		address indexed account,
-		uint256 indexed id,
-		uint256 indexed amount,
-		bytes32 market,
-		uint256 timestamp
-	);
-	
 
 // =========== Liquidator events ===============
 // =========== OracleOpen events ===============
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
 
 // =========== AccessRegistry events ===============
-    event AdminRoleDataGranted(
-        bytes32 indexed role,
-        address indexed account,
-        address indexed sender
-    );
+	event AdminRoleDataGranted(
+			bytes32 indexed role,
+			address indexed account,
+			address indexed sender
+	);
 
-    event AdminRoleDataRevoked(
-        bytes32 indexed role,
-        address indexed account,
-        address indexed sender
-    );
+	event AdminRoleDataRevoked(
+			bytes32 indexed role,
+			address indexed account,
+			address indexed sender
+	);
 
-    event RoleGranted(
-        bytes32 indexed role,
-        address indexed account,
-        address indexed sender
-    );
+	event RoleGranted(
+			bytes32 indexed role,
+			address indexed account,
+			address indexed sender
+	);
 
-    event RoleRevoked(
-        bytes32 indexed role,
-        address indexed account,
-        address indexed sender
-    );
+	event RoleRevoked(
+			bytes32 indexed role,
+			address indexed account,
+			address indexed sender
+	);
     
 	function _addFairPriceAddress(bytes32 _market, address _address) internal {
-        AppStorageOpen storage ds = diamondStorage();
+		AppStorageOpen storage ds = diamondStorage();
 		ds.pairAddresses[_market] = _address;
 	}
 
 	function _getFairPriceAddress(bytes32 _market) internal view returns (address){
-        AppStorageOpen storage ds = diamondStorage();
+		AppStorageOpen storage ds = diamondStorage();
 		return ds.pairAddresses[_market];
 	}
 
@@ -93,25 +82,25 @@ library LibOpen {
 		ds.reserveAddress = _reserve;
 	}
 
-    function diamondStorage() internal pure returns (AppStorageOpen storage ds) {
-        assembly {
-            ds.slot := 0
-        }
-    }
+	function diamondStorage() internal pure returns (AppStorageOpen storage ds) {
+			assembly {
+					ds.slot := 0
+			}
+	}
 
-    function _isMarketSupported(bytes32  _market) internal view {
-        AppStorageOpen storage ds = diamondStorage(); 
+	function _isMarketSupported(bytes32  _market) internal view {
+		AppStorageOpen storage ds = diamondStorage(); 
 		require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
 	}
 
 	function _getMarketAddress(bytes32 _market) internal view returns (address) {
 		AppStorageOpen storage ds = diamondStorage(); 
-    	return ds.indMarketData[_market].tokenAddress;
+		return ds.indMarketData[_market].tokenAddress;
 	}
 
 	function _getMarketDecimal(bytes32 _market) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
-    	return ds.indMarketData[_market].decimals;
+		return ds.indMarketData[_market].decimals;
 	}
 
 	function _minAmountCheck(bytes32 _market, uint _amount) internal view {
@@ -126,25 +115,25 @@ library LibOpen {
     // 	amount = _amount * marketData.decimals;
 	// }
 
-    function _isMarket2Supported(bytes32  _market) internal view {
+	function _isMarket2Supported(bytes32  _market) internal view {
 		require(diamondStorage().token2SupportCheck[_market] == true, "Secondary Token is not supported");
 	}
 
 	function _getMarket2Address(bytes32 _market) internal view returns (address) {
 		AppStorageOpen storage ds = diamondStorage(); 
-    	return ds.indMarket2Data[_market].tokenAddress;
+		return ds.indMarket2Data[_market].tokenAddress;
 	}
 
 	function _getMarket2Decimal(bytes32 _market) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage();
-	    return ds.indMarket2Data[_market].decimals;
+		return ds.indMarket2Data[_market].decimals;
 	}
 
-    function _connectMarket(bytes32 _market) internal view returns (address addr) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        MarketData memory marketData = ds.indMarketData[_market];
+	function _connectMarket(bytes32 _market) internal view returns (address addr) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		MarketData memory marketData = ds.indMarketData[_market];
 		addr = marketData.tokenAddress;
-    }
+	}
 	
 // =========== Comptroller Functions ===========
 
@@ -297,20 +286,20 @@ library LibOpen {
 		return ds.reserveFactor;
 	}
 // =========== Liquidator Functions ===========
-    function _swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256 receivedAmount) {
-        address addrFromMarket;
-        address addrToMarket;
+	function _swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256 receivedAmount) {
+		address addrFromMarket;
+		address addrToMarket;
 
-        if(_mode == 0){
-            addrFromMarket = _getMarketAddress(_fromMarket);
-            addrToMarket = _getMarket2Address(_toMarket);
-        } else if(_mode == 1) {
-            addrFromMarket = _getMarket2Address(_fromMarket);
-            addrToMarket = _getMarketAddress(_toMarket);
-        } else if(_mode == 2) {
-            addrFromMarket = _getMarketAddress(_toMarket);
-            addrToMarket = _getMarketAddress(_fromMarket);
-        }
+		if(_mode == 0){
+				addrFromMarket = _getMarketAddress(_fromMarket);
+				addrToMarket = _getMarket2Address(_toMarket);
+		} else if(_mode == 1) {
+				addrFromMarket = _getMarket2Address(_fromMarket);
+				addrToMarket = _getMarketAddress(_toMarket);
+		} else if(_mode == 2) {
+				addrFromMarket = _getMarketAddress(_toMarket);
+				addrToMarket = _getMarketAddress(_fromMarket);
+		}
 
 		//paraswap
 		// address[] memory callee = new address[](2);
@@ -326,106 +315,77 @@ library LibOpen {
 		//PancakeSwap
 		IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).transferFrom(msg.sender, address(this), _fromAmount);
-        IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
+		IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
 		//WBNB as other test tokens
-        address[] memory path;
-//        if (addrFromMarket == WBNB || addrToMarket == WBNB) {
-            path = new address[](2);
-            path[0] = addrFromMarket;
-            path[1] = addrToMarket;
-        // } else {
-        //     path = new address[](3);
-        //     path[0] = addrFromMarket;
-        //     path[1] = WBNB;
-        //     path[2] = addrToMarket;
-        // }
+		address[] memory path;
+		// if (addrFromMarket == WBNB || addrToMarket == WBNB) {
+			path = new address[](2);
+			path[0] = addrFromMarket;
+			path[1] = addrToMarket;
+		// } else {
+		//     path = new address[](3);
+		//     path[0] = addrFromMarket;
+		//     path[1] = WBNB;
+		//     path[2] = addrToMarket;
+		// }
 
-        IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(
-            _fromAmount,
-            _getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),
-            path,
-            address(this),
-            block.timestamp
-        );
+		IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(
+				_fromAmount,
+				_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),
+				path,
+				address(this),
+				block.timestamp
+		);
 		return receivedAmount;
-    }
+	}
 
 	function _getAmountOutMin(
-        address _tokenIn,
-        address _tokenOut,
-        uint _amountIn
-    ) private view returns (uint) {
-        address[] memory path;
-//        if (_tokenIn == WBNB || _tokenOut == WBNB) {
-            path = new address[](2);
-            path[0] = _tokenIn;
-            path[1] = _tokenOut;
-        // } else {
-        //     path = new address[](3);
-        //     path[0] = _tokenIn;
-        //     path[1] = WBNB;
-        //     path[2] = _tokenOut;
-        // }
+		address _tokenIn,
+		address _tokenOut,
+		uint _amountIn
+	) private view returns (uint) {
+		address[] memory path;
+		//if (_tokenIn == WBNB || _tokenOut == WBNB) {
+			path = new address[](2);
+			path[0] = _tokenIn;
+			path[1] = _tokenOut;
+	// } else {
+	//     path = new address[](3);
+	//     path[0] = _tokenIn;
+	//     path[1] = WBNB;
+	//     path[2] = _tokenOut;
+	// }
 
-        // same length as path
-        uint[] memory amountOutMins = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
-            _amountIn,
-            path
-        );
+	// same length as path
+		uint[] memory amountOutMins = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
+				_amountIn,
+				path
+		);	
 
-        return amountOutMins[path.length - 1];
-    }
+		return amountOutMins[path.length - 1];
+  }
 
 // =========== Deposit Functions ===========
-    function _hasDeposit(address _account, bytes32 _market, bytes32 _commitment) internal view returns(bool ret) {
-        AppStorageOpen storage ds = diamondStorage();
+	function _hasDeposit(address _account, bytes32 _market, bytes32 _commitment) internal view returns(bool ret) {
+		AppStorageOpen storage ds = diamondStorage();
 		ret = ds.indDepositRecord[_account][_market][_commitment].id != 0;
 		// require (ds.indDepositRecord[_account][_market][_commitment].id != 0, "ERROR: No deposit");
 		// return true;
 	}
 
-    function _avblReservesDeposit(bytes32 _market) internal view returns (uint) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        return ds.marketReservesDeposit[_market];
-    }
-
-    function _utilisedReservesDeposit(bytes32 _market) internal view returns (uint) {
-        AppStorageOpen storage ds = diamondStorage(); 
-		return ds.marketUtilisationDeposit[_market];
-    }
-
-    function _accruedYieldCommit(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-		
-		_hasDeposit(_account, _market, _commitment);
-
-		uint256 aggregateYield;
-
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
-
-		(yield.oldLengthAccruedYield, yield.oldTime, aggregateYield) = _calcAPY(_commitment, yield.oldLengthAccruedYield, yield.oldTime, aggregateYield);
-
-		aggregateYield *= deposit.amount;
-
-		yield.accruedYield += aggregateYield;
-		savingsAccount.yield[deposit.id-1].accruedYield += aggregateYield;
-
+	function _avblReservesDeposit(bytes32 _market) internal view returns (uint) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		return ds.marketReservesDeposit[_market];
 	}
 
-    function _preDepositProcess(bytes32 _market,uint256 _amount) internal {
-    	AppStorageOpen storage ds = diamondStorage(); 
-
-		_isMarketSupported(_market);
-		ds.token = IBEP20(_connectMarket(_market));
-		// _quantifyAmount(_market, _amount);
-		_minAmountCheck(_market, _amount);
+	function _utilisedReservesDeposit(bytes32 _market) internal view returns (uint) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		return ds.marketUtilisationDeposit[_market];
 	}
 
 	function _hasAccount(address _account) internal view {
-        AppStorageOpen storage ds = diamondStorage(); 
+		AppStorageOpen storage ds = diamondStorage(); 
 		require(ds.savingsPassbook[_account].accOpenTime!=0, "ERROR: No savings account");
 	}
 
@@ -433,8 +393,8 @@ library LibOpen {
 		require(yield.id !=0, "ERROR: No Yield");
 	}
 
-    function _updateReservesDeposit(bytes32 _market, uint _amount, uint _num) internal authContract(DEPOSIT_ID) {
-        AppStorageOpen storage ds = diamondStorage();
+	function _updateReservesDeposit(bytes32 _market, uint _amount, uint _num) internal authContract(DEPOSIT_ID) {
+		AppStorageOpen storage ds = diamondStorage();
 		if (_num == 0)	{
 			ds.marketReservesDeposit[_market] += _amount;
 		} else if (_num == 1)	{
@@ -442,7 +402,7 @@ library LibOpen {
 		}
 	}
 
-    function _ensureSavingsAccount(address _account, SavingsAccount storage savingsAccount) internal {
+	function _ensureSavingsAccount(address _account, SavingsAccount storage savingsAccount) internal {
 
 		if (savingsAccount.accOpenTime == 0) {
 
@@ -454,17 +414,17 @@ library LibOpen {
 // =========== Loan Functions ===========
 	
 	function _avblReservesLoan(bytes32 _market) internal view returns (uint) {
-        AppStorageOpen storage ds = diamondStorage(); 
+		AppStorageOpen storage ds = diamondStorage(); 
 		return ds.marketReservesLoan[_market];
-    }
+	}
 
-    function _utilisedReservesLoan(bytes32 _market) internal view returns (uint) {
-        AppStorageOpen storage ds = diamondStorage(); 
+	function _utilisedReservesLoan(bytes32 _market) internal view returns (uint) {
+		AppStorageOpen storage ds = diamondStorage(); 
 		return ds.marketUtilisationLoan[_market];
-    }
+	}
 
-    function _updateReservesLoan(bytes32 _market, uint256 _amount, uint256 _num) internal {
-        AppStorageOpen storage ds = diamondStorage(); 
+	function _updateReservesLoan(bytes32 _market, uint256 _amount, uint256 _num) internal {
+		AppStorageOpen storage ds = diamondStorage(); 
 		if (_num == 0) {
 			ds.marketReservesLoan[_market] += _amount;
 		} else if (_num == 1) {
@@ -473,7 +433,7 @@ library LibOpen {
 	}
 
 	function _updateUtilisationLoan(bytes32 _market, uint256 _amount, uint256 _num) internal {
-        AppStorageOpen storage ds = diamondStorage(); 
+		AppStorageOpen storage ds = diamondStorage(); 
 		if (_num == 0)	{
 			ds.marketUtilisationLoan[_market] += _amount;
 		} else if (_num == 1)	{
@@ -500,7 +460,7 @@ library LibOpen {
 		collateralAmount = collateral.amount;
 	}
 
-    function _accruedYieldSt(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
+	function _accruedYield(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
 		bytes32 _commitment = cYield.commitment;
 		uint256 aggregateYield;
 		uint256 num = collateral.id-1;
@@ -512,8 +472,6 @@ library LibOpen {
 		cYield.accruedYield += aggregateYield;
 		loanAccount.accruedAPY[num].accruedYield += aggregateYield;
 	}
-
-
 
 	function _accruedInterest(address _account, bytes32 _loanMarket, bytes32 _commitment) internal /*authContract(LOAN_ID)*/ {
         AppStorageOpen storage ds = diamondStorage(); 
@@ -549,98 +507,14 @@ library LibOpen {
 		ds.loanPassbook[_account].accruedAPR[ds.indLoanRecords[_account][_loanMarket][_commitment].id - 1].oldTime = oldTime;
 	}
 
-    function _checkPermissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private /*authContract(LOAN_ID)*/ {
-
-		
-        AppStorageOpen storage ds = diamondStorage(); 
-		// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
-		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
-		// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _amount);
-		// emit FairPriceCall(ds.requestEventId++, _market, _amount);
-		// emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);		
-		// _quantifyAmount(loanState.currentMarket, _amount);
-		require(_amount <= loanState.currentAmount, "ERROR: Exceeds available loan");
-		
-		_accruedInterest(_sender, _market, _commitment);
-		uint256 collateralAvbl = collateral.amount - ds.indAccruedAPR[_sender][_market][_commitment].accruedInterest;
-
-		// fetch usdPrices
-		uint256 usdCollateral = _getLatestPrice(_collateralMarket);
-		uint256 usdLoan = _getLatestPrice(_market);
-		uint256 usdLoanCurrent = _getLatestPrice(loanState.currentMarket);
-
-		// Quantification of the assets
-		// uint256 cAmount = usdCollateral*collateral.amount;
-		// uint256 cAmountAvbl = usdCollateral*collateralAvbl;
-
-		// uint256 lAmountCurrent = usdLoanCurrent*loanState.currentAmount;
-		uint256 permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);
-
-		require(permissibleAmount > 0, "ERROR: Can not withdraw zero funds");
-		require(permissibleAmount > (_amount), "ERROR:Request exceeds funds");
-		
-		// calcualted in usdterms
-		require((usdCollateral*collateralAvbl + usdLoanCurrent*loanState.currentAmount - (_amount*usdLoanCurrent)) >= (11*(usdLoan*ds.indLoanRecords[_sender][_market][_commitment].amount)/10), "ERROR: Risks liquidation");
-	}
-
-
-
-	function _preAddCollateralProcess(
-		bytes32 _collateralMarket,
-		uint256 _collateralAmount,
-		LoanAccount storage loanAccount,
-		LoanRecords storage loan,
-		LoanState storage loanState,
-		CollateralRecords storage collateral
-	) internal view {
-		require(loanAccount.accOpenTime != 0, "ERROR: No Loan account");
-		require(loan.id != 0, "ERROR: No loan");
-		require(loanState.state == ILoan.STATE.ACTIVE, "ERROR: Inactive loan");
-		require(collateral.market == _collateralMarket, "ERROR: Mismatch collateral market");
-
-		_isMarketSupported(_collateralMarket);
-		_minAmountCheck(_collateralMarket, _collateralAmount);
-	}
-
 	function _ensureLoanAccount(address _account) internal {
-        AppStorageOpen storage ds = diamondStorage();
+		AppStorageOpen storage ds = diamondStorage();
 		LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		if (loanAccount.accOpenTime == 0) {
 			loanAccount.accOpenTime = block.timestamp;
 			loanAccount.account = _account;
 		}
 	}
-
-	function _permissibleCDR (
-        bytes32 _market,
-        bytes32 _collateralMarket,
-        uint256 _loanAmount,
-        uint256 _collateralAmount
-    ) internal view{
-		// emit FairPriceCall(ds.requestEventId++, _market, _loanAmount);
-		// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _collateralAmount);
-
-        uint256 loanByCollateral;
-        uint256 amount = _avblMarketReserves(_market) - _loanAmount ;
-        uint rF = _getReserveFactor()* _marketReserves(_market);
-
-        uint256 usdLoan = (_getLatestPrice(_market)) * _loanAmount;
-        uint256 usdCollateral = (_getLatestPrice(_collateralMarket)) * _collateralAmount;
-
-        require(amount > 0, "ERROR: Loan exceeds reserves");
-        require(_marketReserves(_market) >= rF + amount, "ERROR: Minimum reserve exeception");
-        require (usdLoan/usdCollateral <=3, "ERROR: Exceeds permissible CDR");
-
-        // calculating cdrPermissible.
-        if (_marketReserves(_market) >= amount + 3*_marketReserves(_market)/4)    {
-            loanByCollateral = 3;
-        } else     {
-            loanByCollateral = 2;
-        }
-        require (usdLoan/usdCollateral <= loanByCollateral, "ERROR: Exceeds permissible CDR");
-    }
 
 	function _addCollateralAmount(
 		LoanAccount storage loanAccount,
@@ -652,60 +526,37 @@ library LibOpen {
 		loanAccount.collaterals[num].amount = _collateralAmount;
 	}
 
-
-    function _hasLoanAccount(address _account) internal view returns (bool) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        require(ds.loanPassbook[_account].accOpenTime !=0, "ERROR: No Loan Account");
+  function _hasLoanAccount(address _account) internal view returns (bool) {
+    AppStorageOpen storage ds = diamondStorage(); 
+    require(ds.loanPassbook[_account].accOpenTime !=0, "ERROR: No Loan Account");
 		return true;
-    }
-
-    function _permissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) internal authContract(LOAN1_ID) returns (bool success) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        _hasLoanAccount(_sender);
-
-		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
-		
-		_checkPermissibleWithdrawal(_market, _commitment, _collateralMarket, _amount, _sender);
-		
-		ds.withdrawToken = IBEP20(_connectMarket(loanState.currentMarket));
-		ds.withdrawToken.transfer(_sender,_amount);
-
-		emit WithdrawalProcessed(_sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
-
-		success = true;
-    }
-
-    function _liquidation(address _account, uint256 _id) internal authContract(LOAN1_ID){
-        
-		
-    }
+  }
 
 // =========== Reserve Functions =====================
 	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(RESERVE_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
+    AppStorageOpen storage ds = diamondStorage(); 
 
 		bytes32 collateralMarket;
-        uint collateralAmount;
+		uint collateralAmount;
 
 		(collateralMarket, collateralAmount) = _collateralPointer(_account,_market,_commitment);
 		ds.token = IBEP20(_connectMarket(collateralMarket));
 		ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
-        ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
+    ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
 	}
 
 	function _transferAnyBEP20(address _token, address _sender, address _recipient, uint256 _value) internal authContract(RESERVE_ID) {
 		IBEP20(_token).approveFrom(_sender, address(this), _value);
-        IBEP20(_token).transferFrom(_sender, _recipient, _value);
+    IBEP20(_token).transferFrom(_sender, _recipient, _value);
 	}
 
 	function _avblMarketReserves(bytes32 _market) internal view returns (uint) {
-        require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "Mathematical error");
-        return _marketReserves(_market) - _marketUtilisation(_market);
-    }
+		require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "Mathematical error");
+		return _marketReserves(_market) - _marketUtilisation(_market);
+  }
 
 	function _marketReserves(bytes32 _market) internal view returns (uint) {
-        return _avblReservesDeposit(_market) + _avblReservesLoan(_market);
+		return _avblReservesDeposit(_market) + _avblReservesLoan(_market);
 	}
 
 	function _marketUtilisation(bytes32 _market) internal view returns (uint) {
@@ -714,10 +565,10 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-        // AppStorageOpen storage ds = diamondStorage();
+		// AppStorageOpen storage ds = diamondStorage();
 		// require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
 		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-        // return uint256(price);
+		// return uint256(price);
 		return 1;
 	}
 
@@ -736,44 +587,43 @@ library LibOpen {
 	}
 
 // =========== AccessRegistry Functions =================
-    function _hasRole(bytes32 role, address account) internal view returns (bool) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        return ds._roles[role]._members[account];
-    }
+	function _hasRole(bytes32 role, address account) internal view returns (bool) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		return ds._roles[role]._members[account];
+	}
 
-    function _addRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        ds._roles[role]._members[account] = true;
-        emit RoleGranted(role, account, msg.sender);
-    }
+	function _addRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		ds._roles[role]._members[account] = true;
+		emit RoleGranted(role, account, msg.sender);
+	}
     
-    function _revokeRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        ds._roles[role]._members[account] = false;
-        emit RoleRevoked(role, account, msg.sender);
-    }
+	function _revokeRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		ds._roles[role]._members[account] = false;
+		emit RoleRevoked(role, account, msg.sender);
+	}
 
-    function _hasAdminRole(bytes32 role, address account) internal view returns (bool) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        return ds._adminRoles[role]._adminMembers[account];
-    }
+	function _hasAdminRole(bytes32 role, address account) internal view returns (bool) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		return ds._adminRoles[role]._adminMembers[account];
+	}
 
-    function _addAdminRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        ds._adminRoles[role]._adminMembers[account] = true;
-        emit AdminRoleDataGranted(role, account, msg.sender);
-    }
+	function _addAdminRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		ds._adminRoles[role]._adminMembers[account] = true;
+		emit AdminRoleDataGranted(role, account, msg.sender);
+	}
 
-    function _revokeAdmin(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-        ds._adminRoles[role]._adminMembers[account] = false;
-        emit AdminRoleDataRevoked(role, account, msg.sender);
-    }
+	function _revokeAdmin(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
+		AppStorageOpen storage ds = diamondStorage(); 
+		ds._adminRoles[role]._adminMembers[account] = false;
+		emit AdminRoleDataRevoked(role, account, msg.sender);
+	}
 
 	modifier authContract(uint _facetId) {
 		require(_facetId == diamondStorage().facetIndex[msg.sig] || 
-				diamondStorage().facetIndex[msg.sig] == 0, "Not permitted function call");
+			diamondStorage().facetIndex[msg.sig] == 0, "Not permitted function call");
 		_;
 	}
-
 }

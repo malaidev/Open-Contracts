@@ -85,7 +85,7 @@ contract Loan is Pausable, ILoan {
 		loanAccount.loanState[num].currentAmount = _swappedAmount;
 
 		LibOpen._accruedInterest(msg.sender, _market, _commitment);
-		if (collateral.isCollateralisedDeposit) LibOpen._accruedYieldSt(loanAccount, collateral, cYield);
+		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
 
 		emit MarketSwapped(msg.sender,loan.id,_market,_swapMarket, loan.amount);
 		return true;
@@ -131,7 +131,7 @@ contract Loan is Pausable, ILoan {
 		ds.loanPassbook[msg.sender].loanState[num].currentAmount = swappedAmount;
 
 		LibOpen._accruedInterest(msg.sender, _market, _commitment);
-		LibOpen._accruedYieldSt(ds.loanPassbook[msg.sender], collateral, cYield);
+		LibOpen._accruedYield(ds.loanPassbook[msg.sender], collateral, cYield);
 
 		emit MarketSwapped(msg.sender,loan.id,_swapMarket,_market,swappedAmount);
 	}
@@ -190,7 +190,7 @@ contract Loan is Pausable, ILoan {
 		LibOpen._isMarketSupported(_market);
 		
 		LibOpen._accruedInterest(msg.sender, _market, _commitment);
-		LibOpen._accruedYieldSt(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment], LibOpen.diamondStorage().indAccruedAPY[msg.sender][_market][_commitment]);
+		LibOpen._accruedYield(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment], LibOpen.diamondStorage().indAccruedAPY[msg.sender][_market][_commitment]);
 
 		if (_repayAmount == 0) {
 			// converting the current market into loanMarket for repayment.
