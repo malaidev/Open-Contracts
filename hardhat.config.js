@@ -23,7 +23,6 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
   const reserveAddress = "0x322cC8175a3b3a230c368981c31E50Ef918daA4b";
   const oracleAddress = "0x9c34a1eD973D95dbA464cae4a6c8903cD91fE30b";
   const loanAddress = "0x9bed8B8745aCA8405d550789f602F10D160aC7f5";
-  const loan1Address = "0x372d8090170E275cA85723823eeBAa0ea98f03A4";
   const depositAddress = "0xC593a45a14E04821d9DcEF234559C7504908317b";
   const accessAddress = "0x6Dc785CC760Dae9E34679d0ecfa6c112E3352c84";
   const contracts = [
@@ -46,10 +45,6 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
     {
         name: "Loan",
         address: loanAddress
-    },
-    {
-        name: "Loan1",
-        address: loan1Address
     },
     {
         name: "Reserve",
@@ -150,7 +145,7 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 1000,
+            runs: 200,
           },
         },
       },
@@ -159,7 +154,7 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 1000,
+            runs: 200,
           },
         },
       },

@@ -10,6 +10,7 @@ interface ILoan {
     function collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) external view returns (bool);
     function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external  returns (bool);
     function getFairPriceLoan(uint _requestId) external returns (uint);
+    
     function pauseLoan() external;
     function unpauseLoan() external;
     function isPausedLoan() external view returns (bool);
