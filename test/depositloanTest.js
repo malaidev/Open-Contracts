@@ -22,7 +22,7 @@ describe("===== Deposit Test =====", function () {
 	let comptroller
 	let deposit
     let loan
-    let loan1
+    let loanExt
 	let oracle
     let reserve
 	let library
@@ -66,7 +66,7 @@ describe("===== Deposit Test =====", function () {
 		comptroller = await ethers.getContractAt('Comptroller', diamondAddress)
 		deposit = await ethers.getContractAt("Deposit", diamondAddress)
 		loan = await ethers.getContractAt("Loan", diamondAddress)
-		loan1 = await ethers.getContractAt("Loan1", diamondAddress)
+		loanExt = await ethers.getContractAt("LoanExt", diamondAddress)
 		oracle = await ethers.getContractAt('OracleOpen', diamondAddress)
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)
@@ -156,22 +156,22 @@ describe("===== Deposit Test =====", function () {
     })
 
     it("Check loan", async () => {
-        await expect(loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 0x200, symbolUsdt, 0x100, {gasLimit: 5000000}))
-			.to.emit(loan1, "NewLoan");
+        await expect(loanExt.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 0x200, symbolUsdt, 0x100, {gasLimit: 5000000}))
+			.to.emit(loanExt, "NewLoan");
 
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200)
 
-        await expect(loan1.connect(accounts[1]).loanRequest(symbolBtc, comit_ONEMONTH, 0x200, symbolBtc, 0x100, {gasLimit: 5000000}))
-        .to.emit(loan1, "NewLoan");
+        await expect(loanExt.connect(accounts[1]).loanRequest(symbolBtc, comit_ONEMONTH, 0x200, symbolBtc, 0x100, {gasLimit: 5000000}))
+        .to.emit(loanExt, "NewLoan");
 
         expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfb00)
         expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x300)
     })
 
     it("Check addCollateral", async () => {
-        await expect(loan1.connect(accounts[1]).addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 0x100, {gasLimit: 5000000}))
-            .to.emit(loan1, "AddCollateral")
+        await expect(loanExt.connect(accounts[1]).addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 0x100, {gasLimit: 5000000}))
+            .to.emit(loanExt, "AddCollateral")
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfb00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x300)
     })

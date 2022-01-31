@@ -11,7 +11,7 @@ import "../interfaces/ILiquidator.sol";
 import "../interfaces/IDeposit.sol";
 import "../interfaces/IReserve.sol";
 import "../interfaces/ILoan.sol";
-import "../interfaces/ILoan1.sol";
+import "../interfaces/ILoanExt.sol";
 import "../interfaces/IOracleOpen.sol";
 import "../interfaces/IAccessRegistry.sol";
 import "../interfaces/AggregatorV3Interface.sol";
@@ -29,7 +29,7 @@ library LibOpen {
 	uint8 constant RESERVE_ID = 13;
 	// uint8 constant ORACLEOPEN_ID = 14;
 	uint8 constant LOAN_ID = 15;
-	uint8 constant LOAN1_ID = 16;
+	uint8 constant LOANEXT_ID = 16;
 	uint8 constant DEPOSIT_ID = 17; 
 	uint8 constant ACCESSREGISTRY_ID = 18;
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
@@ -441,7 +441,6 @@ library LibOpen {
 		}
 	}
 
-
 	function _collateralPointer(address _account, bytes32 _market, bytes32 _commitment) internal view returns (bytes32 collateralMarket, uint collateralAmount) {
 		AppStorageOpen storage ds = diamondStorage(); 
 		
@@ -507,25 +506,6 @@ library LibOpen {
 		ds.loanPassbook[_account].accruedAPR[ds.indLoanRecords[_account][_loanMarket][_commitment].id - 1].oldTime = oldTime;
 	}
 
-	function _ensureLoanAccount(address _account) internal {
-		AppStorageOpen storage ds = diamondStorage();
-		LoanAccount storage loanAccount = ds.loanPassbook[_account];
-		if (loanAccount.accOpenTime == 0) {
-			loanAccount.accOpenTime = block.timestamp;
-			loanAccount.account = _account;
-		}
-	}
-
-	function _addCollateralAmount(
-		LoanAccount storage loanAccount,
-		CollateralRecords storage collateral,
-		uint256 _collateralAmount,
-		uint256 num
-	) internal {
-		collateral.amount += _collateralAmount;
-		loanAccount.collaterals[num].amount = _collateralAmount;
-	}
-
   function _hasLoanAccount(address _account) internal view returns (bool) {
     AppStorageOpen storage ds = diamondStorage(); 
     require(ds.loanPassbook[_account].accOpenTime !=0, "ERROR: No Loan Account");
@@ -533,17 +513,6 @@ library LibOpen {
   }
 
 // =========== Reserve Functions =====================
-	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(RESERVE_ID) {
-    AppStorageOpen storage ds = diamondStorage(); 
-
-		bytes32 collateralMarket;
-		uint collateralAmount;
-
-		(collateralMarket, collateralAmount) = _collateralPointer(_account,_market,_commitment);
-		ds.token = IBEP20(_connectMarket(collateralMarket));
-		ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
-    ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
-	}
 
 	function _transferAnyBEP20(address _token, address _sender, address _recipient, uint256 _value) internal authContract(RESERVE_ID) {
 		IBEP20(_token).approveFrom(_sender, address(this), _value);
@@ -597,7 +566,7 @@ library LibOpen {
 		ds._roles[role]._members[account] = true;
 		emit RoleGranted(role, account, msg.sender);
 	}
-    
+
 	function _revokeRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
 		AppStorageOpen storage ds = diamondStorage(); 
 		ds._roles[role]._members[account] = false;

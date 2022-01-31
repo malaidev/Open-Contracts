@@ -203,8 +203,8 @@ struct AppStorageOpen {
     // =========== Loan state variables ============
     bytes32 adminLoan;
     address adminLoanAddress;
-    bytes32 adminLoan1;
-    address adminLoan1Address;
+    bytes32 adminLoanExt;
+    address adminLoanExtAddress;
     IBEP20 loanToken;
     IBEP20 withdrawToken;
     IBEP20 collateralToken;

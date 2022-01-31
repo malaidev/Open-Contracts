@@ -4,7 +4,7 @@ pragma solidity 0.8.1;
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
 
-contract Loan1 is Pausable, ILoan1 {
+contract LoanExt is Pausable, ILoanExt {
 	event NewLoan(
 		address indexed account,
 		bytes32 loanMarket,
@@ -44,12 +44,10 @@ contract Loan1 is Pausable, ILoan1 {
 	);
 
 	constructor() {
-    	// AppStorage storage ds = LibOpen.diamondStorage(); 
-		// ds.adminLoan1Address = msg.sender;
-		// ds.loan1 = ILoan1(msg.sender);
+		
 	}
 
-    function hasLoanAccount(address _account) external view override returns (bool) {
+	function hasLoanAccount(address _account) external view override returns (bool) {
 		return LibOpen._hasLoanAccount(_account);
 	}
 
@@ -81,7 +79,7 @@ contract Loan1 is Pausable, ILoan1 {
 		ds.collateralToken.transferFrom(msg.sender, ds.reserveAddress, _collateralAmount);
 
 		LibOpen._updateReservesLoan(_collateralMarket,_collateralAmount, 0);
-		LibOpen._ensureLoanAccount(msg.sender);
+		ensureLoanAccount(msg.sender);
 
 		processNewLoan(_market,_commitment,_loanAmount,_collateralMarket,_collateralAmount);
 
@@ -188,7 +186,7 @@ contract Loan1 is Pausable, ILoan1 {
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) private {
-        AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		require(
 			_loanAmount != 0 && _collateralAmount != 0,
 			"Loan or collateral cannot be zero"
@@ -233,13 +231,32 @@ contract Loan1 is Pausable, ILoan1 {
 		ds.collateralToken.transferFrom(msg.sender, ds.reserveAddress, _collateralAmount);
 		LibOpen._updateReservesLoan(_collateralMarket, _collateralAmount, 0);
 		
-		LibOpen._addCollateralAmount(loanAccount, collateral, _collateralAmount, loan.id-1);
+		addCollateralAmount(loanAccount, collateral, _collateralAmount, loan.id-1);
 		LibOpen._accruedInterest(msg.sender, _market, _commitment);
 
 		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
 
 		emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
 		return true;
+	}
+
+	function ensureLoanAccount(address _account) private {
+		AppStorageOpen storage ds = LibOpen.diamondStorage();
+		LoanAccount storage loanAccount = ds.loanPassbook[_account];
+		if (loanAccount.accOpenTime == 0) {
+			loanAccount.accOpenTime = block.timestamp;
+			loanAccount.account = _account;
+		}
+	}
+
+	function addCollateralAmount(
+		LoanAccount storage loanAccount,
+		CollateralRecords storage collateral,
+		uint256 _collateralAmount,
+		uint256 num
+	) private {
+		collateral.amount += _collateralAmount;
+		loanAccount.collaterals[num].amount = _collateralAmount;
 	}
 
 	function permissibleCDR (
@@ -271,7 +288,7 @@ contract Loan1 is Pausable, ILoan1 {
 		require (usdLoan/usdCollateral <= loanByCollateral, "ERROR: Exceeds permissible CDR");
 	}
 
-	function liquidation(address _account, uint256 _id) external override nonReentrant() authLoan1() returns (bool success) {
+	function liquidation(address _account, uint256 _id) external override nonReentrant() authLoanExt() returns (bool success) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
 		bytes32 _market = ds.loanPassbook[_account].loans[_id-1].market;
@@ -388,25 +405,23 @@ contract Loan1 is Pausable, ILoan1 {
 		require((usdCollateral*collateralAvbl + usdLoanCurrent*loanState.currentAmount - (_amount*usdLoanCurrent)) >= (11*(usdLoan*ds.indLoanRecords[msg.sender][_market][_commitment].amount)/10), "ERROR: Risks liquidation");
 	}
 	
-	function pauseLoan1() external override authLoan1() nonReentrant() {
+	function pauseLoanExt() external override authLoanExt() nonReentrant() {
 		_pause();
 	}
 	
-	function unpauseLoan1() external override authLoan1() nonReentrant() {
+	function unpauseLoanExt() external override authLoanExt() nonReentrant() {
 		_unpause();   
 	}
 
-	function isPausedLoan1() external view virtual override returns (bool) {
+	function isPausedLoanExt() external view virtual override returns (bool) {
 		return _paused();
 	}
 
-    modifier authLoan1() {
+    modifier authLoanExt() {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		console.log("superadminaddress is %s", ds.superAdminAddress);
-		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoan1, ds.adminLoan1Address), "ERROR: Not an admin");
+		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoanExt, ds.adminLoanExtAddress), "ERROR: Not an admin");
 
 		_;
 	}
-
-
 }

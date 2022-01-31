@@ -52,7 +52,15 @@ contract Reserve is Pausable, IReserve {
 	}
 
     function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override returns (bool){
-        LibOpen._collateralTransfer(_account, _market, _commitment);
+        AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+
+		bytes32 collateralMarket;
+		uint collateralAmount;
+
+		(collateralMarket, collateralAmount) = LibOpen._collateralPointer(_account,_market,_commitment);
+		ds.token = IBEP20(LibOpen._connectMarket(collateralMarket));
+		ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
+        ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
         return true;
     }
 

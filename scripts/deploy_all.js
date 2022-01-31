@@ -49,7 +49,7 @@ async function deployDiamond() {
         'Reserve',
         'OracleOpen',
         'Loan',
-        'Loan1',
+        'LoanExt',
         'Deposit',
         'AccessRegistry'
     ]
@@ -140,7 +140,7 @@ async function deployOpenFacets(diamondAddress) {
         'Reserve',
         'OracleOpen',
         'Loan',
-        'Loan1',
+        'LoanExt',
         'Deposit',
         'AccessRegistry'
     ]
