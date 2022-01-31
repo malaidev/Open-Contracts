@@ -47,11 +47,11 @@ contract Deposit is Pausable, IDeposit{
 			_savingsBalance = deposit.amount;
 
 		}	else if (_request == IDeposit.SAVINGSTYPE.YIELD)	{
-			LibOpen._accruedYield(msg.sender,_market,_commitment);
+			LibOpen._accruedYieldCommit(msg.sender,_market,_commitment);
 			_savingsBalance =  yield.accruedYield;
 
 		}	else if (_request == IDeposit.SAVINGSTYPE.BOTH)	{
-			LibOpen._accruedYield(msg.sender,_market,_commitment);
+			LibOpen._accruedYieldCommit(msg.sender,_market,_commitment);
 			_savingsBalance = deposit.amount + yield.accruedYield;
 		}
 		return _savingsBalance;
@@ -68,7 +68,7 @@ contract Deposit is Pausable, IDeposit{
 		YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
 
 		LibOpen._hasYield(yield);
-		LibOpen._accruedYield(msg.sender,_market,_commitment);
+		LibOpen._accruedYieldCommit(msg.sender,_market,_commitment);
 
 		_amount = yield.accruedYield;
 
@@ -132,7 +132,7 @@ contract Deposit is Pausable, IDeposit{
 		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
 		// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
 
-		LibOpen._accruedYield(msg.sender,_market,_commitment);
+		LibOpen._accruedYieldCommit(msg.sender,_market,_commitment);
 
 		uint _savingsBalance = savingsBalance(_market, _commitment, _request);
 		require(_amount <= _savingsBalance, "Insufficient balance"); // Dinh modified
@@ -199,7 +199,7 @@ contract Deposit is Pausable, IDeposit{
 
 		uint num = deposit.id - 1;
 
-		LibOpen._accruedYield(_account, _market, _commitment);
+		LibOpen._accruedYieldCommit(_account, _market, _commitment);
 		
 		deposit.amount += _amount;
 		deposit.lastUpdate =  block.timestamp;
@@ -227,7 +227,7 @@ contract Deposit is Pausable, IDeposit{
 
 			if (yield.isTimelockApplicable == false || block.timestamp >= yield.activationTime+yield.timelockValidity)	{
 				
-				// _accruedYield(_account,_market,_commitment);
+				// _accruedYieldComit(_account,_market,_commitment);
 				yield.accruedYield -= _amount;
 				yield.oldTime = block.timestamp;
 			}	else if (yield.isTimelockApplicable != false || block.timestamp < yield.activationTime+yield.timelockValidity)	{
@@ -239,7 +239,7 @@ contract Deposit is Pausable, IDeposit{
 			// require (deposit.id == yield.id, "mapping error");
 
 			if (yield.isTimelockApplicable == false || block.timestamp >= yield.activationTime+yield.timelockValidity)	{
-				// _accruedYield(_account,_market,_commitment);
+				// _accruedYieldComit(_account,_market,_commitment);
 				yield.accruedYield -= _amount;
 				yield.oldTime = block.timestamp;
 

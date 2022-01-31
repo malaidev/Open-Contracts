@@ -157,13 +157,13 @@ describe("===== Deposit Test =====", function () {
 
     it("Check loan", async () => {
         await expect(loan1.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 0x200, symbolUsdt, 0x100, {gasLimit: 5000000}))
-			.to.emit(library, "NewLoan");
+			.to.emit(loan1, "NewLoan");
 
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200)
 
         await expect(loan1.connect(accounts[1]).loanRequest(symbolBtc, comit_ONEMONTH, 0x200, symbolBtc, 0x100, {gasLimit: 5000000}))
-        .to.emit(library, "NewLoan");
+        .to.emit(loan1, "NewLoan");
 
         expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfb00)
         expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x300)
@@ -171,7 +171,7 @@ describe("===== Deposit Test =====", function () {
 
     it("Check addCollateral", async () => {
         await expect(loan1.connect(accounts[1]).addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 0x100, {gasLimit: 5000000}))
-            .to.emit(library, "AddCollateral")
+            .to.emit(loan1, "AddCollateral")
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfb00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x300)
     })

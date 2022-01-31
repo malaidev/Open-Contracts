@@ -64,8 +64,6 @@ contract Loan is Pausable, ILoan {
 		return true;
 	}
 
-	
-
 	function pauseLoan() external override authLoan() nonReentrant() {
 		_pause();
 	}
