@@ -374,17 +374,17 @@ contract LoanExt is Pausable, ILoanExt {
 	function checkPermissibleWithdrawal(bytes32 _market,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private /*authContract(LOAN_ID)*/ {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
-		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[msg.sender][_market][_commitment];
+		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
+		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
 		// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _amount);
 		// emit FairPriceCall(ds.requestEventId++, _market, _amount);
 		// emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);		
 		// _quantifyAmount(loanState.currentMarket, _amount);
 		require(_amount <= loanState.currentAmount, "ERROR: Exceeds available loan");
 		
-		LibOpen._accruedInterest(msg.sender, _market, _commitment);
-		uint256 collateralAvbl = collateral.amount - ds.indAccruedAPR[msg.sender][_market][_commitment].accruedInterest;
+		LibOpen._accruedInterest(_sender, _market, _commitment);
+		uint256 collateralAvbl = collateral.amount - ds.indAccruedAPR[_sender][_market][_commitment].accruedInterest;
 
 		// fetch usdPrices
 		uint256 usdCollateral = LibOpen._getLatestPrice(_collateralMarket);
@@ -402,7 +402,7 @@ contract LoanExt is Pausable, ILoanExt {
 		require(permissibleAmount > (_amount), "ERROR:Request exceeds funds");
 		
 		// calcualted in usdterms
-		require((usdCollateral*collateralAvbl + usdLoanCurrent*loanState.currentAmount - (_amount*usdLoanCurrent)) >= (11*(usdLoan*ds.indLoanRecords[msg.sender][_market][_commitment].amount)/10), "ERROR: Risks liquidation");
+		require((usdCollateral*collateralAvbl + usdLoanCurrent*loanState.currentAmount - (_amount*usdLoanCurrent)) >= (11*(usdLoan*ds.indLoanRecords[_sender][_market][_commitment].amount)/10), "ERROR: Risks liquidation");
 	}
 	
 	function pauseLoanExt() external override authLoanExt() nonReentrant() {

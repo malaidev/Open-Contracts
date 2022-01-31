@@ -138,7 +138,6 @@ contract Loan is Pausable, ILoan {
 
 	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-    LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
 		// LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
