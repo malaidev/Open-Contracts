@@ -8,7 +8,7 @@ pragma solidity 0.8.1;
 interface IDeposit {
 	enum SAVINGSTYPE{DEPOSIT, YIELD, BOTH}
 	function hasAccount(address account_) external view returns (bool);
-    function savingsBalance(bytes32 _market, bytes32 _commitment) external returns (uint);
+    // function savingsBalance(bytes32 _market, bytes32 _commitment, SAVINGSTYPE req) external returns (uint);
 	function convertYield(bytes32 _market, bytes32 _commitment) external returns (bool success);
 	function hasYield(bytes32 _market, bytes32 _commitment) external view returns (bool);
 	function avblReservesDeposit(bytes32 _market) external view returns (uint);

@@ -114,34 +114,34 @@ describe("===== Deposit Test =====", function () {
         // USDT
 
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdt, comit_NONE, depositAmount, {gasLimit: 5000000}))
-            .emit(library, "NewDeposit")
+            .emit(deposit, "NewDeposit")
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfe00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200)
 
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdt, comit_NONE, depositAmount, {gasLimit: 5000000}))
-            .emit(library, "DepositAdded")
+            .emit(deposit, "DepositAdded")
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x400)
 
         // USDC
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000}))
-            .emit(library, "NewDeposit")
+            .emit(deposit, "NewDeposit")
         expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
         expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
 
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000}))
-            .emit(library, "DepositAdded")
+            .emit(deposit, "DepositAdded")
         expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x400)
 
         // BTC
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolBtc, comit_NONE, depositAmount, {gasLimit: 5000000}))
-            .emit(library, "NewDeposit")
+            .emit(deposit, "NewDeposit")
         expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfe00)
         expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x200)
 
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolBtc, comit_NONE, depositAmount, {gasLimit: 5000000}))
-            .emit(library, "DepositAdded")
+            .emit(deposit, "DepositAdded")
         expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x400)
 

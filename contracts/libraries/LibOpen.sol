@@ -36,11 +36,6 @@ library LibOpen {
 
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
-	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
-	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
-	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
-	
 	
 // =========== Loan events ===============
 	/// EVENTS
@@ -186,7 +181,7 @@ library LibOpen {
 	    return ds.indMarket2Data[_market].decimals;
 	}
 
-    function _connectMarket(bytes32 _market) private view returns (address addr) {
+    function _connectMarket(bytes32 _market) internal view returns (address addr) {
         AppStorageOpen storage ds = diamondStorage(); 
         MarketData memory marketData = ds.indMarketData[_market];
 		addr = marketData.tokenAddress;
@@ -451,33 +446,6 @@ library LibOpen {
 		return ds.marketUtilisationLoan[_market];
     }
 
-    function _withdrawDeposit(address _account, bytes32 _market, bytes32 _commitment, uint _amount, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-		
-		_hasAccount(_account);// checks if user has savings account 
-		_isMarketSupported(_market);
-
-		// DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-
-		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
-		// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
-
-		_accruedYield(_account,_market,_commitment);
-
-		uint _savingsBalance = _accountBalance(_account, _market, _commitment, _request);
-		require(_amount <= _savingsBalance, "Insufficient balance"); // Dinh modified
-		if (_commitment == _getCommitment(0))	{
-			_updateSavingsBalance(_account, _market, _commitment, _amount, _request);
-		}
-		/// Transfer funds to the user's wallet.
-		ds.token = IBEP20(_connectMarket(_market));
-		ds.token.approveFrom(ds.reserveAddress, address(this), _amount);
-		ds.token.transferFrom(ds.reserveAddress, _account, _amount);
-
-		_updateReservesDeposit(_market, _amount, 1);
-		emit Withdrawal(_account,_market, _amount, _commitment, block.timestamp);
-	}
-
     function _accruedYield(address _account,bytes32 _market,bytes32 _commitment) internal authContract(DEPOSIT_ID) {
         AppStorageOpen storage ds = diamondStorage(); 
 		
@@ -502,7 +470,7 @@ library LibOpen {
 		bytes32 _market,
 		uint256 _amount
 		// SavingsAccount memory savingsAccount
-	) private {
+	) internal {
     	AppStorageOpen storage ds = diamondStorage(); 
 
 		_isMarketSupported(_market);
@@ -511,86 +479,6 @@ library LibOpen {
 		_minAmountCheck(_market, _amount);
 	}
 
-	function _processNewDeposit(
-		// address _account,
-		bytes32 _market,
-		bytes32 _commitment,
-		uint256 _amount,
-		SavingsAccount storage savingsAccount,
-		DepositRecords storage deposit,
-		YieldLedger storage yield
-	) internal authContract(DEPOSIT_ID) {
-		// SavingsAccount storage savingsAccount = savingsPassbook[_account];
-		// DepositRecords storage deposit = indDepositRecord[_account][_market][_commitment];
-		// YieldLedger storage yield = indYieldRecord[_account][_market][_commitment];
-
-		uint id;
-
-		if (savingsAccount.deposits.length == 0) {
-			id = 1;
-		} else {
-			id = savingsAccount.deposits.length + 1;
-		}
-
-		deposit.id = id;	
-		deposit.market =_market;
-		deposit.commitment = _commitment;
-		deposit.amount = _amount;
-		deposit.lastUpdate =  block.timestamp;
-
-		
-		if (_commitment != _getCommitment(0)) {
-			yield.id = id;
-			yield.market = bytes32(_market);
-			yield.oldLengthAccruedYield = _getApyTimeLength(_commitment);
-			yield.oldTime = block.timestamp;
-			yield.accruedYield = 0;
-			yield.isTimelockApplicable = true;
-			yield.isTimelockActivated=  false;
-			yield.timelockValidity = 86400;
-			yield.activationTime = 0;
-		} else if (_commitment == _getCommitment(0)) {
-			yield.id=  id;
-			yield.market=_market;
-			yield.oldLengthAccruedYield = _getApyTimeLength(_commitment);
-			yield.oldTime = block.timestamp;
-			yield.accruedYield = 0;
-			yield.isTimelockApplicable = false;
-			yield.isTimelockActivated=  true;
-			yield.timelockValidity = 0;
-			yield.activationTime = 0;
-		}
-
-		savingsAccount.deposits.push(deposit);
-		savingsAccount.yield.push(yield);
-	}
-
-	function _processDeposit(
-		address _account,
-		bytes32 _market,
-		bytes32 _commitment,
-		uint256 _amount
-	) internal authContract(DEPOSIT_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
-
-		uint num = deposit.id - 1;
-
-		_accruedYield(_account, _market, _commitment);
-		
-		deposit.amount += _amount;
-		deposit.lastUpdate =  block.timestamp;
-
-
-		savingsAccount.deposits[num].amount += _amount;
-		savingsAccount.deposits[num].lastUpdate =  block.timestamp;
-
-		savingsAccount.yield[num].oldLengthAccruedYield = yield.oldLengthAccruedYield;
-		savingsAccount.yield[num].oldTime = yield.oldTime;
-		savingsAccount.yield[num].accruedYield = yield.accruedYield;
-	}
 
 	function _hasAccount(address _account) internal view {
         AppStorageOpen storage ds = diamondStorage(); 
@@ -599,67 +487,6 @@ library LibOpen {
 
 	function _hasYield(YieldLedger memory yield) internal pure {
 		require(yield.id !=0, "ERROR: No Yield");
-	}
-
-    function _accountBalance(address _account, bytes32 _market, bytes32 _commitment, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) returns (uint) {
-        AppStorageOpen storage ds = diamondStorage(); 
-
-		uint _savingsBalance;
-		
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
-
-		if (_request == IDeposit.SAVINGSTYPE.DEPOSIT)	{
-			_savingsBalance = deposit.amount;
-
-		}	else if (_request == IDeposit.SAVINGSTYPE.YIELD)	{
-			_accruedYield(_account,_market,_commitment);
-			_savingsBalance =  yield.accruedYield;
-
-		}	else if (_request == IDeposit.SAVINGSTYPE.BOTH)	{
-			_accruedYield(_account,_market,_commitment);
-			_savingsBalance = deposit.amount + yield.accruedYield;
-		}
-		return _savingsBalance;
-	}
-
-	function _updateSavingsBalance(address _account, bytes32 _market, bytes32 _commitment, uint _amount, IDeposit.SAVINGSTYPE _request) internal authContract(DEPOSIT_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
-
-		if (_request == IDeposit.SAVINGSTYPE.DEPOSIT)	{
-			deposit.amount -= _amount;
-			deposit.lastUpdate =  block.timestamp;
-
-		}	else if (_request == IDeposit.SAVINGSTYPE.YIELD)	{
-
-			if (yield.isTimelockApplicable == false || block.timestamp >= yield.activationTime+yield.timelockValidity)	{
-				
-				// _accruedYield(_account,_market,_commitment);
-				yield.accruedYield -= _amount;
-				yield.oldTime = block.timestamp;
-			}	else if (yield.isTimelockApplicable != false || block.timestamp < yield.activationTime+yield.timelockValidity)	{
-				revert ('Withdrawal can not be processed');
-			}
-
-		}	else if (_request == IDeposit.SAVINGSTYPE.BOTH)	{
-
-			// require (deposit.id == yield.id, "mapping error");
-
-			if (yield.isTimelockApplicable == false || block.timestamp >= yield.activationTime+yield.timelockValidity)	{
-				// _accruedYield(_account,_market,_commitment);
-				yield.accruedYield -= _amount;
-				yield.oldTime = block.timestamp;
-
-			}	else if (yield.isTimelockApplicable != false || block.timestamp < yield.activationTime+yield.timelockValidity)	{
-				revert ('Withdrawal can not be processed');
-			}
-			
-			deposit.amount -= _amount;
-			deposit.lastUpdate =  block.timestamp;
-		}
 	}
 
     function _updateReservesDeposit(bytes32 _market, uint _amount, uint _num) internal authContract(DEPOSIT_ID) {
@@ -671,74 +498,13 @@ library LibOpen {
 		}
 	}
 
-    function _createNewDeposit(bytes32 _market,bytes32 _commitment,uint256 _amount, address _sender) internal authContract(DEPOSIT_ID) {
-		AppStorageOpen storage ds = diamondStorage(); 
-
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[_sender];
-		DepositRecords storage deposit = ds.indDepositRecord[_sender][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_sender][_market][_commitment];
-		
-		_ensureSavingsAccount(_sender,savingsAccount);
-
-		ds.token.approveFrom(_sender, address(this), _amount);
-		ds.token.transferFrom(_sender, ds.reserveAddress, _amount);
-		
-		_processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
-		_updateReservesDeposit(_market, _amount, 0);
-		emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id);
-	}
-
-	function _addToDeposit(address _sender, bytes32 _market, bytes32 _commitment, uint _amount) internal authContract(DEPOSIT_ID) {
-		AppStorageOpen storage ds = diamondStorage(); 
-
-		_preDepositProcess(_market, _amount);
-
-		if (!_hasDeposit(_sender, _market, _commitment))	{
-			_createNewDeposit(_market, _commitment, _amount, _sender);
-			return;
-		}
-		
-		ds.token.approveFrom(_sender, address(this), _amount);
-		ds.token.transferFrom(_sender, ds.reserveAddress, _amount);
-
-		_processDeposit(_sender, _market, _commitment, _amount);
-		_updateReservesDeposit(_market, _amount, 0);
-		emit DepositAdded(_sender, _market, _commitment, _amount, ds.indDepositRecord[_sender][_market][_commitment].id);
-	}
-
-    function _ensureSavingsAccount(address _account, SavingsAccount storage savingsAccount) private {
+    function _ensureSavingsAccount(address _account, SavingsAccount storage savingsAccount) internal {
 
 		if (savingsAccount.accOpenTime == 0) {
 
 			savingsAccount.accOpenTime = block.timestamp;
 			savingsAccount.account = _account;
 		}
-	}
-
-	function _convertYield(address _account, bytes32 _market, bytes32 _commitment, uint _amount) internal authContract(DEPOSIT_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-
-		_hasAccount(_account);
-
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[_account];
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
-
-		_hasYield(yield);
-		_accruedYield(_account,_market,_commitment);
-
-		_amount = yield.accruedYield;
-
-		// updating yield
-		yield.accruedYield = 0;
-
-		deposit.amount += _amount;
-		deposit.lastUpdate = block.timestamp;
-
-		savingsAccount.deposits[deposit.id -1].amount += _amount;
-		savingsAccount.deposits[deposit.id -1].lastUpdate = block.timestamp;
-		savingsAccount.yield[deposit.id-1].accruedYield = 0;
-		emit YieldDeposited(_account, _market, _commitment, _amount);
 	}
 
 // =========== Loan Functions ===========
