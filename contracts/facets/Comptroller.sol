@@ -3,12 +3,13 @@ pragma solidity 0.8.1;
 import "../util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "../libraries/LibOpen.sol";
+import "../libraries/AppStorageOpen.sol";
 
 contract Comptroller is Pausable, IComptroller {
 	// using Address for address;
-
-	event APRupdated(address indexed admin, uint indexed newAPR, uint oldAPR, uint indexed timestamp);
-	event APYupdated(address indexed admin, uint indexed newAPY, uint oldAPY, uint indexed timestamp);
+	
+	event APRupdated(address indexed admin, uint indexed newAPR, uint indexed timestamp);
+	event APYupdated(address indexed admin, uint indexed newAPY, uint indexed timestamp);
 	
 	event ReserveFactorUpdated(address indexed admin, uint oldReserveFactor, uint indexed newReserveFactor, uint indexed timestamp);
 	event LoanIssuanceFeesUpdated(address indexed admin, uint oldFees, uint indexed newFees, uint indexed timestamp);
@@ -87,11 +88,28 @@ contract Comptroller is Pausable, IComptroller {
 
 	// SETTERS
 	function updateAPY(bytes32 _commitment, uint _apy) external override authComptroller() nonReentrant() returns (bool) {
-		return LibOpen._updateApy(_commitment, _apy);
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		APY storage apyUpdate = ds.indAPYRecords[_commitment];
+
+		// if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
+		apyUpdate.commitment = _commitment;
+		apyUpdate.time.push(block.timestamp);
+		apyUpdate.apyChanges.push(_apy);
+		emit APYupdated(msg.sender, _apy, block.timestamp);
+		return true;
 	}
 
 	function updateAPR(bytes32 _commitment, uint _apr) external override authComptroller() nonReentrant() returns (bool ) {
-		return LibOpen._updateApr(_commitment, _apr);
+		AppStorageOpen storage ds = LibOpen.diamondStorage();
+		APR storage aprUpdate = ds.indAPRRecords[_commitment];
+
+		if(aprUpdate.time.length != aprUpdate.aprChanges.length) return false;
+
+		aprUpdate.commitment = _commitment;
+		aprUpdate.time.push(block.timestamp);
+		aprUpdate.aprChanges.push(_apr);
+		emit APRupdated(msg.sender, _apr, block.timestamp);
+		return true;
 	}
 
 	function calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) external view override returns (uint, uint, uint){

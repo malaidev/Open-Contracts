@@ -34,14 +34,13 @@ library LibOpen {
 	uint8 constant ACCESSREGISTRY_ID = 18;
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 
-event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-
-// =========== Comptroller events ================
+	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
 	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
 	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
 	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
+	
 	
 // =========== Loan events ===============
 	/// EVENTS
@@ -251,32 +250,9 @@ event OwnershipTransferred(address indexed previousOwner, address indexed newOwn
 		return ds.commitment[_index];
 	}
 
-    function _updateApy(bytes32 _commitment, uint _apy) internal authContract(COMPTROLLER_ID) returns (bool) {
-        AppStorageOpen storage ds = diamondStorage(); 
-		APY storage apyUpdate = ds.indAPYRecords[_commitment];
-
-		// if(apyUpdate.time.length != apyUpdate.apyChanges.length) return false;
-		apyUpdate.commitment = _commitment;
-		apyUpdate.time.push(block.timestamp);
-		apyUpdate.apyChanges.push(_apy);
-		return true;
-	}
-
 	function _setCommitment(bytes32 _commitment) internal authContract(COMPTROLLER_ID) {
 		AppStorageOpen storage ds = diamondStorage();
 		ds.commitment.push(_commitment);
-	}
-	
-	function _updateApr(bytes32 _commitment, uint _apr) internal authContract(COMPTROLLER_ID) returns (bool) {
-        AppStorageOpen storage ds = diamondStorage();
-		APR storage aprUpdate = ds.indAPRRecords[_commitment];
-
-		if(aprUpdate.time.length != aprUpdate.aprChanges.length) return false;
-
-		aprUpdate.commitment = _commitment;
-		aprUpdate.time.push(block.timestamp);
-		aprUpdate.aprChanges.push(_apr);
-		return true;
 	}
 
 	function _calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) internal view returns (uint, uint, uint) {
