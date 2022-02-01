@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-import "https://github.com/0xHashstack/Open-contracts/blob/Legacy-branch/contracts/util/Address.sol";
-import "https://github.com/0xHashstack/Open-contracts/blob/Legacy-branch/contracts/util/Pausable.sol";
+import "./util/Address.sol";
+import "./util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
-import "https://github.com/0xHashstack/Open-contracts/blob/Legacy-branch/contracts/util/IBEP20.sol";
+import "./util/IBEP20.sol";
 
 contract AccessRegistry is Pausable {
     using Address for address;
