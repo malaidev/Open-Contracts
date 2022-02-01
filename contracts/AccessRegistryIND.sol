@@ -61,9 +61,9 @@ contract AccessRegistry is Pausable {
     ) 
     {
         adminAddress = account_;
-        adminAccess = "AccessRegistry.adminAccess";
+        adminAccess = keccak256("AccessRegistry.adminAccess");
         _addAdminRole(adminAccess, adminAddress);
-        _addAdminRole("tokenList", tokenListAddr_);
+        _addAdminRole(keccak256("tokenList"), tokenListAddr_);
         _addAdminRole(keccak256("comptroller"), comptrollerAddr_);
         _addAdminRole(keccak256("reserve"), reserveAddr_);
         _addAdminRole(keccak256("deposit"), depositAddr_);
