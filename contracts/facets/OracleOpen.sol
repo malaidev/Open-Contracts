@@ -25,16 +25,16 @@ contract OracleOpen is Pausable, IOracleOpen {
         LibOpen._fairPrice(_requestId, _fPrice, _market, _amount);
     }
 
-    // function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {
+    // function liquidationTrigger(address account, uint loanId) external override authOracleOpen() nonReentrant() returns(bool) {
     //     LibOpen._liquidation(account, loanId);
     //     return true;
     // }
 
-    function pauseOracle() external override onlyAdmin() nonReentrant() {
+    function pauseOracle() external override authOracleOpen() nonReentrant() {
        _pause();
 	}
 	
-	function unpauseOracle() external override onlyAdmin() nonReentrant() {
+	function unpauseOracle() external override authOracleOpen() nonReentrant() {
        _unpause();   
 	}
 
@@ -42,7 +42,7 @@ contract OracleOpen is Pausable, IOracleOpen {
         return _paused();
     }
 
-    modifier onlyAdmin() {
+    modifier authOracleOpen() {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminOpenOracle, ds.adminOpenOracleAddress), "ERROR: Not an admin");
 
