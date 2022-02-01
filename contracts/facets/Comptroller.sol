@@ -84,8 +84,6 @@ contract Comptroller is Pausable, IComptroller {
     	LibOpen._setCommitment(_commitment);
 	}
 
-	function liquidationTrigger(uint loanID) external override {}
-
 	// SETTERS
 	function updateAPY(bytes32 _commitment, uint _apy) external override authComptroller() nonReentrant() returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 

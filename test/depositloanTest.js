@@ -174,19 +174,28 @@ describe("===== Deposit Test =====", function () {
             .to.emit(loanExt, "AddCollateral")
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfb00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x300)
+        console.log("after addCollateral isReentrant is ", await loanExt.GetisReentrant());
     })
 
     it("Check repayLoan", async () => {
         console.log(await reserve.avblMarketReserves(symbolUsdt))
 	    await (loan.connect(accounts[1]).repayLoan(symbolUsdt, comit_ONEMONTH, 0x100, {gasLimit: 5000000}));
         console.log(await reserve.avblMarketReserves(symbolUsdt))
+        console.log("after repayLoan isReentrant is ", await loanExt.GetisReentrant());
 	})
 
-    it("Check withdrawCollateral", async () => {
-        console.log(await bepUsdt.balanceOf(accounts[1].address))
-        await expect(loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH, {gasLimit: 5000000}))
-            .emit(loan, "CollateralReleased")
-        console.log(await bepUsdt.balanceOf(accounts[1].address))
+    // it("Check withdrawCollateral", async () => {
+    //     console.log(await bepUsdt.balanceOf(accounts[1].address))
+    //     console.log("before withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
+    //     await expect(loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH, {gasLimit: 5000000}))
+    //         .emit(loan, "CollateralReleased")
+    //     console.log(await bepUsdt.balanceOf(accounts[1].address))
+    //     console.log("after withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
+    // })
+
+    it("Check liquidation", async () => {
+        console.log("before liquidation isReentrant is ", await loanExt.GetisReentrant());
+        await loanExt.connect(accounts[1]).liquidation(accounts[1].address, 0);
     })
   
 })

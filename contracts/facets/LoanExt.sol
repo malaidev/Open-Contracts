@@ -217,7 +217,7 @@ contract LoanExt is Pausable, ILoanExt {
 		uint256 _collateralAmount
 	) external override returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-    LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
+    	LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
 		LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
@@ -237,6 +237,9 @@ contract LoanExt is Pausable, ILoanExt {
 		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
 
 		emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
+
+		console.log("isReentrant is %s", isReentrant);
+		
 		return true;
 	}
 
@@ -288,7 +291,9 @@ contract LoanExt is Pausable, ILoanExt {
 		require (usdLoan/usdCollateral <= loanByCollateral, "ERROR: Exceeds permissible CDR");
 	}
 
-	function liquidation(address _account, uint256 _id) external override nonReentrant() authLoanExt() returns (bool success) {
+	function GetisReentrant() public view returns (bool) { return isReentrant; }
+
+	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool success) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
 		bytes32 _market = ds.loanPassbook[_account].loans[_id-1].market;
@@ -418,6 +423,7 @@ contract LoanExt is Pausable, ILoanExt {
 	}
 
     modifier authLoanExt() {
+		console.log("isReentrant is %s", isReentrant);
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		console.log("superadminaddress is %s", ds.superAdminAddress);
 		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoanExt, ds.adminLoanExtAddress), "ERROR: Not an admin");

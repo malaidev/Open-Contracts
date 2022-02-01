@@ -160,7 +160,7 @@ contract Loan is Pausable, ILoan {
 		(, collateralAmount) = LibOpen._collateralPointer(msg.sender,_market,_commitment);
 		ds.token = IBEP20(LibOpen._connectMarket(collateral.market));
 		ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
-    ds.token.transferFrom(ds.reserveAddress, msg.sender, collateralAmount);
+    	ds.token.transferFrom(ds.reserveAddress, msg.sender, collateralAmount);
 
 		delete ds.indCollateralRecords[msg.sender][loan.market][loan.commitment];
 		delete ds.indLoanState[msg.sender][loan.market][loan.commitment];
@@ -169,7 +169,7 @@ contract Loan is Pausable, ILoan {
 		// delete loanAccount.loanState[loan.id-1];
 		// delete loanAccount.loans[loan.id-1];
 		// delete loanAccount.collaterals[loan.id-1];
-    LibOpen._updateReservesLoan(collateral.market, collateral.amount, 1);
+    	LibOpen._updateReservesLoan(collateral.market, collateral.amount, 1);
 
 		emit CollateralReleased(msg.sender, collateral.amount, collateral.market, block.timestamp);
 

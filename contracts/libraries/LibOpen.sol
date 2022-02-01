@@ -43,29 +43,7 @@ library LibOpen {
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
 
 // =========== AccessRegistry events ===============
-	event AdminRoleDataGranted(
-			bytes32 indexed role,
-			address indexed account,
-			address indexed sender
-	);
 
-	event AdminRoleDataRevoked(
-			bytes32 indexed role,
-			address indexed account,
-			address indexed sender
-	);
-
-	event RoleGranted(
-			bytes32 indexed role,
-			address indexed account,
-			address indexed sender
-	);
-
-	event RoleRevoked(
-			bytes32 indexed role,
-			address indexed account,
-			address indexed sender
-	);
     
 	function _addFairPriceAddress(bytes32 _market, address _address) internal {
 		AppStorageOpen storage ds = diamondStorage();
@@ -534,10 +512,11 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage();
-		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
-		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-		return uint256(price);
+		// AppStorageOpen storage ds = diamondStorage();
+		// require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
+		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		// return uint256(price);
+		return 1;
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {
@@ -560,34 +539,34 @@ library LibOpen {
 		return ds._roles[role]._members[account];
 	}
 
-	function _addRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		ds._roles[role]._members[account] = true;
-		emit RoleGranted(role, account, msg.sender);
-	}
+	// function _addRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
+	// 	AppStorageOpen storage ds = diamondStorage(); 
+	// 	ds._roles[role]._members[account] = true;
+	// 	emit RoleGranted(role, account, msg.sender);
+	// }
 
-	function _revokeRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		ds._roles[role]._members[account] = false;
-		emit RoleRevoked(role, account, msg.sender);
-	}
+	// function _revokeRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
+	// 	AppStorageOpen storage ds = diamondStorage(); 
+	// 	ds._roles[role]._members[account] = false;
+	// 	emit RoleRevoked(role, account, msg.sender);
+	// }
 
 	function _hasAdminRole(bytes32 role, address account) internal view returns (bool) {
 		AppStorageOpen storage ds = diamondStorage(); 
 		return ds._adminRoles[role]._adminMembers[account];
 	}
 
-	function _addAdminRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		ds._adminRoles[role]._adminMembers[account] = true;
-		emit AdminRoleDataGranted(role, account, msg.sender);
-	}
+	// function _addAdminRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
+	// 	AppStorageOpen storage ds = diamondStorage(); 
+	// 	ds._adminRoles[role]._adminMembers[account] = true;
+	// 	emit AdminRoleDataGranted(role, account, msg.sender);
+	// }
 
-	function _revokeAdmin(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		ds._adminRoles[role]._adminMembers[account] = false;
-		emit AdminRoleDataRevoked(role, account, msg.sender);
-	}
+	// function _revokeAdmin(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
+	// 	AppStorageOpen storage ds = diamondStorage(); 
+	// 	ds._adminRoles[role]._adminMembers[account] = false;
+	// 	emit AdminRoleDataRevoked(role, account, msg.sender);
+	// }
 
 	modifier authContract(uint _facetId) {
 		require(_facetId == diamondStorage().facetIndex[msg.sig] || 
