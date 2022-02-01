@@ -124,15 +124,6 @@ struct PriceData {
 }
 
 // =========== AccessRegistry structs =============
-struct RoleData {
-    mapping(address => bool) _members;
-    bytes32 _role;
-}
-
-struct AdminRoleData {
-    mapping(address => bool) _adminMembers;
-    bytes32 _adminRole;
-}
 
 struct AppStorageOpen {
     
@@ -226,6 +217,5 @@ struct AppStorageOpen {
     address adminReserveAddress;
 
     // =========== AccessRegistry state variables ==============
-    mapping(bytes32 => RoleData) _roles;
-    mapping(bytes32 => AdminRoleData) _adminRoles;
+    
 }

@@ -31,7 +31,6 @@ library LibOpen {
 	uint8 constant LOAN_ID = 15;
 	uint8 constant LOANEXT_ID = 16;
 	uint8 constant DEPOSIT_ID = 17; 
-	uint8 constant ACCESSREGISTRY_ID = 18;
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -41,9 +40,6 @@ library LibOpen {
 // =========== Liquidator events ===============
 // =========== OracleOpen events ===============
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
-
-// =========== AccessRegistry events ===============
-
     
 	function _addFairPriceAddress(bytes32 _market, address _address) internal {
 		AppStorageOpen storage ds = diamondStorage();
@@ -512,11 +508,10 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		// AppStorageOpen storage ds = diamondStorage();
-		// require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
-		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-		// return uint256(price);
-		return 1;
+		AppStorageOpen storage ds = diamondStorage();
+		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
+		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		return uint256(price);
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {
@@ -532,41 +527,6 @@ library LibOpen {
 		newPrice.amount = _amount;
 		newPrice.price = _fPrice;
 	}
-
-// =========== AccessRegistry Functions =================
-	function _hasRole(bytes32 role, address account) internal view returns (bool) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		return ds._roles[role]._members[account];
-	}
-
-	// function _addRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-	// 	AppStorageOpen storage ds = diamondStorage(); 
-	// 	ds._roles[role]._members[account] = true;
-	// 	emit RoleGranted(role, account, msg.sender);
-	// }
-
-	// function _revokeRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-	// 	AppStorageOpen storage ds = diamondStorage(); 
-	// 	ds._roles[role]._members[account] = false;
-	// 	emit RoleRevoked(role, account, msg.sender);
-	// }
-
-	function _hasAdminRole(bytes32 role, address account) internal view returns (bool) {
-		AppStorageOpen storage ds = diamondStorage(); 
-		return ds._adminRoles[role]._adminMembers[account];
-	}
-
-	// function _addAdminRole(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-	// 	AppStorageOpen storage ds = diamondStorage(); 
-	// 	ds._adminRoles[role]._adminMembers[account] = true;
-	// 	emit AdminRoleDataGranted(role, account, msg.sender);
-	// }
-
-	// function _revokeAdmin(bytes32 role, address account) internal authContract(ACCESSREGISTRY_ID) {
-	// 	AppStorageOpen storage ds = diamondStorage(); 
-	// 	ds._adminRoles[role]._adminMembers[account] = false;
-	// 	emit AdminRoleDataRevoked(role, account, msg.sender);
-	// }
 
 	modifier authContract(uint _facetId) {
 		require(_facetId == diamondStorage().facetIndex[msg.sig] || 

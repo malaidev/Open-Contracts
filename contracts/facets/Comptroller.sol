@@ -232,8 +232,8 @@ contract Comptroller is Pausable, IComptroller {
 	}
 
 	modifier authComptroller() {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminComptroller, ds.adminComptrollerAddress), "ERROR: Not an admin");
+    	AppStorageOpen storage ds = LibOpen.diamondStorage();
+		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminComptroller, msg.sender), "ERROR: Not an admin");
 		_;
 	}
 

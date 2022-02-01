@@ -181,8 +181,7 @@ contract TokenList is Pausable, ITokenList {
 
 	modifier authTokenList() {
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminTokenList, ds.adminTokenListAddress), "ERROR: Not an admin");	
-	  _;
+		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminTokenList, msg.sender), "ERROR: Not an admin");		  _;
 	}
 
 }

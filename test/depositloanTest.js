@@ -14,7 +14,7 @@ const { assert } = require('chai')
 const {deployDiamond}= require('../scripts/deploy_all.js')
 const {addMarkets}= require('../scripts/deploy_all.js')
 
-describe("===== Deposit Test =====", function () {
+describe(" Complex Test ", function () {
     let diamondAddress
 	let diamondCutFacet
 	let diamondLoupeFacet
@@ -80,7 +80,7 @@ describe("===== Deposit Test =====", function () {
         for (const address of await diamondLoupeFacet.facetAddresses()) {
             addresses.push(address)
         }
-        assert.equal(addresses.length, 11)
+        assert.equal(addresses.length, 10)
     })
 
     it('facets should have the right function selectors -- call to facetFunctionSelectors function', async () => {
@@ -193,9 +193,9 @@ describe("===== Deposit Test =====", function () {
         console.log("after withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
     })
 
-    it("Check liquidation", async () => {
-        console.log("before liquidation isReentrant is ", await loanExt.GetisReentrant());
-        await loanExt.connect(accounts[1]).liquidation(accounts[1].address, 2);
-    })
+    // it("Check liquidation", async () => {
+    //     console.log("before liquidation isReentrant is ", await loanExt.GetisReentrant());
+    //     await loanExt.connect(contractOwner).liquidation(accounts[1].address, 2);
+    // })
   
 })
