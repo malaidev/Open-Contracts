@@ -136,7 +136,7 @@ contract Loan is Pausable, ILoan {
 		emit MarketSwapped(msg.sender,loan.id,_swapMarket,_market,swappedAmount);
 	}
 
-	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
+	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override nonReentrant() returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
 		// LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
@@ -176,7 +176,7 @@ contract Loan is Pausable, ILoan {
 		return true;
 	}
 
-	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external override returns (bool success) {
+	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool success) {
 		// AppStorageOpen storage ds = diamondStorage(); 
         LibOpen._hasLoanAccount(msg.sender);
 		// LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
