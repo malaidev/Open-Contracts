@@ -22,6 +22,7 @@
     "dotenv": "^10.0.0",
     "eth-crypto": "^2.1.0",
     "hardhat": "^2.6.7",
+    "hardhat-abi-exporter": "^2.8.0",
     "hardhat-contract-sizer": "^2.1.1",
     "solc": "^0.8.1",
     "web3": "^1.6.0"
