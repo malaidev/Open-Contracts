@@ -426,7 +426,7 @@ contract LoanExt is Pausable, ILoanExt {
 		console.log("isReentrant is %s", isReentrant);
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		console.log("superadminaddress is %s", ds.superAdminAddress);
-		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoanExt, ds.adminLoanExtAddress), "ERROR: Not an admin");
+		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminLoanExt, msg.sender), "ERROR: Not an admin");
 
 		_;
 	}

@@ -11,6 +11,7 @@ async function main() {
 async function deployDiamond() {
     const accounts = await ethers.getSigners()
     const contractOwner = await accounts[0]
+	const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
     console.log(`contractOwner ${contractOwner.address}`)
 
     // deploy DiamondCutFacet
@@ -41,6 +42,10 @@ async function deployDiamond() {
         })
     }
 
+    const AccessRegistry = await ethers.getContractFactory("AccessRegistry");
+    const accessRegistry = await AccessRegistry.deploy(contractOwner.address)
+    console.log("AccessRegistry deployed at ", accessRegistry.address)
+
     console.log("Begin deploying facets");
     const OpenNames = [
         'TokenList',
@@ -50,8 +55,7 @@ async function deployDiamond() {
         'OracleOpen',
         'Loan',
         'LoanExt',
-        'Deposit',
-        'AccessRegistry'
+        'Deposit'
     ]
     const opencut = []
     let facetId = 10;
@@ -95,6 +99,7 @@ async function deployDiamond() {
     let args = []
     args.push(contractOwner.address)
     args.push(opencut[3]["facetAddress"])
+    args.push(accessRegistry.address)
     console.log(args)
     // call to init function
     let functionCall = diamondInit.interface.encodeFunctionData('init', args)

@@ -447,7 +447,7 @@ contract Loan is Pausable, ILoan {
 
 	modifier authLoan() {
     	AppStorageOpen storage ds = LibOpen.diamondStorage();
-		require(LibOpen._hasAdminRole(ds.superAdmin, ds.superAdminAddress) || LibOpen._hasAdminRole(ds.adminLoan, ds.adminLoanAddress), "ERROR: Not an admin");
+		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminLoan, msg.sender), "ERROR: Not an admin");
 		_;
 	}
 }

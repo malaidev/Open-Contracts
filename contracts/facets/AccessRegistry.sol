@@ -1,10 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 import "../util/Pausable.sol";
-// import "./mockup/IMockBep20.sol";
-import "../libraries/LibOpen.sol";
+import "../interfaces/IAccessRegistry.sol";
+import "hardhat/console.sol";
+
+struct RoleData {
+    mapping(address => bool) _members;
+    bytes32 _role;
+}
+
+struct AdminRoleData {
+    mapping(address => bool) _adminMembers;
+    bytes32 _adminRole;
+}
 
 contract AccessRegistry is Pausable, IAccessRegistry {
+
+	mapping(bytes32 => RoleData) roles;
+	mapping(bytes32 => AdminRoleData) adminRoles;
+	bytes32 superAdmin;
   
 	event AdminRoleDataGranted(
 		bytes32 indexed role,
@@ -29,10 +43,14 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		address indexed account,
 		address indexed sender
 	);
-	constructor() {
-		// AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		// ds.superAdmin = keccak256("AccessRegistry.admin");
-		// LibOpen._addAdminRole(keccak256("AccessRegistry.admin"), ds.contractOwner);
+	constructor(address contractOwner) {
+		// AppStorageOpen storage ds = LibOpen.diamondStorage();
+		superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
+		console.log("constructor Accessregistry with %s", address(this));
+		adminRoles[superAdmin]._adminMembers[contractOwner] = true;
+
+		addAdminRole(superAdmin, address(this));
+		console.log("constructor Accessregistry success");
 	}
 		
 	// receive() external payable {
@@ -46,13 +64,12 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	// }
 
 	function hasRole(bytes32 role, address account) public view override returns (bool) {
-		return LibOpen._hasRole(role, account);
+		return roles[role]._members[account];
 	}
 
 	function addRole(bytes32 role, address account) public override onlyAdmin {
 		require(!hasRole(role, account), "Role already exists. Please create a different role");
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		ds._roles[role]._members[account] = true;
+		roles[role]._members[account] = true;
 		emit RoleGranted(role, account, msg.sender);
 	}
 
@@ -69,8 +86,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	}
 
 	function revokeRole(bytes32 role, address account) private {
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		ds._roles[role]._members[account] = false;
+		roles[role]._members[account] = false;
 		emit RoleRevoked(role, account, msg.sender);
 	}
 
@@ -89,7 +105,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	}
 
 	function hasAdminRole(bytes32 role, address account) public view override returns (bool) {
-		return LibOpen._hasAdminRole(role, account);
+		return adminRoles[role]._adminMembers[account];
 	}
 
 	function addAdminRole(bytes32 role, address account) public override onlyAdmin {
@@ -97,8 +113,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 				!hasAdminRole(role, account),
 				"Role already exists. Please create a different role"
 		);
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		ds._adminRoles[role]._adminMembers[account] = true;
+		adminRoles[role]._adminMembers[account] = true;
 		emit AdminRoleDataGranted(role, account, msg.sender);
 	}
 
@@ -108,8 +123,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	}
 
 	function revokeAdmin(bytes32 role, address account) private {
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		ds._adminRoles[role]._adminMembers[account] = false;
+		adminRoles[role]._adminMembers[account] = false;
 		emit AdminRoleDataRevoked(role, account, msg.sender);
 	}
 
@@ -136,8 +150,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	}
 	
 	modifier onlyAdmin {
-		AppStorageOpen storage ds = LibOpen.diamondStorage();
-		require(hasAdminRole(ds.superAdmin, ds.superAdminAddress), "ERROR: Not an admin");
+		require(hasAdminRole(superAdmin, msg.sender), "ERROR: Not an admin");
 		_;
 	}
 
