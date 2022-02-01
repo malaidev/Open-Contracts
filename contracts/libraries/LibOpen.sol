@@ -508,11 +508,10 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		// AppStorageOpen storage ds = diamondStorage();
-		// require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
-		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-		// return uint256(price);
-		return 1;
+		AppStorageOpen storage ds = diamondStorage();
+		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
+		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		return uint256(price);
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {

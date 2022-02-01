@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
-import "../util/Pausable.sol";
-import "../interfaces/IAccessRegistry.sol";
+import "./util/Pausable.sol";
+import "./interfaces/IAccessRegistry.sol";
 import "hardhat/console.sol";
 
 struct RoleData {
