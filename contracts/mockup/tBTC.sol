@@ -28,10 +28,10 @@ contract tBTC is Context{
     event PauseState(address indexed _pauser, bool isPaused);
 
     constructor(string memory name_,string memory symbol_,uint8 decimals_,address admin_,uint256 cappedSupply_) {
-        _name = "Bitcoin";
-        _symbol = "BTC.t";
-        _decimals = 8;
-        _totalSupply = 2100000000000000;
+        name = "Bitcoin";
+        symbol = "BTC.t";
+        decimals = 8;
+        totalSupply = 2100000000000000;
         admin = admin_;
         cappedSupply = cappedSupply_;
 

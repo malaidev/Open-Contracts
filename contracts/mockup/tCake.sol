@@ -28,10 +28,10 @@ contract tBTC is Context{
     event PauseState(address indexed _pauser, bool isPaused);
 
     constructor(string memory name_,string memory symbol_,uint8 decimals_,address admin_,uint256 cappedSupply_) {
-        _name = "CAKE";
-        _symbol = "CAKE.t";
-        _decimals = 18;
-        _totalSupply = 2600000000000000000000000000;
+        name = "CAKE";
+        symbol = "CAKE.t";
+        decimals = 18;
+        totalSupply = 2600000000000000000000000000;
         admin = admin_;
         cappedSupply = cappedSupply_;
 
