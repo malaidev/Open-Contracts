@@ -8,7 +8,7 @@ describe("AccessRegistry", function() {
     const instance = await upgrades.deployProxy(AccessRegistry,address(this));
     const upgraded = await upgrades.upgradeProxy(instance.address, AccessRegistryV2);
 
-    const value = await upgraded.value();
-    expect(value.toString()).to.equal(address(this));
+    const contractOwner = await upgraded.contractOwner();
+    expect(contractOwner.toString()).to.equal(address(this));
   });
 });
