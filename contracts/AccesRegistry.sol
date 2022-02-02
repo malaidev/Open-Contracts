@@ -19,6 +19,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	mapping(bytes32 => RoleData) roles;
 	mapping(bytes32 => AdminRoleData) adminRoles;
 	bytes32 superAdmin;
+	bool private initialized;
   
 	event AdminRoleDataGranted(
 		bytes32 indexed role,
@@ -43,15 +44,19 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		address indexed account,
 		address indexed sender
 	);
-	constructor(address contractOwner) {
-		// AppStorageOpen storage ds = LibOpen.diamondStorage();
+
+		// constructor() initialize {}
+
+	function initialize(address contractOwner) public {
+        require(!initialized, "Contract instance has already been initialized");
+        initialized = true;
 		superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
 		console.log("constructor Accessregistry with %s", address(this));
 		adminRoles[superAdmin]._adminMembers[contractOwner] = true;
-
 		addAdminRole(superAdmin, address(this));
 		console.log("constructor Accessregistry success");
 	}
+        
 		
 	// receive() external payable {
 	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 

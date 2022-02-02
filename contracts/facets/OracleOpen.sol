@@ -45,6 +45,7 @@ contract OracleOpen is Pausable, IOracleOpen {
 	
 	function unpauseOracle() external override authOracleOpen() nonReentrant() {
 		_unpause();
+
 	}
 
 	function isPausedOracle() external view override virtual returns (bool) {
@@ -56,4 +57,5 @@ contract OracleOpen is Pausable, IOracleOpen {
 		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminOpenOracle, msg.sender), "ERROR: Not an admin");
 		_;
 	}
+
 }
