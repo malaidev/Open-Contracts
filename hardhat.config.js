@@ -1,10 +1,8 @@
 const { task } = require("hardhat/config");
 const { getSelectors, FacetCutAction } = require('./scripts/libraries/diamond.js')
 const utils = require('ethers').utils
-require("@nomiclabs/hardhat-etherscan");
+
 require("@nomiclabs/hardhat-waffle");
-require('hardhat-abi-exporter');
-require('@openzeppelin/hardhat-upgrades');
 
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -126,7 +124,6 @@ module.exports = {
       chainId: 97,
       timeout: 200000,
       gas: 2100000, 
-      gasPrice: 8000000000
     },
 //     harmony: {
 //       url: 'https://api.s0.b.hmny.io',
