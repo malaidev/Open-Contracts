@@ -47,6 +47,15 @@ contract LoanExt is Pausable, ILoanExt {
 		
 	}
 
+	receive() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
+	
+	fallback() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
+
+
 	function hasLoanAccount(address _account) external view override returns (bool) {
 		return LibOpen._hasLoanAccount(_account);
 	}

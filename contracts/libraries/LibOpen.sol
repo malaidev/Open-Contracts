@@ -35,12 +35,14 @@ library LibOpen {
 
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-	
-
 // =========== Liquidator events ===============
 // =========== OracleOpen events ===============
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
-    
+
+	function contractOwner() internal view returns (address contractOwner_) {
+		contractOwner_ = diamondStorage().contractOwner;
+	}
+
 	function _addFairPriceAddress(bytes32 _market, address _address) internal {
 		AppStorageOpen storage ds = diamondStorage();
 		ds.pairAddresses[_market] = _address;
@@ -508,10 +510,11 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage();
-		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
-		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-		return uint256(price);
+		// AppStorageOpen storage ds = diamondStorage();
+		// require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
+		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		// return uint256(price);
+		return 1;
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {

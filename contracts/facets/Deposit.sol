@@ -19,15 +19,13 @@ contract Deposit is Pausable, IDeposit{
 		// ds.deposit = IDeposit(msg.sender);
 	}
 
-	// receive() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
-	// 	payable(ds.superAdminAddress).transfer(_msgValue());
-	// }
+	receive() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 	
-	// fallback() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
-	// 	payable(ds.superAdminAddress).transfer(_msgValue());
-	// }
+	fallback() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 
 	function hasAccount(address _account) external view override returns (bool)	{
 		LibOpen._hasAccount(_account);

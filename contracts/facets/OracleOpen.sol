@@ -7,44 +7,53 @@ import "../libraries/LibOpen.sol";
 
 contract OracleOpen is Pausable, IOracleOpen {
 
-    constructor() {
-    	// AppStorage storage ds = LibOpen.diamondStorage(); 
-        // ds.adminOpenOracleAddress = msg.sender;
-        // ds.oracle = IOracleOpen(msg.sender);
-    }
+	constructor() {
+		// AppStorage storage ds = LibOpen.diamondStorage(); 
+			// ds.adminOpenOracleAddress = msg.sender;
+			// ds.oracle = IOracleOpen(msg.sender);
+	}
 
-    function getLatestPrice(bytes32 _market) external view override returns (uint) {    
-        return LibOpen._getLatestPrice(_market);
-    }
+	receive() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
+	
+	fallback() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 
-    function getFairPrice(uint _requestId) external view override returns (uint) {
-        return LibOpen._getFairPrice(_requestId);
-    }
 
-    function setFairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) external {
-        LibOpen._fairPrice(_requestId, _fPrice, _market, _amount);
-    }
+	function getLatestPrice(bytes32 _market) external view override returns (uint) {    
+			return LibOpen._getLatestPrice(_market);
+	}
 
-    // function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {
-    //     LibOpen._liquidation(account, loanId);
-    //     return true;
-    // }
+	function getFairPrice(uint _requestId) external view override returns (uint) {
+			return LibOpen._getFairPrice(_requestId);
+	}
 
-    function pauseOracle() external override onlyAdmin() nonReentrant() {
-       _pause();
+	function setFairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) external {
+			LibOpen._fairPrice(_requestId, _fPrice, _market, _amount);
+	}
+
+	// function liquidationTrigger(address account, uint loanId) external override onlyAdmin() nonReentrant() returns(bool) {
+	//     LibOpen._liquidation(account, loanId);
+	//     return true;
+	// }
+
+	function pauseOracle() external override onlyAdmin() nonReentrant() {
+			_pause();
 	}
 	
 	function unpauseOracle() external override onlyAdmin() nonReentrant() {
-       _unpause();   
+		_unpause();
 	}
 
-    function isPausedOracle() external view override virtual returns (bool) {
-        return _paused();
-    }
+	function isPausedOracle() external view override virtual returns (bool) {
+			return _paused();
+	}
 
-    modifier onlyAdmin() {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-        require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminOpenOracle, msg.sender), "ERROR: Not an admin");
-        _;
-    }
+	modifier onlyAdmin() {
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+			require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminOpenOracle, msg.sender), "ERROR: Not an admin");
+			_;
+	}
 }

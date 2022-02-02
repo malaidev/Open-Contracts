@@ -2,6 +2,7 @@
 pragma solidity 0.8.1;
 import "../util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
+
 import "../libraries/LibOpen.sol";
 import "../libraries/AppStorageOpen.sol";
 
@@ -27,33 +28,31 @@ contract Comptroller is Pausable, IComptroller {
 	// 	ds.comptroller = IComptroller(msg.sender);
 	}
 	
-	// receive() external payable {
-    // 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-	// 	 payable(ds.superAdminAddress).transfer(_msgValue());
-	// }
-	
-	// fallback() external payable {
-    // 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-	// 	payable(ds.superAdminAddress).transfer(_msgValue());
-	// }
+	receive() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
+
+	fallback() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 	
 	function getAPR(bytes32 _commitment) external view override returns (uint) {
-    	return LibOpen._getAPR(_commitment);
+		return LibOpen._getAPR(_commitment);
 	}
 	function getAPRInd(bytes32 _commitment, uint _index) external view override returns (uint) {
-    	return LibOpen._getAPRInd(_commitment, _index);
+		return LibOpen._getAPRInd(_commitment, _index);
 	}
 
 	function getAPY(bytes32 _commitment) external view override returns (uint) {
-    	return LibOpen._getAPY(_commitment);
+		return LibOpen._getAPY(_commitment);
 	}
 
 	function getAPYInd(bytes32 _commitment, uint _index) external view override returns (uint) {
-    	return LibOpen._getAPYInd(_commitment, _index);
+		return LibOpen._getAPYInd(_commitment, _index);
 	}
 
 	function getApytime(bytes32 _commitment, uint _index) external view override returns (uint) {
-    	return LibOpen._getApytime(_commitment, _index);
+		return LibOpen._getApytime(_commitment, _index);
 	}
 
 	function getAprtime(bytes32 _commitment, uint _index) external view override returns (uint) {

@@ -33,17 +33,13 @@ contract Loan is Pausable, ILoan {
 		// ds.loan = ILoan(msg.sender);
 	}
 
-	// receive() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
-	// 	 payable(ds.contractOwner).transfer(_msgValue());
-	// }
+	receive() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 	
-	// fallback() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
-	// 	payable(ds.contractOwner).transfer(_msgValue());
-	// }
-
-	// External view functions
+	fallback() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 
 	/// Swap loan to a secondary market.
 	function swapLoan(
