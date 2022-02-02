@@ -28,13 +28,13 @@ contract tBTC is Context{
     event Approval(address indexed _owner,address indexed _spender,uint256 _value);
     event PauseState(address indexed _pauser, bool isPaused);
 
-    constructor(address admin_,uint256 cappedSupply_) {
+    constructor(address admin_) {
         name = "Bitcoin";
         symbol = "BTC.t";
         decimals = 8;
         totalSupply = 2100000000000000;
         admin = admin_;
-        cappedSupply = cappedSupply_;
+        cappedSupply = 2100000000000000;
 
         mint(admin, 500000000000000);
     }

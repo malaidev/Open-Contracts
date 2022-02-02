@@ -27,13 +27,13 @@ contract tCake is Context{
     event Approval(address indexed _owner,address indexed _spender,uint256 _value);
     event PauseState(address indexed _pauser, bool isPaused);
 
-    constructor(address admin_,uint256 cappedSupply_) {
+    constructor(address admin_) {
         name = "CAKE";
         symbol = "CAKE.t";
         decimals = 18;
         totalSupply = 2600000000000000000000000000;
         admin = admin_;
-        cappedSupply = cappedSupply_;
+        cappedSupply = 50000000000000000000000000;
 
         mint(admin, 10000000000000000000000000);
     }
