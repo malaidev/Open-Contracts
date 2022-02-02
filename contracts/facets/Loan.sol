@@ -33,17 +33,13 @@ contract Loan is Pausable, ILoan {
 		// ds.loan = ILoan(msg.sender);
 	}
 
-	// receive() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
-	// 	 payable(ds.contractOwner).transfer(_msgValue());
-	// }
+	receive() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 	
-	// fallback() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
-	// 	payable(ds.contractOwner).transfer(_msgValue());
-	// }
-
-	// External view functions
+	fallback() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 
 	/// Swap loan to a secondary market.
 	function swapLoan(
@@ -159,8 +155,9 @@ contract Loan is Pausable, ILoan {
 
 		(, collateralAmount) = LibOpen._collateralPointer(msg.sender,_market,_commitment);
 		ds.token = IBEP20(LibOpen._connectMarket(collateral.market));
-		ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
-    	ds.token.transferFrom(ds.reserveAddress, msg.sender, collateralAmount);
+		// ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
+    	// ds.token.transferFrom(ds.reserveAddress, msg.sender, collateralAmount);
+		ds.token.transfer(msg.sender, collateralAmount);
 
 		delete ds.indCollateralRecords[msg.sender][loan.market][loan.commitment];
 		delete ds.indLoanState[msg.sender][loan.market][loan.commitment];
@@ -236,8 +233,9 @@ contract Loan is Pausable, ILoan {
 				}
 
 				updateDebtRecords(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment], LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment]/*, deductibleInterest, cYield*/);
-				LibOpen.diamondStorage().loanToken.approveFrom(LibOpen.diamondStorage().reserveAddress, address(this), _remnantAmount);
-				LibOpen.diamondStorage().loanToken.transferFrom(LibOpen.diamondStorage().reserveAddress, LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
+				// LibOpen.diamondStorage().loanToken.approveFrom(LibOpen.diamondStorage().reserveAddress, address(this), _remnantAmount);
+				// LibOpen.diamondStorage().loanToken.transferFrom(LibOpen.diamondStorage().reserveAddress, LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
+				LibOpen.diamondStorage().loanToken.transfer(LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
 
 				emit LoanRepaid(msg.sender, LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id, LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].market, block.timestamp);
 				
@@ -272,8 +270,9 @@ contract Loan is Pausable, ILoan {
 				
 				if (_repayAmount > LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount) {
 					_remnantAmount = _repayAmount - LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount;
-					LibOpen.diamondStorage().loanToken.approveFrom(LibOpen.diamondStorage().reserveAddress, address(this), _remnantAmount);
-					LibOpen.diamondStorage().loanToken.transferFrom(LibOpen.diamondStorage().reserveAddress, LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
+					// LibOpen.diamondStorage().loanToken.approveFrom(LibOpen.diamondStorage().reserveAddress, address(this), _remnantAmount);
+					// LibOpen.diamondStorage().loanToken.transferFrom(LibOpen.diamondStorage().reserveAddress, LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
+					LibOpen.diamondStorage().loanToken.transfer(LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
 				} else if (_repayAmount <= LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount) {
 					
 					_repayAmount += LibOpen._swap(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market,_market, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount, 1);

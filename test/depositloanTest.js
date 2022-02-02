@@ -93,6 +93,7 @@ describe(" Complex Test ", function () {
     })
 
     it("Token Mint", async () => {
+        console.log("Reserve balance is ", await bepUsdt.balanceOf(diamondAddress));
 		// expect(await bepUsdt.balanceOf(deposit.address)).to.be.equal(0);
 		await expect(bepUsdt.transfer(contractOwner.address, 0x10000)).to.emit(bepUsdt, 'Transfer');
 		await expect(bepUsdt.transfer(accounts[1].address, 0x10000)).to.emit(bepUsdt, 'Transfer');
@@ -117,6 +118,7 @@ describe(" Complex Test ", function () {
             .emit(deposit, "NewDeposit")
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfe00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200)
+        console.log("Reserve balance is ", await bepUsdt.balanceOf(diamondAddress));
 
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdt, comit_NONE, depositAmount, {gasLimit: 5000000}))
             .emit(deposit, "DepositAdded")
@@ -184,18 +186,18 @@ describe(" Complex Test ", function () {
         console.log("after repayLoan isReentrant is ", await loanExt.GetisReentrant());
 	})
 
-    it("Check withdrawCollateral", async () => {
-        console.log(await bepUsdt.balanceOf(accounts[1].address))
-        console.log("before withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
-        await expect(loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH, {gasLimit: 5000000}))
-            .emit(loan, "CollateralReleased")
-        console.log(await bepUsdt.balanceOf(accounts[1].address))
-        console.log("after withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
-    })
-
-    // it("Check liquidation", async () => {
-    //     console.log("before liquidation isReentrant is ", await loanExt.GetisReentrant());
-    //     await loanExt.connect(contractOwner).liquidation(accounts[1].address, 2);
+    // it("Check withdrawCollateral", async () => {
+    //     console.log(await bepUsdt.balanceOf(accounts[1].address))
+    //     console.log("before withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
+    //     await expect(loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH, {gasLimit: 5000000}))
+    //         .emit(loan, "CollateralReleased")
+    //     console.log(await bepUsdt.balanceOf(accounts[1].address))
+    //     console.log("after withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
     // })
+
+    it("Check liquidation", async () => {
+        console.log("before liquidation isReentrant is ", await loanExt.GetisReentrant());
+        await loanExt.connect(contractOwner).liquidation(accounts[1].address, 2);
+    })
   
 })

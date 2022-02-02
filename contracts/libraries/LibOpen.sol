@@ -35,12 +35,14 @@ library LibOpen {
 
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
-	
-
 // =========== Liquidator events ===============
 // =========== OracleOpen events ===============
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
-    
+
+	function contractOwner() internal view returns (address contractOwner_) {
+		contractOwner_ = diamondStorage().contractOwner;
+	}
+
 	function _addFairPriceAddress(bytes32 _market, address _address) internal {
 		AppStorageOpen storage ds = diamondStorage();
 		ds.pairAddresses[_market] = _address;
