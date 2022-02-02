@@ -262,7 +262,7 @@ library LibOpen {
 		return ds.reserveFactor;
 	}
 // =========== Liquidator Functions ===========
-	function _swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256 receivedAmount) {
+	function _swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode, address sender) internal returns (uint256 receivedAmount) {
 		address addrFromMarket;
 		address addrToMarket;
 
@@ -290,7 +290,8 @@ library LibOpen {
 
 		//PancakeSwap
 		// IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
-		IBEP20(addrFromMarket).transferFrom(msg.sender, address(this), _fromAmount);
+		console.log("sender is %s", sender);
+		IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
 		//WBNB as other test tokens

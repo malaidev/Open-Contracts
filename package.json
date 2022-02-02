@@ -19,12 +19,13 @@
   },
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.7",
+    "@pancakeswap/pancake-swap-lib": "0.0.4",
     "dotenv": "^10.0.0",
     "eth-crypto": "^2.1.0",
     "hardhat": "^2.6.7",
     "hardhat-contract-sizer": "^2.1.1",
     "solc": "^0.8.1",
-    "web3": "^1.6.0"  
+    "web3": "^1.6.0"
   },
   "directories": {
     "test": "test"
@@ -38,5 +39,4 @@
     "url": "https://github.com/0xHashstack/Open-protocol/issues"
   },
   "homepage": "https://github.com/0xHashstack/Open-protocol#readme"
-
 }

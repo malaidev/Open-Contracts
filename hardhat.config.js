@@ -80,7 +80,6 @@ task("Tenderly", "Test contracts", async(taskArgs, hre) => {
 });
 
  require('hardhat-contract-sizer');
- require("@nomiclabs/hardhat-etherscan");
  require('dotenv').config();
 
  require("@tenderly/hardhat-tenderly");
