@@ -256,7 +256,7 @@ async function addMarkets(diamondAddress) {
     const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, admin_, 2600000000)
     await tcake.deployed()
     const tCakeAddress = tcake.address;
-    // console.log("tCake deployed: ", tcake.address)
+    console.log("tCake deployed: ", tcake.address)
 
     const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, admin_, 4000000)
     await twbnb.deployed()
