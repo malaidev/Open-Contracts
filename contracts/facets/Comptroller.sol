@@ -23,7 +23,7 @@ contract Comptroller is Pausable, IComptroller {
 	event MaxWithdrawalUpdated(address indexed admin, uint indexed newFactor, uint indexed newBlockLimit, uint oldFactor, uint oldBlockLimit, uint timestamp);
 
 	constructor() {
-    // 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+    // 	AppStorageOpen storage ds = LibOpen.diamondStorage();
 	// 	ds.comptroller = IComptroller(msg.sender);
 	}
 	
