@@ -19,6 +19,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 	mapping(bytes32 => RoleData) roles;
 	mapping(bytes32 => AdminRoleData) adminRoles;
 	bytes32 superAdmin;
+	bool private initialized;
   
 	event AdminRoleDataGranted(
 		bytes32 indexed role,
@@ -44,8 +45,7 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		address indexed sender
 	);
 
-	/// @custom:oz-upgrades-unsafe-allow constructor
-		constructor() initialize {}
+		// constructor() initialize {}
 
 	function initialize(address contractOwner) public {
         require(!initialized, "Contract instance has already been initialized");
