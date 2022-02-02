@@ -289,7 +289,7 @@ library LibOpen {
 		// );
 
 		//PancakeSwap
-		IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
+		// IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).transferFrom(msg.sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
@@ -491,7 +491,7 @@ library LibOpen {
 // =========== Reserve Functions =====================
 
 	function _transferAnyBEP20(address _token, address _sender, address _recipient, uint256 _value) internal authContract(RESERVE_ID) {
-		IBEP20(_token).approveFrom(_sender, address(this), _value);
+		// IBEP20(_token).approveFrom(_sender, address(this), _value);
     IBEP20(_token).transferFrom(_sender, _recipient, _value);
 	}
 
