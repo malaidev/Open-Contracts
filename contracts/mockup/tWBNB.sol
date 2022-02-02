@@ -31,7 +31,7 @@ contract tWBNB is Context{
         name = "WBNB";
         symbol = "WBNB.t";
         decimals = 18;
-        totalSupply = 4000000000000000000000000;
+        totalSupply = 0;
         admin = admin_;
         cappedSupply = 100000000000000000000000000;
 

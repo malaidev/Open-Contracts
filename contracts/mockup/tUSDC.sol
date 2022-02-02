@@ -31,7 +31,7 @@ contract tUSDC is Context{
         name = "USD-Coin";
         symbol = "USDC.t";
         decimals = 18;
-        totalSupply = 10000000000000000000000000000;
+        totalSupply = 0;
         admin = admin_;
         cappedSupply = 10000000000000000000000000000;
 

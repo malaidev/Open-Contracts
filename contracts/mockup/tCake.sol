@@ -31,7 +31,7 @@ contract tCake is Context{
         name = "CAKE";
         symbol = "CAKE.t";
         decimals = 18;
-        totalSupply = 2600000000000000000000000000;
+        totalSupply = 0;
         admin = admin_;
         cappedSupply = 50000000000000000000000000;
 

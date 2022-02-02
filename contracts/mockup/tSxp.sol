@@ -31,7 +31,7 @@ contract tSxp is Context{
         name = "SXP";
         symbol = "SXP.t";
         decimals = 18;
-        totalSupply = 100000000000000000000000000;
+        totalSupply = 0;
         admin = admin_;
         cappedSupply = 100000000000000000000000000;
 
