@@ -1,412 +1,190 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.1;
-import "../util/IBEP20.sol";
-import "../util/Context.sol";
+pragma solidity >=0.8.6 <0.9.0;
 
-library SafeMath {
-  /**
-   * @dev Returns the addition of two unsigned integers, reverting on
-   * overflow.
-   *
-   * Counterpart to Solidity's `+` operator.
-   *
-   * Requirements:
-   * - Addition cannot overflow.
-   */
-  function add(uint256 a, uint256 b) internal pure returns (uint256) {
-    uint256 c = a + b;
-    require(c >= a, "SafeMath: addition overflow");
+import "./util/Context.sol";
+import "./util/Address.sol";
+import "./util/IERC20.sol";
 
-    return c;
-  }
+contract tBTC is Context{
+    using Address for address;
 
-  /**
-   * @dev Returns the subtraction of two unsigned integers, reverting on
-   * overflow (when the result is negative).
-   *
-   * Counterpart to Solidity's `-` operator.
-   *
-   * Requirements:
-   * - Subtraction cannot overflow.
-   */
-  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-    return sub(a, b, "SafeMath: subtraction overflow");
-  }
+    string public name;
+    string public symbol;
+    uint8 public decimals;
 
-  /**
-   * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
-   * overflow (when the result is negative).
-   *
-   * Counterpart to Solidity's `-` operator.
-   *
-   * Requirements:
-   * - Subtraction cannot overflow.
-   */
-  function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-    require(b <= a, errorMessage);
-    uint256 c = a - b;
+    uint256 public totalSupply;
+    uint256 cappedSupply;
 
-    return c;
-  }
+    address admin;
 
-  /**
-   * @dev Returns the multiplication of two unsigned integers, reverting on
-   * overflow.
-   *
-   * Counterpart to Solidity's `*` operator.
-   *
-   * Requirements:
-   * - Multiplication cannot overflow.
-   */
-  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-    // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-    // benefit is lost if 'b' is also tested.
-    // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-    if (a == 0) {
-      return 0;
+    bool isReentrant = false;
+    bool isPaused = false;
+
+    mapping(address => uint256) _balances;
+    mapping(address => mapping(address => uint256)) _allowances;
+
+    event Transfer(address indexed _from, address indexed _to, uint256 _value);
+    event Approval(address indexed _owner,address indexed _spender,uint256 _value);
+    event PauseState(address indexed _pauser, bool isPaused);
+
+    constructor(string memory name_,string memory symbol_,uint8 decimals_,address admin_,uint256 cappedSupply_) {
+        _name = "USD-Coin";
+        _symbol = "USDC.t";
+        _decimals = 18;
+        _totalSupply = 10000000000000000000000000000;
+        admin = admin_;
+        cappedSupply = cappedSupply_;
+
+        mint(admin, 5000000000000000000000000000);
     }
 
-    uint256 c = a * b;
-    require(c / a == b, "SafeMath: multiplication overflow");
+    receive() external payable {
+        payable(admin).transfer(_msgValue());
+    }
 
-    return c;
-  }
-
-  /**
-   * @dev Returns the integer division of two unsigned integers. Reverts on
-   * division by zero. The result is rounded towards zero.
-   *
-   * Counterpart to Solidity's `/` operator. Note: this function uses a
-   * `revert` opcode (which leaves remaining gas untouched) while Solidity
-   * uses an invalid opcode to revert (consuming all remaining gas).
-   *
-   * Requirements:
-   * - The divisor cannot be zero.
-   */
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    return div(a, b, "SafeMath: division by zero");
-  }
-
-  /**
-   * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
-   * division by zero. The result is rounded towards zero.
-   *
-   * Counterpart to Solidity's `/` operator. Note: this function uses a
-   * `revert` opcode (which leaves remaining gas untouched) while Solidity
-   * uses an invalid opcode to revert (consuming all remaining gas).
-   *
-   * Requirements:
-   * - The divisor cannot be zero.
-   */
-  function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-    // Solidity only automatically asserts when dividing by 0
-    require(b > 0, errorMessage);
-    uint256 c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-
-    return c;
-  }
-
-  /**
-   * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
-   * Reverts when dividing by zero.
-   *
-   * Counterpart to Solidity's `%` operator. This function uses a `revert`
-   * opcode (which leaves remaining gas untouched) while Solidity uses an
-   * invalid opcode to revert (consuming all remaining gas).
-   *
-   * Requirements:
-   * - The divisor cannot be zero.
-   */
-  function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-    return mod(a, b, "SafeMath: modulo by zero");
-  }
-
-  /**
-   * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
-   * Reverts with custom message when dividing by zero.
-   *
-   * Counterpart to Solidity's `%` operator. This function uses a `revert`
-   * opcode (which leaves remaining gas untouched) while Solidity uses an
-   * invalid opcode to revert (consuming all remaining gas).
-   *
-   * Requirements:
-   * - The divisor cannot be zero.
-   */
-  function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-    require(b != 0, errorMessage);
-    return a % b;
-  }
-}
+    fallback() external payable {
+        payable(admin).transfer(_msgValue());
+    }
 
 
-contract tUSDC  is Context, IBEP20 {
-  using SafeMath for uint256;
+    function transferAnyERC20(address token_,address recipient_,uint256 _value_) external auth() nonReentrant() returns(bool)   {
+        IERC20(token_).transfer(recipient_, _value_);
 
-  mapping (address => uint256) private _balances;
+        return true;
+    }
 
-  mapping (address => mapping (address => uint256)) private _allowances;
+    function balanceOf(address _addr) external view returns (uint256) {
+        return _balances[_addr];
+    }
 
-  address admintUSDC;
-  uint256 private _totalSupply;
-  uint8 private _decimals;
-  string private _symbol;
-  string private _name;
-  
-  event Transfer(address indexed from, address indexed to, uint256 value);
-  event Approval(address indexed owner, address indexed spender, uint256 value);
+    function allowance(address _owner, address _spender) external view returns (uint256 remaining)    {
+        return _allowances[_owner][_spender];
+    }
 
-  constructor(address admin_) {
-    admintUSDC = admin_;
-    _name = "USD-Coin";
-    _symbol = "USDC.t";
-    _decimals = 18;
-    _totalSupply = 10000000000000000000000000000;
-    // _balances[msg.sender] = _totalSupply;
-    _mint(admintUSDC, 5000000000000000000000000000);
+    function pauseState() public view returns (string memory) {
+        if (isPaused == true) {
+            return "Contract is paused. Token transfers are temporarily disabled.";
+        }
+        return "Contract is not paused";
+    }
 
-    emit Transfer(address(0), msg.sender, _totalSupply);
-  }
+    function pause() external auth() nonReentrant() {
+        _pause();
+    }
 
-  /**
-   * @dev Returns the bep token owner.
-   */
-  function getOwner() external view returns (address) {
-    return admintUSDC;
-  }
+    function unpause() external auth() nonReentrant() {
+        _unpause();
+    }
 
-  /**
-   * @dev Returns the token decimals.
-   */
-  function decimals() external view returns (uint8) {
-    return _decimals;
-  }
+    function transfer(address _to, uint256 _value) external nonReentrant() returns (bool) {
+        _checkPauseState();
+        _transfer(_msgSender(), _to, _value);
+        return true;
+    }
 
-  /**
-   * @dev Returns the token symbol.
-   */
-  function symbol() external view returns (string memory) {
-    return _symbol;
-  }
+    function approve(address _spender, uint256 _value) external nonReentrant() returns (bool) {
+        _checkPauseState();
+        _approve(_spender, _value);
+        return true;
+    }
 
-  /**
-  * @dev Returns the token name.
-  */
-  function name() external view returns (string memory) {
-    return _name;
-  }
+    function transferFrom(address _from,address _to,uint256 _value) external nonReentrant() returns (bool) {
+        _checkPauseState();
+        require (_allowances[_from][_msgSender()] >= _value && _balances[_from] >= _value, "Insufficient balance, or allowance");
+        
+        _allowances[_from][_msgSender()] -= _value;
+        _transfer(_from, _to, _value);
+        return true;
+    }
 
-  /**
-   * @dev See {USD-Coin-totalSupply}.
-   */
-  function totalSupply() external view returns (uint256) {
-    return _totalSupply;
-  }
+    function increaseAllowance(address _spender, uint256 _value) external nonReentrant() returns(bool) {
+        _checkPauseState();
+        if (_allowances[_msgSender()][_spender] == 0)   {
+            _approve(_spender, _value);
+        }
+        _allowances[_msgSender()][_spender] += _value;
+        
+        emit Approval(_msgSender(), _spender, _value);
+        return true;
+    }
 
-  /**
-   * @dev See {USD-Coin-balanceOf}.
-   */
-  function balanceOf(address account) external view override returns (uint256) {
-    return _balances[account];
-  }
+    function decreaseAllowance(address _spender, uint256 _value) external nonReentrant() returns(bool) {
+        _checkPauseState();
+        require(_allowances[_msgSender()][_spender]>=0, "Decrease value > allowance");
 
-  /**
-   * @dev See {USD-Coin-transfer}.
-   *
-   * Requirements:
-   *
-   * - `recipient` cannot be the zero address.
-   * - the caller must have a balance of at least `amount`.
-   */
-  function transfer(address recipient, uint256 amount) external override returns (bool) {
-    _transfer(_msgSender(), recipient, amount);
-    return true;
-  }
+        _allowances[_msgSender()][_spender] -= _value;
+        
+        emit Approval(_msgSender(), _spender, _value);
 
-  /**
-   * @dev See {USD-Coin-allowance}.
-   */
-  function allowance(address owner, address spender) external view override returns (uint256) {
-    return _allowances[owner][spender];
-  }
+        return true;
+    }
 
-  /**
-   * @dev See {USD-Coin-approve}.
-   *
-   * Requirements:
-   *
-   * - `spender` cannot be the zero address.
-   */
-  function approve(address spender, uint256 amount) external override returns (bool) {
-    _approve(_msgSender(), spender, amount);
-    return true;
-  }
+    // This works too
+    function mint(address _to, uint256 _value) public auth() nonReentrant() {
+        _checkPauseState();
+        require(totalSupply <= cappedSupply && _value != 0 && _to != address(0),"Token mint is not possible");
+        _balances[_to] += _value;
+        totalSupply += _value;
 
-  
-  function approveFrom(address sender, address spender, uint256 amount) external override returns (bool) {
-    _approve(sender, spender, amount);
-    return true;
-  }
+        emit Transfer(address(0), _to, _value);
+    }
 
-  /**
-   * @dev See {USD-Coin-transferFrom}.
-   *
-   * Emits an {Approval} event indicating the updated allowance. This is not
-   * required by the EIP. See the note at the beginning of {USD-Coin};
-   *
-   * Requirements:
-   * - `sender` and `recipient` cannot be the zero address.
-   * - `sender` must have a balance of at least `amount`.
-   * - the caller must have allowance for `sender`'s tokens of at least
-   * `amount`.
-   */
-  function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
-    _transfer(sender, recipient, amount);
-    _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "USD-Coin: transfer amount exceeds allowance"));
-    return true;
-  }
+    function burn(address _addr, uint256 _value) public auth() nonReentrant()    {
+        _checkPauseState();
+        require(_addr != address(0),"You can not burn tokens from this address");
 
-  /**
-   * @dev Atomically increases the allowance granted to `spender` by the caller.
-   *
-   * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {USD-Coin-approve}.
-   *
-   * Emits an {Approval} event indicating the updated allowance.
-   *
-   * Requirements:
-   *
-   * - `spender` cannot be the zero address.
-   */
-  function increaseAllowance(address spender, uint256 addedValue) public override returns (bool) {
-    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
-    return true;
-  }
+        _balances[_addr] -= _value;
+        totalSupply -= _value;
+        
+        emit Transfer(_addr, address(0), _value);
+    }
 
-  /**
-   * @dev Atomically decreases the allowance granted to `spender` by the caller.
-   *
-   * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {USD-Coin-approve}.
-   *
-   * Emits an {Approval} event indicating the updated allowance.
-   *
-   * Requirements:
-   *
-   * - `spender` cannot be the zero address.
-   * - `spender` must have allowance for the caller of at least
-   * `subtractedValue`.
-   */
-  function decreaseAllowance(address spender, uint256 subtractedValue) public override returns (bool) {
-    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "USD-Coin: decreased allowance below zero"));
-    return true;
-  }
+    function _checkPauseState() internal view {
+        require(isPaused == false,"The contract is paused. Transfer functions are temporarily disabled");
+    }
 
-  /**
-   * @dev Creates `amount` tokens and assigns them to `msg.sender`, increasing
-   * the total supply.
-   *
-   * Requirements
-   *
-   * - `msg.sender` must be the token owner
-   */
-  function mint(uint256 amount) public returns (bool) {
-    _mint(_msgSender(), amount);
-    return true;
-  }
+    function _pause() internal auth() {
+        require(isPaused == false, "This contract is already paused");
+        isPaused = true;
 
-  function pauseState() external pure override returns(string memory) {
-    return "Hey, Not sure";
-  }
+        emit PauseState(_msgSender(), true);
+    }
 
-  /**
-   * @dev Moves tokens `amount` from `sender` to `recipient`.
-   *
-   * This is internal function is equivalent to {transfer}, and can be used to
-   * e.g. implement automatic token fees, slashing mechanisms, etc.
-   *
-   * Emits a {Transfer} event.
-   *
-   * Requirements:
-   *
-   * - `sender` cannot be the zero address.
-   * - `recipient` cannot be the zero address.
-   * - `sender` must have a balance of at least `amount`.
-   */
-  function _transfer(address sender, address recipient, uint256 amount) internal {
-    require(sender != address(0), "USD-Coin: transfer from the zero address");
-    require(recipient != address(0), "USD-Coin: transfer to the zero address");
+    function _unpause() internal auth() {
+        require(isPaused == true, "This contract is already paused");
+        isPaused = false;
 
-    _balances[sender] = _balances[sender].sub(amount, "USD-Coin: transfer amount exceeds balance");
-    _balances[recipient] = _balances[recipient].add(amount);
-    emit Transfer(sender, recipient, amount);
-  }
+        emit PauseState(_msgSender(), false);
+    }
+    
+    function _transfer(address sender, address recipient, uint256 _value) private {
+        require(recipient != address(0) && _balances[sender] >= _value, "You can not send funds to zero address; Or, insufficient balance");
 
-  /** @dev Creates `amount` tokens and assigns them to `account`, increasing
-   * the total supply.
-   *
-   * Emits a {Transfer} event with `from` set to the zero address.
-   *
-   * Requirements
-   *
-   * - `to` cannot be the zero address.
-   */
-  function _mint(address account, uint256 amount) internal {
-    require(account != address(0), "USD-Coin: mint to the zero address");
-    require(account == admintUSDC, "Only Admin can mint");
-    _totalSupply = _totalSupply.add(amount);
-    _balances[account] = _balances[account].add(amount);
-    emit Transfer(address(0), account, amount);
-  }
+        _balances[sender] -= _value;
+        _balances[recipient] += _value;
 
-  /**
-   * @dev Destroys `amount` tokens from `account`, reducing the
-   * total supply.
-   *
-   * Emits a {Transfer} event with `to` set to the zero address.
-   *
-   * Requirements
-   *
-   * - `account` cannot be the zero address.
-   * - `account` must have at least `amount` tokens.
-   */
-  function _burn(address account, uint256 amount) internal {
-    require(account != address(0), "USD-Coin: burn from the zero address");
+        emit Transfer(sender, recipient, _value);
+    }
 
-    _balances[account] = _balances[account].sub(amount, "USD-Coin: burn amount exceeds balance");
-    _totalSupply = _totalSupply.sub(amount);
-    emit Transfer(account, address(0), amount);
-  }
+    function _approve(address _spender, uint256 _value) private {
+        
+        _allowances[_msgSender()][_spender] = 0;
+        
+        require(_balances[_msgSender()] >= _value && _spender != address(0), "Zero address can not be used in a transfer; or, Insufficient balance");
+        _allowances[_msgSender()][_spender] = _value;
 
-  /**
-   * @dev Sets `amount` as the allowance of `spender` over the `owner`s tokens.
-   *
-   * This is internal function is equivalent to `approve`, and can be used to
-   * e.g. set automatic allowances for certain subsystems, etc.
-   *
-   * Emits an {Approval} event.
-   *
-   * Requirements:
-   *
-   * - `owner` cannot be the zero address.
-   * - `spender` cannot be the zero address.
-   */
-  function _approve(address owner, address spender, uint256 amount) internal {
-    require(owner != address(0), "USD-Coin: approve from the zero address");
-    require(spender != address(0), "USD-Coin: approve to the zero address");
+        emit Approval(_msgSender(), _spender, _value);        
+    }
 
-    _allowances[owner][spender] = amount;
-    emit Approval(owner, spender, amount);
-  }
+    modifier nonReentrant() {
+        require(isReentrant == false, "Re-entrant alert!");
+        isReentrant = true;
+        _;
+        isReentrant = false;
+    }
 
-  /**
-   * @dev Destroys `amount` tokens from `account`.`amount` is then deducted
-   * from the caller's allowance.
-   *
-   * See {_burn} and {_approve}.
-   */
-  function _burnFrom(address account, uint256 amount) internal {
-    _burn(account, amount);
-    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "USD-Coin: burn amount exceeds allowance"));
-  }
+    modifier auth() {
+        require(_msgSender() == admin, "Inadequate permission");
+        _;
+    }
 }
