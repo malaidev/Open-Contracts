@@ -4,6 +4,7 @@ pragma solidity 0.8.1;
 import "../util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "../libraries/LibOpen.sol";
+import "hardhat/console.sol";
 
 contract Deposit is Pausable, IDeposit{
 		
@@ -19,15 +20,13 @@ contract Deposit is Pausable, IDeposit{
 		// ds.deposit = IDeposit(msg.sender);
 	}
 
-	// receive() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
-	// 	payable(ds.superAdminAddress).transfer(_msgValue());
-	// }
+	receive() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 	
-	// fallback() external payable {
-    // 	AppStorage storage ds = LibOpen.diamondStorage(); 
-	// 	payable(ds.superAdminAddress).transfer(_msgValue());
-	// }
+	fallback() external payable {
+		payable(LibOpen.contractOwner()).transfer(_msgValue());
+	}
 
 	function hasAccount(address _account) external view override returns (bool)	{
 		LibOpen._hasAccount(_account);
@@ -140,8 +139,9 @@ contract Deposit is Pausable, IDeposit{
 		}
 		/// Transfer funds to the user's wallet.
 		ds.token = IBEP20(LibOpen._connectMarket(_market));
-		ds.token.approveFrom(ds.reserveAddress, address(this), _amount);
-		ds.token.transferFrom(ds.reserveAddress, msg.sender, _amount);
+		// ds.token.approveFrom(ds.reserveAddress, address(this), _amount);
+		// ds.token.transferFrom(ds.reserveAddress, msg.sender, _amount);
+		ds.token.transfer(msg.sender, _amount);
 
 		LibOpen._updateReservesDeposit(_market, _amount, 1);
 		emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
@@ -159,7 +159,7 @@ contract Deposit is Pausable, IDeposit{
 		}
 		
 		ds.token.approveFrom(msg.sender, address(this), _amount);
-		ds.token.transferFrom(msg.sender, ds.reserveAddress, _amount);
+		ds.token.transferFrom(msg.sender, address(this), _amount);
 
 		processDeposit(msg.sender, _market, _commitment, _amount);
 		LibOpen._updateReservesDeposit(_market, _amount, 0);
@@ -178,7 +178,9 @@ contract Deposit is Pausable, IDeposit{
 		LibOpen._ensureSavingsAccount(_sender,savingsAccount);
 
 		ds.token.approveFrom(_sender, address(this), _amount);
-		ds.token.transferFrom(_sender, ds.reserveAddress, _amount);
+		ds.token.transferFrom(_sender, address(this), _amount);
+
+		console.log("From lib address is %s", address(this));
 		
 		processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
 		LibOpen._updateReservesDeposit(_market, _amount, 0);

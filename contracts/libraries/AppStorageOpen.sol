@@ -130,11 +130,10 @@ struct AppStorageOpen {
     IBEP20 token;
     mapping(bytes4 => uint) facetIndex;
 	address reserveAddress;
-
-
     // ===========  admin addresses ===========
     bytes32 superAdmin; // superAdmin address backed in function setContractOwner()
-    address superAdminAddress;
+    address superAdminAddress; // Address of AccessRegistry
+    address contractOwner; 
 
     // =========== TokenList state variables ===========
     bytes32 adminTokenList;
