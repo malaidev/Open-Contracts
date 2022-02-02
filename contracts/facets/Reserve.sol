@@ -51,6 +51,7 @@ contract Reserve is Pausable, IReserve {
 	function marketReserves(bytes32 _market) external view override returns(uint)	{
 		return LibOpen._marketReserves(_market);
 	}
+
 	
 	function marketUtilisation(bytes32 _market) external view override returns(uint)	{
 		return LibOpen._marketUtilisation(_market);
