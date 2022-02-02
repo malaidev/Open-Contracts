@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.6 <0.9.0;
+pragma solidity 0.8.1;
 
-import "./util/Context.sol";
-import "./util/Address.sol";
-import "./util/IERC20.sol";
+import "../util/Context.sol";
+import "../util/Address.sol";
+import "../util/IERC20.sol";
 
-contract tBTC is Context{
+contract tSxp is Context{
     using Address for address;
 
     string public name;
@@ -27,13 +27,13 @@ contract tBTC is Context{
     event Approval(address indexed _owner,address indexed _spender,uint256 _value);
     event PauseState(address indexed _pauser, bool isPaused);
 
-    constructor(string memory name_,string memory symbol_,uint8 decimals_,address admin_,uint256 cappedSupply_) {
+    constructor(address admin_) {
         name = "SXP";
         symbol = "SXP.t";
         decimals = 18;
         totalSupply = 100000000000000000000000000;
         admin = admin_;
-        cappedSupply = cappedSupply_;
+        cappedSupply = 100000000000000000000000000;
 
         mint(admin, 100000000000000000000000000);
     }

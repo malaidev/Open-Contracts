@@ -407,35 +407,42 @@ async function addMarkets(diamondAddress) {
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     const admin_ = contractOwner.address;
-    // const tBTC = await ethers.getContractFactory('tBTC')
-    // const tbtc = await tBTC.deploy(admin_)
-    // await tbtc.deployed()
-    const tBtcAddress = "0x664aABd659Ae578454c7A7FC5b850DFB2203a87C";
-    // console.log("tBTC deployed: ", tbtc.address)
+    const tBTC = await ethers.getContractFactory('tBTC')
+    const tbtc = await tBTC.deploy(admin_)
+    await tbtc.deployed()
+    // const tBtcAddress = "0x664aABd659Ae578454c7A7FC5b850DFB2203a87C";
+    console.log("tBTC deployed: ", tbtc.address)
 
-    // const tUSDC = await ethers.getContractFactory('tUSDC')
-    // const tusdc = await tUSDC.deploy(admin_)
-    // await tusdc.deployed()
-    const tUsdcAddress = "0x07D293cFc6E76430af18Ab6Ac3f41828e202D159";
-    // console.log("tUSDC deployed: ", tusdc.address)
+    const tUSDC = await ethers.getContractFactory('tUSDC')
+    const tusdc = await tUSDC.deploy(admin_)
+    await tusdc.deployed()
+    // const tUsdcAddress = "0x07D293cFc6E76430af18Ab6Ac3f41828e202D159";
+    console.log("tUSDC deployed: ", tusdc.address)
 
-    // const tUSDT = await ethers.getContractFactory('tUSDT')
-    // const tusdt = await tUSDT.deploy(admin_)
-    // await tusdt.deployed()
-    const tUsdtAddress = "0x3d2b1f363c79BaB4320DD0522239617aF31DaFde";
-    // console.log("tUSDT deployed: ", tusdt.address)
+    const tUSDT = await ethers.getContractFactory('tUSDT')
+    const tusdt = await tUSDT.deploy(admin_)
+    await tusdt.deployed()
+    // const tUsdtAddress = "0x3d2b1f363c79BaB4320DD0522239617aF31DaFde";
+    console.log("tUSDT deployed: ", tusdt.address)
 
-    // const tSxp = await ethers.getContractFactory('tSxp')
-    // const tsxp = await tSxp.deploy(admin_)
-    // await tsxp.deployed()
-    const tSxpAddress = "0xb6c2c0764e69FBb1CeC2254ec927Ddc7fe42738F";
-    // console.log("tSxp deployed: ", tsxp.address)
+    const admin_ = contractOwner.address;
+    const tWBNB = await ethers.getContractFactory('tWBNB')
+    const tWBNB = await tWBNB.deploy(admin_)
+    await tWBNB.deployed()
+    console.log("tWBNB deployed: ", tWBNB.address)
 
-    // const tCake = await ethers.getContractFactory('tCake')
-    // const tcake = await tCake.deploy(admin_)
-    // await tcake.deployed()
-    const tCakeAddress = "0x498D69f8ddf475E21C3d036F0bf0C6Ef82FEF2Ea";
-    // console.log("tCake deployed: ", tcake.address)
+
+    const tSxp = await ethers.getContractFactory('tSxp')
+    const tsxp = await tSxp.deploy(admin_)
+    await tsxp.deployed()
+    // const tSxpAddress = "0xb6c2c0764e69FBb1CeC2254ec927Ddc7fe42738F";
+    console.log("tSxp deployed: ", tsxp.address)
+
+    const tCake = await ethers.getContractFactory('tCake')
+    const tcake = await tCake.deploy(admin_)
+    await tcake.deployed()
+    // const tCakeAddress = "0x498D69f8ddf475E21C3d036F0bf0C6Ef82FEF2Ea";
+    console.log("tCake deployed: ", tcake.address)
 
      
 
@@ -443,7 +450,7 @@ async function addMarkets(diamondAddress) {
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolUsdt,
         18,
-        tUsdtAddress, // USDT.t
+        tUsdt.address, // USDT.t
         100, 
         { gasLimit: 800000 }
     )
@@ -453,7 +460,7 @@ async function addMarkets(diamondAddress) {
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolUsdc,
         18,
-        tUsdcAddress, // USDC.t
+        tUsdc.address, // USDC.t
         100, 
         { gasLimit: 800000 }
     ) 
@@ -462,7 +469,7 @@ async function addMarkets(diamondAddress) {
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolBtc,
         8,
-        tBtcAddress, // BTC.t
+        tBtc.address, // BTC.t
         1, 
         { gasLimit: 800000 }
     )
@@ -471,7 +478,7 @@ async function addMarkets(diamondAddress) {
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolWBNB,
         18,
-        '0x359A0A7DffEa6B95a436d5E558d20EC8972EbC4B',
+        tWBNB.address,
         1,
         { gasLimit: 800000 }
     )
@@ -533,7 +540,7 @@ async function addtWBNB() {
     await tokenList.connect(contractOwner).addMarketSupport(
         symbolWBNB,
         18,
-        "0x359A0A7DffEa6B95a436d5E558d20EC8972EbC4B",
+        twBNB.address,
         1,
         { gasLimit: 800000 }
     )
