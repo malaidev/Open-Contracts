@@ -52,6 +52,18 @@ t.wBNB address : `0x359A0A7DffEa6B95a436d5E558d20EC8972EbC4B`
 
 ## Faucet Liquidity :
 
+Faucet addr :
+`0x281890B95BaFe28587a93fAA1eF737563fd79205`
+
+tBTC : `false`
+
+tUSDC : `false`
+
+tUSDT : `false`
+
+t.wBNB : `false`
+
+
 # Basic Sample Hardhat Project
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
