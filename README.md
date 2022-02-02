@@ -31,7 +31,14 @@ $ npx hardhat run --network bsctestnet scripts/deploy_all.js
 Congrats! you have successfully deployed all the contracts on bsc testnet.
 Dont forget to check it out on [bscscan testnet](https://testnet.bscscan.com/)
 
+# Contract Records
+This section would have all the records regarding latest contracts deployed , markets being used and faucet liquidity
 
+## Contracts Deployed :
+
+## Markets Used :
+
+## Faucet Liquidity :
 
 # Basic Sample Hardhat Project
 
