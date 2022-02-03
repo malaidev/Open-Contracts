@@ -154,8 +154,6 @@ contract Deposit is Pausable, IDeposit{
         preDepositProcess(_market, _amount);
         console.log("addToDeposit sender address is %s", msg.sender);
 
-        ds.token.approve(address(this), _amount); // allowance from the user to the contract(deposit).
-
         if (!LibOpen._hasDeposit(msg.sender, _market, _commitment))    {
             createNewDeposit(_market, _commitment, _amount, msg.sender);
             return false;

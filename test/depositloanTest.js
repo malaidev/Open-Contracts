@@ -119,7 +119,7 @@ describe(" Complex Test ", function () {
 
         // USDT
 
-        // await bepUsdt.connect(accounts[1]).approve(diamondAddress, depositAmount);
+        await bepUsdt.connect(accounts[1]).approve(diamondAddress, depositAmount);
         console.log("Approve before deposit is ", await bepUsdt.allowance(accounts[1].address, diamondAddress));
 
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdt, comit_NONE, depositAmount, {gasLimit: 5000000}))
@@ -128,33 +128,33 @@ describe(" Complex Test ", function () {
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200)
         console.log("Reserve balance is ", await bepUsdt.balanceOf(diamondAddress));
 
-        // await bepUsdt.connect(accounts[1]).approve(diamondAddress, depositAmount);
+        await bepUsdt.connect(accounts[1]).approve(diamondAddress, depositAmount);
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdt, comit_NONE, depositAmount, {gasLimit: 5000000}))
             .emit(deposit, "DepositAdded")
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x400)
 
         // USDC
-        // await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+        await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000}))
             .emit(deposit, "NewDeposit")
         expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
         expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
 
-        // await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+        await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000}))
             .emit(deposit, "DepositAdded")
         expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x400)
 
         // BTC
-        // await bepBtc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+        await bepBtc.connect(accounts[1]).approve(diamondAddress, depositAmount);
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolBtc, comit_NONE, depositAmount, {gasLimit: 5000000}))
             .emit(deposit, "NewDeposit")
         expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfe00)
         expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x200)
 
-        // await bepBtc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+        await bepBtc.connect(accounts[1]).approve(diamondAddress, depositAmount);
         await expect(deposit.connect(accounts[1]).addToDeposit(symbolBtc, comit_NONE, depositAmount, {gasLimit: 5000000}))
             .emit(deposit, "DepositAdded")
         expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfc00)
@@ -168,14 +168,14 @@ describe(" Complex Test ", function () {
     })
 
     it("Check loan", async () => {
-        // await bepUsdt.connect(accounts[1]).approve(diamondAddress, 0x200);
+        await bepUsdt.connect(accounts[1]).approve(diamondAddress, 0x200);
         await expect(loanExt.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 0x200, symbolUsdt, 0x100, {gasLimit: 5000000}))
 			.to.emit(loanExt, "NewLoan");
 
         expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfc00)
         expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200)
 
-        // await bepBtc.connect(accounts[1]).approve(diamondAddress, 0x200);
+        await bepBtc.connect(accounts[1]).approve(diamondAddress, 0x200);
         await expect(loanExt.connect(accounts[1]).loanRequest(symbolBtc, comit_ONEMONTH, 0x200, symbolBtc, 0x100, {gasLimit: 5000000}))
         .to.emit(loanExt, "NewLoan");
 
@@ -209,7 +209,7 @@ describe(" Complex Test ", function () {
 
     it("Check liquidation", async () => {
         console.log("before liquidation isReentrant is ", await loanExt.GetisReentrant());
-        // await bepBtc.connect(accounts[1]).approve(diamondAddress, 0x200);
+        await bepBtc.connect(accounts[1]).approve(diamondAddress, 0x200);
 
         await loanExt.connect(contractOwner).liquidation(accounts[1].address, 2);
     })

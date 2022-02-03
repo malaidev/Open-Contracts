@@ -291,7 +291,6 @@ library LibOpen {
 		//PancakeSwap
 		// IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
 		console.log("sender is %s", sender);
-		IBEP20(addrFromMarket).approve(address(this), _fromAmount);
 		IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
@@ -494,8 +493,7 @@ library LibOpen {
 
 	function _transferAnyBEP20(address _token, address _sender, address _recipient, uint256 _value) internal authContract(RESERVE_ID) {
 		// IBEP20(_token).approveFrom(_sender, address(this), _value);
-		IBEP20(_token).approve(_recipient, _value);
-    IBEP20(_token).transferFrom(_sender, _recipient, _value);
+	    IBEP20(_token).transferFrom(_sender, _recipient, _value);
 	}
 
 	function _avblMarketReserves(bytes32 _market) internal view returns (uint) {
@@ -513,12 +511,10 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		// AppStorageOpen storage ds = diamondStorage();
-		// require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
-		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-		// return uint256(price);
-
-		return 1 ;
+		AppStorageOpen storage ds = diamondStorage();
+		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
+		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		return uint256(price);
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {

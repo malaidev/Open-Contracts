@@ -22,7 +22,6 @@ async function deployDiamond() {
 
     console.log('DiamondCutFacet deployed:', diamondCutFacet.address)
 
-
     // deploy facets
     console.log('')
     console.log('Deploying facets')
