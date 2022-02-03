@@ -109,14 +109,6 @@ contract Comptroller is Pausable, IComptroller {
 		return true;
 	}
 
-	function calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) external view override returns (uint, uint, uint){
-    	return LibOpen._calcAPR(_commitment, oldLengthAccruedInterest, oldTime, aggregateInterest);
-	}
-
-	function calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) external view override returns (uint, uint, uint) {
-		return LibOpen._calcAPY(_commitment, oldLengthAccruedYield, oldTime, aggregateYield);
-	}
-
 	function updateLoanIssuanceFees(uint fees) external override authComptroller() returns(bool) {
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint oldFees = ds.loanIssuanceFees;
@@ -208,7 +200,7 @@ contract Comptroller is Pausable, IComptroller {
 		uint oldReserveFactor = ds.reserveFactor;
 		ds.reserveFactor = _reserveFactor;
 		 
-		emit ReserveFactorUpdated(msg.sender,oldReserveFactor, ds.reserveFactor, block.timestamp);
+		emit ReserveFactorUpdated(msg.sender, oldReserveFactor, ds.reserveFactor, block.timestamp);
 		return true;
 	} 
 
