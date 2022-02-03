@@ -29,13 +29,13 @@ contract MockBep20 is Context{
     event Approval(address indexed _owner,address indexed _spender,uint256 _value);
     event PauseState(address indexed _pauser, bool isPaused);
 
-    constructor(string memory name_,string memory symbol_,uint8 decimals_,address admin_,uint256 cappedSupply_) {
-        name = name_;
-        symbol = symbol_;
-        decimals = decimals_;
+    constructor(string memory _name,string memory _symbol,uint8 _decimals,address _admin,uint256 _cappedSupply) {
+        name = _name;
+        symbol = _symbol;
+        decimals = _decimals;
 
-        admin = admin_;
-        cappedSupply = cappedSupply_*10**decimals;
+        admin = _admin;
+        cappedSupply = _cappedSupply*10**decimals;
         console.log("mint amount is %s", 5000000*10**decimals);
         mint(admin, 50000000000*10**decimals);
     }
@@ -49,14 +49,14 @@ contract MockBep20 is Context{
     }
 
 
-    function transferAnyERC20(address token_,address recipient_,uint256 _value_) external auth() nonReentrant() returns(bool)   {
-        IERC20(token_).transfer(recipient_, _value_);
+    function transferAnyERC20(address _token,address _recipient,uint256 _value) external auth() nonReentrant() returns(bool success)   {
+        IERC20(_token).transfer(_recipient, _value);
 
-        return true;
+        return bool success;
     }
 
-    function balanceOf(address _addr) external view returns (uint256) {
-        return _balances[_addr];
+    function balanceOf(address _account) external view returns (uint256) {
+        return _balances[_account];
     }
 
     function allowance(address _owner, address _spender) external view returns (uint256 remaining)    {
@@ -78,90 +78,109 @@ contract MockBep20 is Context{
         _unpause();
     }
 
-    function transfer(address _to, uint256 _value) external nonReentrant() returns (bool) {
+    function transfer(address _to, uint256 _value) external nonReentrant() returns (bool success) {
         _checkPauseState();
         _transfer(_msgSender(), _to, _value);
-        return true;
+        
+        return success;
     }
 
-    function approve(address _spender, uint256 _value) external nonReentrant() returns (bool) {
+    function approve(address _spender, uint256 _value) external nonReentrant() returns (bool success) {
+        
         _checkPauseState();
         _approve(_spender, _value);
-        return true;
+        
+        return success;
     }
 
-    function transferFrom(address _from,address _to,uint256 _value) external nonReentrant() returns (bool) {
+    function transferFrom(address _from,address _to,uint256 _value) external nonReentrant() returns (bool success) {
         _checkPauseState();
+
         console.log("allowce is %s, value is %s, balanace is %s", _allowances[_from][_msgSender()], _value, _balances[_from]);
-        require (_allowances[_from][_msgSender()] >= _value && _balances[_from] >= _value, "Insufficient balance, or allowance");
+        
+        require (_allowances[_from][_msgSender()] >= _value, "ERROR: Amount exceeds allowance");
+        require (_balances[_from] >= _value, "ERROR: Insufficient balance at source");
         
         _allowances[_from][_msgSender()] -= _value;
+
         _transfer(_from, _to, _value);
-        return true;
+
+        return success;
     }
 
-    function increaseAllowance(address _spender, uint256 _value) external nonReentrant() returns(bool) {
+    function increaseAllowance(address _spender, uint256 _value) external nonReentrant() returns (bool success) {
         _checkPauseState();
+
         if (_allowances[_msgSender()][_spender] == 0)   {
-            _approve(_spender, _value);
+            return _approve(_spender, _value);
         }
+
         _allowances[_msgSender()][_spender] += _value;
         
         emit Approval(_msgSender(), _spender, _value);
-        return true;
+        return success;
     }
 
-    function decreaseAllowance(address _spender, uint256 _value) external nonReentrant() returns(bool) {
+    function decreaseAllowance(address _spender, uint256 _value) external nonReentrant() returns (bool success) {
         _checkPauseState();
-        require(_allowances[_msgSender()][_spender]>=0, "Decrease value > allowance");
+        require(_allowances[_msgSender()][_spender]>=_value, "ERROR: Reducible amount exceeds allowance");
 
         _allowances[_msgSender()][_spender] -= _value;
         
         emit Approval(_msgSender(), _spender, _value);
 
-        return true;
+        return success;
     }
 
-    // This works too
-    function mint(address _to, uint256 _value) public auth() nonReentrant() {
+
+    function mint(address _to, uint256 _value) public auth() nonReentrant() returns(bool success){
         _checkPauseState();
-        require(totalSupply <= cappedSupply && _value != 0 && _to != address(0),"Token mint is not possible");
+        
+        require(totalSupply <= cappedSupply,"ERROR: Mint exceeds capped supply");
+        require(_to != address(0),"ERROR: Mint to address 0");
+        require(_value != 0,"ERROR: Can not mint zero amount");
+
         _balances[_to] += _value;
         totalSupply += _value;
 
         emit Transfer(address(0), _to, _value);
+        bool success;
     }
 
-    function burn(address _addr, uint256 _value) public auth() nonReentrant()    {
+    function burn(address _account, uint256 _value) public auth() nonReentrant() returns (bool success) {
         _checkPauseState();
-        require(_addr != address(0),"You can not burn tokens from this address");
+        
+        require(_account != address(0),"ERROR: Burn is not possible from zero address");
 
-        _balances[_addr] -= _value;
+        _balances[_account] -= _value;
         totalSupply -= _value;
         
-        emit Transfer(_addr, address(0), _value);
+        emit Transfer(_account, address(0), _value);
+
+        return success;
     }
 
     function _checkPauseState() internal view {
-        require(isPaused == false,"The contract is paused. Transfer functions are temporarily disabled");
+        require(isPaused == false,"ERROR: Contract paused. Transactions temporarily disabled.");
     }
 
     function _pause() internal auth() {
-        require(isPaused == false, "This contract is already paused");
+        require(isPaused == false, "ERROR: Already paused");
         isPaused = true;
 
         emit PauseState(_msgSender(), true);
     }
 
     function _unpause() internal auth() {
-        require(isPaused == true, "This contract is already paused");
+        require(isPaused == true, "ERROR: Already unpaused");
         isPaused = false;
 
         emit PauseState(_msgSender(), false);
     }
     
     function _transfer(address sender, address recipient, uint256 _value) private {
-        require(recipient != address(0) && _balances[sender] >= _value, "You can not send funds to zero address; Or, insufficient balance");
+        require(_spender != address(0), "ERROR: Zero address");
+        require(_balances[sender] >= _value, "ERROR: Insufficient balance");
 
         _balances[sender] -= _value;
         _balances[recipient] += _value;
@@ -172,23 +191,27 @@ contract MockBep20 is Context{
     function _approve(address _spender, uint256 _value) private {
         
         _allowances[_msgSender()][_spender] = 0;
+
         console.log("sender is %s, value is %s", address(_msgSender()), _value );
         console.log("balance is %s, spender is %s", _balances[_msgSender()], _spender);
-        require(_balances[_msgSender()] >= _value && _spender != address(0), "Zero address can not be used in a transfer; or, Insufficient balance");
+
+        require(_spender != address(0), "ERROR: Zero address");
+        require(_balances[_msgSender()] >= _value, "ERROR: Insufficient balance");
+        
         _allowances[_msgSender()][_spender] = _value;
 
         emit Approval(_msgSender(), _spender, _value);        
     }
 
     modifier nonReentrant() {
-        require(isReentrant == false, "Re-entrant alert!");
+        require(isReentrant == false, "ERROR: Re-entrant");
         isReentrant = true;
         _;
         isReentrant = false;
     }
 
     modifier auth() {
-        require(_msgSender() == admin, "Inadequate permission");
+        require(_msgSender() == admin, "ERROR: Not an admin");
         _;
     }
 }
