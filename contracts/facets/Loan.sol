@@ -34,11 +34,11 @@ contract Loan is Pausable, ILoan {
 	}
 
 	receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 	
 	fallback() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
 	/// Swap loan to a secondary market.

@@ -14,11 +14,11 @@ contract Reserve is Pausable, IReserve {
 	}
 	
 	receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
     
 	fallback() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
 	function transferAnyBEP20(

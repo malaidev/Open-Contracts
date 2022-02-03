@@ -45,11 +45,11 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 
 	// receive() external payable {
 	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-	//     payable(ds.upgradeAdmin).transfer(_msgValue());
+	//     payable(ds.upgradeAdmin).transfer(msg.value);
 	// }
 	// fallback() external payable {
 	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-	//     payable(ds.upgradeAdmin).transfer(_msgValue());
+	//     payable(ds.upgradeAdmin).transfer(msg.value);
 	// }
 	function hasRole(bytes32 role, address account) public view override returns (bool) {
 		return roles[role]._members[account];
