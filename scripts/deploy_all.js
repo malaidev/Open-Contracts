@@ -501,6 +501,6 @@ if (require.main === module) {
 }
 exports.deployDiamond = deployDiamond
 // exports.deployOpenFacets = deployOpenFacets
-exports.addMarkets = addMarkets
 
+exports.addMarkets = addMarkets
 

@@ -84,7 +84,7 @@ contract LoanExt is Pausable, ILoanExt {
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
 
 		require(loan.id == 0, "ERROR: Active loan");
-		ds.collateralToken.approveFrom(msg.sender, address(this), _collateralAmount);
+		// ds.collateralToken.approveFrom(msg.sender, address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(msg.sender, address(this), _collateralAmount);
 
 		LibOpen._updateReservesLoan(_collateralMarket,_collateralAmount, 0);
@@ -236,7 +236,7 @@ contract LoanExt is Pausable, ILoanExt {
 
 		ds.collateralToken = IBEP20(LibOpen._connectMarket(_collateralMarket));
 		// _quantifyAmount(_collateralMarket, _collateralAmount);
-		ds.collateralToken.approveFrom(msg.sender, address(this), _collateralAmount);
+		// ds.collateralToken.approveFrom(msg.sender, address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(msg.sender, address(this), _collateralAmount);
 		LibOpen._updateReservesLoan(_collateralMarket, _collateralAmount, 0);
 		
@@ -310,7 +310,7 @@ contract LoanExt is Pausable, ILoanExt {
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
 		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
-		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_market][_commitment];
+		// uint deductAccruedInterest = ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 		// CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
 
 		// emit FairPriceCall(ds.requestEventId++, collateral.market, collateral.amount);
@@ -321,20 +321,20 @@ contract LoanExt is Pausable, ILoanExt {
 		LibOpen._accruedInterest(_account, _market, _commitment);
 		
 		if (loan.commitment == LibOpen._getCommitment(2))
-			collateral.amount += ds.indAccruedAPY[_account][_market][_commitment].accruedYield - deductibleInterest.accruedInterest;
+			collateral.amount += ds.indAccruedAPY[_account][_market][_commitment].accruedYield - ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 		else if (loan.commitment == LibOpen._getCommitment(2))
-			collateral.amount -= deductibleInterest.accruedInterest;
+			collateral.amount -= ds.indAccruedAPR[_account][_market][_commitment].accruedInterest;
 
 		delete ds.indAccruedAPY[_account][_market][_commitment];
 		delete ds.indAccruedAPR[_account][_market][_commitment];
 		delete ds.loanPassbook[_account].accruedAPR[loan.id - 1];
 		delete ds.loanPassbook[_account].accruedAPY[loan.id - 1];
 
-		uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
-		uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
+		// uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
+		// uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
 		// convert collateral & loanCurrent into loanActual
-		uint256 _repaymentAmount = LibOpen._swap(collateral.market, loan.market, cAmount, 2);
-		_repaymentAmount += LibOpen._swap(loanState.currentMarket, loan.market, lAmountCurrent, 1);
+		uint256 _repaymentAmount = LibOpen._swap(collateral.market, loan.market, LibOpen._getLatestPrice(collateral.market)*collateral.amount, 2, _account);
+		_repaymentAmount += LibOpen._swap(loanState.currentMarket, loan.market, LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount, 1, _account);
 
 		delete ds.indLoanState[_account][_market][_commitment];
 		delete ds.indLoanRecords[_account][_market][_commitment];

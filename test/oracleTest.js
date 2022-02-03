@@ -53,7 +53,7 @@ describe(" Oracle Test ", function () {
     before(async function () {
         accounts = await ethers.getSigners()
 		contractOwner = accounts[0]
-		
+
 		diamondAddress = "0xf87B4A3eD47416De6096d1eE183e86dAbcFc8Cc8";
 
 		tokenList = await ethers.getContractAt('TokenList', diamondAddress)
@@ -65,7 +65,7 @@ describe(" Oracle Test ", function () {
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)
 
-        console.log()
+        console.log(tokenList.address);
 	})
 
     it("Check diamond", async () => {

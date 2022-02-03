@@ -153,12 +153,13 @@ contract Deposit is Pausable, IDeposit{
 
 		preDepositProcess(_market, _amount);
 
+		console.log("addToDeposit sender address is %s", msg.sender);
 		if (!LibOpen._hasDeposit(msg.sender, _market, _commitment))	{
 			createNewDeposit(_market, _commitment, _amount, msg.sender);
 			return false;
 		}
 		
-		ds.token.approveFrom(msg.sender, address(this), _amount);
+		// ds.token.approveFrom(msg.sender, address(this), _amount);
 		ds.token.transferFrom(msg.sender, address(this), _amount);
 
 		processDeposit(msg.sender, _market, _commitment, _amount);
@@ -177,7 +178,6 @@ contract Deposit is Pausable, IDeposit{
 		
 		LibOpen._ensureSavingsAccount(_sender,savingsAccount);
 
-		ds.token.approveFrom(_sender, address(this), _amount);
 		ds.token.transferFrom(_sender, address(this), _amount);
 
 		console.log("From lib address is %s", address(this));
