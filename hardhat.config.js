@@ -116,8 +116,9 @@ module.exports = {
       nonce:150
     },
     bsctestnet: {
-      accounts: {
-        mnemonic: process.env.MNEMONIC
+      accounts: 
+      {
+          mnemonic: process.env.MNEMONIC,
       },
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
