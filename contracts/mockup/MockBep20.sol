@@ -38,11 +38,11 @@ contract MockBep20 is Context{
     }
 
     receive() external payable {
-        payable(admin).transfer(_msgValue());
+        payable(admin).transfer(msg.value);
     }
 
     fallback() external payable {
-        payable(admin).transfer(_msgValue());
+        payable(admin).transfer(msg.value);
     }
 
 

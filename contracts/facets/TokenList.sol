@@ -29,11 +29,11 @@ contract TokenList is Pausable, ITokenList {
   }
 
   receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
     
 	fallback() external payable {
-    payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+    payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
   function isMarketSupported(bytes32  _market) external view override returns (bool)	{

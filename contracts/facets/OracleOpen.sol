@@ -14,11 +14,11 @@ contract OracleOpen is Pausable, IOracleOpen {
 	}
 
 	receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 	
 	fallback() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
 

@@ -20,11 +20,11 @@ contract Deposit is Pausable, IDeposit{
 	}
 
 	receive() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 	
 	fallback() external payable {
-		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
 	function hasAccount(address _account) external view override returns (bool)	{
