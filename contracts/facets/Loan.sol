@@ -88,11 +88,11 @@ contract Loan is Pausable, ILoan {
 	}
 
 /// SwapToLoan
-	function swapToLoan(
+	function _swapToLoan(
 		bytes32 _swapMarket,
 		bytes32 _commitment,
 		bytes32 _market
-	) public nonReentrant() returns (uint swappedAmount) {
+	) internal returns (uint swappedAmount) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LibOpen._hasLoanAccount(msg.sender);
 		
@@ -228,7 +228,7 @@ contract Loan is Pausable, ILoan {
 					_remnantAmount += LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentAmount;
 				}
 				else {
-					_swappedAmount = swapToLoan(LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket, _commitment, _market);
+					_swappedAmount = _swapToLoan(LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket, _commitment, _market);
 					_repayAmount += _swappedAmount;
 				}
 
@@ -264,7 +264,7 @@ contract Loan is Pausable, ILoan {
 
 				if (LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket == _market)	_repayAmount += LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentAmount;
 				else if (LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket != _market) {
-					_swappedAmount = swapToLoan(LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket, _commitment, _market);
+					_swappedAmount = _swapToLoan(LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket, _commitment, _market);
 					_repayAmount += _swappedAmount;
 				}
 				
