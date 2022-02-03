@@ -330,8 +330,8 @@ contract LoanExt is Pausable, ILoanExt {
 		// uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
 		// uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
 		// convert collateral & loanCurrent into loanActual
-		uint256 _repaymentAmount = LibOpen._swap(collateral.market, loan.market, LibOpen._getLatestPrice(collateral.market)*collateral.amount, 2, _account);
-		_repaymentAmount += LibOpen._swap(loanState.currentMarket, loan.market, LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount, 1, _account);
+		uint256 _repaymentAmount = LibOpen._swap(_account, collateral.market, loan.market, LibOpen._getLatestPrice(collateral.market)*collateral.amount, 2);
+		_repaymentAmount += LibOpen._swap(_account, loanState.currentMarket, loan.market, LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount, 1);
 
 		delete ds.indLoanState[_account][_market][_commitment];
 		delete ds.indLoanRecords[_account][_market][_commitment];

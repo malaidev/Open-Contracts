@@ -333,8 +333,8 @@ contract Deposit is Pausable, IDeposit{
 		LibOpen._minAmountCheck(_market, _amount);
 	}
 
-    function getFairPriceDeposit(uint _requestId) external view override returns (uint price){
-		price = LibOpen._getFairPrice(_requestId);
+    function getFairPriceDeposit(uint _requestId) external view override returns (uint){
+		return LibOpen._getFairPrice(_requestId);
 	}
 
 	function pauseDeposit() external override authDeposit() nonReentrant() {
