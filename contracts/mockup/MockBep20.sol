@@ -5,8 +5,6 @@ import "../util/Context.sol";
 import "../util/Address.sol";
 import "../util/IERC20.sol";
 
-import "hardhat/console.sol";
-
 contract MockBep20 is Context{
     using Address for address;
 

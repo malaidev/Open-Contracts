@@ -2,7 +2,6 @@
 pragma solidity 0.8.1;
 import "./util/Pausable.sol";
 import "./interfaces/IAccessRegistry.sol";
-import "hardhat/console.sol";
 struct RoleData {
     mapping(address => bool) _members;
     bytes32 _role;

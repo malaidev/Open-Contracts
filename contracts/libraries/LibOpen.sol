@@ -18,8 +18,6 @@ import "../interfaces/AggregatorV3Interface.sol";
 import "../interfaces/IAugustusSwapper.sol";
 import "../interfaces/IPancakeRouter01.sol";
 
-import "hardhat/console.sol";
-
 library LibOpen {
 	using Address for address;
 

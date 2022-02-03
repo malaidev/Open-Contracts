@@ -4,7 +4,6 @@ pragma solidity 0.8.1;
 import "../util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "../libraries/LibOpen.sol";
-import "hardhat/console.sol";
 
 contract Deposit is Pausable, IDeposit{
 		
