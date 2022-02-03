@@ -32,7 +32,7 @@ contract tBTC is Context{
         name = "Bitcoin";
         symbol = "BTC.t";
         decimals = 8;
-        totalSupply = 2100000000000000;
+        totalSupply = 0;
         admin = admin_;
         cappedSupply = 2100000000000000;
 

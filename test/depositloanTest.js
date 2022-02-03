@@ -74,6 +74,7 @@ describe(" Complex Test ", function () {
 		bepUsdt = await ethers.getContractAt('tUSDT', rets['tUsdtAddress'])
 		bepBtc = await ethers.getContractAt('tBTC', rets['tBtcAddress'])
 		bepUsdc = await ethers.getContractAt('tUSDC', rets['tUsdcAddress'])
+        bepWbnb = await ethers.getContractAt('tWBNB', rets['tUsdcAddress'])
 	})
 
     it('should have three facets -- call to facetAddresses function', async () => {
