@@ -346,9 +346,8 @@ async function addMarkets(diamondAddress) {
         { gasLimit: 800000 }
     )
 
-    return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress}
+    return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
 }
-
 
 // async function addMarkets(diamondAddress) {
 //     const accounts = await ethers.getSigners()
@@ -490,6 +489,7 @@ async function addMarkets(diamondAddress) {
 
 //     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress}
 // }
+
 
 if (require.main === module) {
     main()

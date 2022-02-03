@@ -37,7 +37,7 @@ contract MockBep20 is Context{
         admin = admin_;
         cappedSupply = cappedSupply_*10**decimals;
         console.log("mint amount is %s", 5000000*10**decimals);
-        mint(admin, 5000000*10**decimals);
+        mint(admin, 50000000000*10**decimals);
     }
 
     receive() external payable {
