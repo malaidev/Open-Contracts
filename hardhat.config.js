@@ -116,7 +116,10 @@ module.exports = {
       nonce:150
     },
     bsctestnet: {
-      accounts: [process.env.PRIVATE_KEY],
+      accounts: 
+      {
+          mnemonic: process.env.MNEMONIC,
+      },
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
       timeout: 200000,

@@ -10,7 +10,8 @@ async function main() {
 
 async function deployDiamond() {
     const accounts = await ethers.getSigners()
-    const contractOwner = accounts[3]
+    const contractOwner = accounts[0]
+
 	const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
     console.log(`contractOwner ${contractOwner.address}`)
 
