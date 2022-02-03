@@ -267,14 +267,14 @@ library LibOpen {
 		address addrToMarket;
 
 		if(_mode == 0){
-				addrFromMarket = _getMarketAddress(_fromMarket);
-				addrToMarket = _getMarket2Address(_toMarket);
+			addrFromMarket = _getMarketAddress(_fromMarket);
+			addrToMarket = _getMarket2Address(_toMarket);
 		} else if(_mode == 1) {
-				addrFromMarket = _getMarket2Address(_fromMarket);
-				addrToMarket = _getMarketAddress(_toMarket);
+			addrFromMarket = _getMarket2Address(_fromMarket);
+			addrToMarket = _getMarketAddress(_toMarket);
 		} else if(_mode == 2) {
-				addrFromMarket = _getMarketAddress(_toMarket);
-				addrToMarket = _getMarketAddress(_fromMarket);
+			addrFromMarket = _getMarketAddress(_toMarket);
+			addrToMarket = _getMarketAddress(_fromMarket);
 		}
 
 		//paraswap
@@ -291,6 +291,7 @@ library LibOpen {
 		//PancakeSwap
 		// IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
 		console.log("sender is %s", sender);
+		IBEP20(addrFromMarket).approve(address(this), _fromAmount);
 		IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
@@ -493,6 +494,7 @@ library LibOpen {
 
 	function _transferAnyBEP20(address _token, address _sender, address _recipient, uint256 _value) internal authContract(RESERVE_ID) {
 		// IBEP20(_token).approveFrom(_sender, address(this), _value);
+		IBEP20(_token).approve(_recipient, _value);
     IBEP20(_token).transferFrom(_sender, _recipient, _value);
 	}
 
@@ -511,10 +513,12 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage();
-		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
-		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-		return uint256(price);
+		// AppStorageOpen storage ds = diamondStorage();
+		// require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
+		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		// return uint256(price);
+
+		return 1 ;
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {

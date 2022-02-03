@@ -85,6 +85,7 @@ contract LoanExt is Pausable, ILoanExt {
 
 		require(loan.id == 0, "ERROR: Active loan");
 		// ds.collateralToken.approveFrom(msg.sender, address(this), _collateralAmount);
+		ds.collateralToken.approve(address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(msg.sender, address(this), _collateralAmount);
 
 		LibOpen._updateReservesLoan(_collateralMarket,_collateralAmount, 0);
@@ -237,6 +238,7 @@ contract LoanExt is Pausable, ILoanExt {
 		ds.collateralToken = IBEP20(LibOpen._connectMarket(_collateralMarket));
 		// _quantifyAmount(_collateralMarket, _collateralAmount);
 		// ds.collateralToken.approveFrom(msg.sender, address(this), _collateralAmount);
+		ds.collateralToken.approve(address(this), _collateralAmount);
 		ds.collateralToken.transferFrom(msg.sender, address(this), _collateralAmount);
 		LibOpen._updateReservesLoan(_collateralMarket, _collateralAmount, 0);
 		

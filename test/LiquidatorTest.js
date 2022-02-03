@@ -22,7 +22,7 @@ describe("===== Swapping Loans =====", function () {
   let comptroller;
   let deposit;
   let loan;
-  let loan1;
+  let LoanExt;
   let oracle;
   let reserve;
   let library;
@@ -36,20 +36,20 @@ describe("===== Swapping Loans =====", function () {
   let rets;
   const addresses = [];
 
-  const symbolWBNB =
-    "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
-  const symbolUsdt =
-    "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
-  const symbolUsdc =
-    "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
-  const symbolBtc =
-    "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
-  const symbolEth =
-    "0x4554480000000000000000000000000000000000000000000000000000000000";
-  const symbolSxp =
-    "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
-  const symbolCAKE =
-    "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
+  // const symbolWBNB =
+  //   "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
+  // const symbolUsdt =
+  //   "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
+  // const symbolUsdc =
+  //   "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
+  // const symbolBtc =
+  //   "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
+  // const symbolEth =
+  //   "0x4554480000000000000000000000000000000000000000000000000000000000";
+  // const symbolSxp =
+  //   "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
+  // const symbolCAKE =
+  //   "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
 
   const comit_NONE = utils.formatBytes32String("comit_NONE");
   const comit_TWOWEEKS = utils.formatBytes32String("comit_TWOWEEKS");
@@ -78,14 +78,15 @@ describe("===== Swapping Loans =====", function () {
     comptroller = await ethers.getContractAt("Comptroller", diamondAddress);
     deposit = await ethers.getContractAt("Deposit", diamondAddress);
     loan = await ethers.getContractAt("Loan", diamondAddress);
-    loan1 = await ethers.getContractAt("Loan1", diamondAddress);
+    LoanExt = await ethers.getContractAt("LoanExt", diamondAddress);
     oracle = await ethers.getContractAt("OracleOpen", diamondAddress);
     liquidator = await ethers.getContractAt("Liquidator", diamondAddress);
     reserve = await ethers.getContractAt("Reserve", diamondAddress);
 
     bepUsdt = await ethers.getContractAt("tUSDT", rets["tUsdtAddress"]);
-    bepBtc = await ethers.getContractAt("tBTC", rets["tBtcAddress"]);
-    bepUsdc = await ethers.getContractAt("tUSDC", rets["tUsdcAddress"]);
+    // bepBtc = await ethers.getContractAt("tBTC", rets["tBtcAddress"]);
+    // bepUsdc = await ethers.getContractAt("tUSDC", rets["tUsdcAddress"]);
+    // bepWbnb = await ethers.getContractAt('tWBNB', rets['tUsdcAddress'])
     done();
   }) /**.timeout(2000000)*/;
 
@@ -154,12 +155,12 @@ describe("===== Swapping Loans =====", function () {
     expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x400);
 
     await expect(
-      loan1
+      LoanExt
         .connect(accounts[1])
         .loanRequest(symbolUsdt, comit_ONEMONTH, 0x200, symbolUsdt, 0x500, {
           gasLimit: 5000000,
         })
-    ).to.emit(loan1, "NewLoan");
+    ).to.emit(LoanExt, "NewLoan");
 
     expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfc00);
     expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200);
@@ -185,12 +186,12 @@ describe("===== Swapping Loans =====", function () {
 
   //   it("Check addCollateral", async () => {
   //     await expect(
-  //       loan1
+  //       LoanExt
   //         .connect(accounts[1])
   //         .addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 0x100, {
   //           gasLimit: 5000000,
   //         })
-  //     ).to.emit(loan1, "AddCollateral");
+  //     ).to.emit(LoanExt, "AddCollateral");
   //     expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfb00);
   //     expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x300);
   //   });
