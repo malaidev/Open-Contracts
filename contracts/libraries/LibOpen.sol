@@ -290,7 +290,6 @@ library LibOpen {
 
 		//PancakeSwap
 		// IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
-		console.log("sender is %s", sender);
 		IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
 		IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 

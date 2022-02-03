@@ -152,7 +152,6 @@ contract Deposit is Pausable, IDeposit{
         AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
         preDepositProcess(_market, _amount);
-        console.log("addToDeposit sender address is %s", msg.sender);
 
         if (!LibOpen._hasDeposit(msg.sender, _market, _commitment))    {
             createNewDeposit(_market, _commitment, _amount, msg.sender);
@@ -179,8 +178,6 @@ contract Deposit is Pausable, IDeposit{
         LibOpen._ensureSavingsAccount(_sender,savingsAccount);
 
         ds.token.transferFrom(_sender, address(this), _amount);
-
-        console.log("From lib address is %s", address(this));
 
         processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
         LibOpen._updateReservesDeposit(_market, _amount, 0);

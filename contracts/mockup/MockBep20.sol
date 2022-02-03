@@ -36,7 +36,6 @@ contract MockBep20 is Context{
 
         admin = _admin;
         cappedSupply = _cappedSupply*10**decimals;
-        console.log("mint amount is %s", 5000000*10**decimals);
         mint(admin, 50000000000*10**decimals);
     }
 
@@ -96,8 +95,6 @@ contract MockBep20 is Context{
     function transferFrom(address _from,address _to,uint256 _value) external nonReentrant() returns (bool success) {
         _checkPauseState();
 
-        console.log("allowce is %s, value is %s, balanace is %s", _allowances[_from][_msgSender()], _value, _balances[_from]);
-        
         require (_allowances[_from][_msgSender()] >= _value, "ERROR: Amount exceeds allowance");
         require (_balances[_from] >= _value, "ERROR: Insufficient balance at source");
         
@@ -191,9 +188,6 @@ contract MockBep20 is Context{
     function _approve(address _spender, uint256 _value) private {
         
         _allowances[_msgSender()][_spender] = 0;
-
-        console.log("sender is %s, value is %s", address(_msgSender()), _value );
-        console.log("balance is %s, spender is %s", _balances[_msgSender()], _spender);
 
         require(_spender != address(0), "ERROR: Zero address");
         require(_balances[_msgSender()] >= _value, "ERROR: Insufficient balance");

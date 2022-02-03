@@ -246,8 +246,6 @@ contract LoanExt is Pausable, ILoanExt {
 
 		emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
 
-		console.log("isReentrant is %s", isReentrant);
-		
 		return true;
 	}
 
@@ -431,9 +429,7 @@ contract LoanExt is Pausable, ILoanExt {
 	}
 
     modifier authLoanExt() {
-		console.log("isReentrant is %s", isReentrant);
     	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		console.log("superadminaddress is %s", ds.superAdminAddress);
 		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminLoanExt, msg.sender), "ERROR: Not an admin");
 
 		_;
