@@ -28,7 +28,7 @@ describe(" Complex Test ", function () {
 	let library
 	let liquidator
 	let accounts
-	let contractOwner
+	let upgradeAdmin
 	let bepUsdt
 	let bepBtc
 	let bepUsdc
@@ -52,7 +52,7 @@ describe(" Complex Test ", function () {
 
     before(async function () {
         accounts = await ethers.getSigners()
-		contractOwner = accounts[0]
+		upgradeAdmin = accounts[0]
 		console.log("account1 is ", accounts[1].address)
 		
 		diamondAddress = await deployDiamond()
@@ -96,7 +96,7 @@ describe(" Complex Test ", function () {
     it("Token Mint", async () => {
         console.log("Reserve balance is ", await bepUsdt.balanceOf(diamondAddress));
 		// expect(await bepUsdt.balanceOf(deposit.address)).to.be.equal(0);
-		await expect(bepUsdt.transfer(contractOwner.address, 0x10000)).to.emit(bepUsdt, 'Transfer');
+		await expect(bepUsdt.transfer(upgradeAdmin.address, 0x10000)).to.emit(bepUsdt, 'Transfer');
 		await expect(bepUsdt.transfer(accounts[1].address, 0x10000)).to.emit(bepUsdt, 'Transfer');
 		await expect(bepUsdc.transfer(accounts[1].address, 0x10000)).to.emit(bepUsdc, 'Transfer');
 		await expect(bepBtc.transfer(accounts[1].address, 0x10000)).to.emit(bepBtc, 'Transfer');
@@ -104,7 +104,7 @@ describe(" Complex Test ", function () {
 		await expect(bepUsdt.transfer(diamondAddress, 0x10000000)).to.emit(bepUsdt, 'Transfer');
 		await expect(bepUsdc.transfer(diamondAddress, 0x10000000)).to.emit(bepUsdc, 'Transfer');
 
-		// await bepUsdt.transfer(contractOwner.address, 10000000000000);
+		// await bepUsdt.transfer(upgradeAdmin.address, 10000000000000);
 	})
 
     // // it("Check is market support", async () => {
@@ -211,7 +211,7 @@ describe(" Complex Test ", function () {
         console.log("before liquidation isReentrant is ", await loanExt.GetisReentrant());
         await bepBtc.connect(accounts[1]).approve(diamondAddress, 0x200);
 
-        await loanExt.connect(contractOwner).liquidation(accounts[1].address, 2);
+        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 2);
     })
   
 })

@@ -28,7 +28,7 @@ describe("===== Swapping Loans =====", function () {
   let library;
   let liquidator;
   let accounts;
-  let contractOwner;
+  let upgradeAdmin;
   let bepUsdt;
   let bepBtc;
   let bepUsdc;
@@ -58,7 +58,7 @@ describe("===== Swapping Loans =====", function () {
 
   before(async function (done) {
     accounts = await ethers.getSigners();
-    contractOwner = accounts[0];
+    upgradeAdmin = accounts[0];
     console.log("account1 is ", accounts[1].address);
 
     diamondAddress = await deployDiamond();
@@ -110,7 +110,7 @@ describe("===== Swapping Loans =====", function () {
 
   it("Token Mint", async (done) => {
     // expect(await bepUsdt.balanceOf(deposit.address)).to.be.equal(0);
-    await expect(bepUsdt.transfer(contractOwner.address, 0x10000)).to.emit(
+    await expect(bepUsdt.transfer(upgradeAdmin.address, 0x10000)).to.emit(
       bepUsdt,
       "Transfer"
     );

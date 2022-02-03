@@ -21,7 +21,7 @@ library LibDiamond {
         bytes4[] selectors;
         //  Function selectors with the ABI of a contract provide enough information about functions to be useful for user-interface software.
 		mapping(bytes4 => bool) supportedInterfaces;
-        address contractOwner; // owner of the contract
+        address upgradeAdmin; // owner of the contract
     }
 	
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
@@ -33,20 +33,20 @@ library LibDiamond {
         }
     }
 
-    function setContractOwner(address _newOwner) internal {
+    function setupgradeAdmin(address _newOwner) internal {
         DiamondStorage storage ds = diamondStorage();
-        address previousOwner = ds.contractOwner;
-        ds.contractOwner = _newOwner;
+        address previousOwner = ds.upgradeAdmin;
+        ds.upgradeAdmin = _newOwner;
 		  
         emit OwnershipTransferred(previousOwner, _newOwner);
     }
 
-    function contractOwner() internal view returns (address contractOwner_) {
-        contractOwner_ = diamondStorage().contractOwner;
+    function upgradeAdmin() internal view returns (address upgradeAdmin_) {
+        upgradeAdmin_ = diamondStorage().upgradeAdmin;
     }
 
-    function enforceIsContractOwner() internal view {
-        require(msg.sender == diamondStorage().contractOwner, "LibDiamond: Must be contract owner");
+    function enforceIsupgradeAdmin() internal view {
+        require(msg.sender == diamondStorage().upgradeAdmin, "LibDiamond: Must be contract owner");
     }
 
     event DiamondCut(IDiamondCut.FacetCut[] _diamondCut, address _init, bytes _calldata);

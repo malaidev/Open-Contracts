@@ -36,11 +36,11 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 		address indexed account,
 		address indexed sender
 	);
-	constructor(address contractOwner) {
+	constructor(address upgradeAdmin) {
 		// AppStorageOpen storage ds = LibOpen.diamondStorage();
 		superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
 		console.log("constructor Accessregistry with %s", address(this));
-		adminRoles[superAdmin]._adminMembers[contractOwner] = true;
+		adminRoles[superAdmin]._adminMembers[upgradeAdmin] = true;
 
 		addAdminRole(superAdmin, address(this));
 		console.log("constructor Accessregistry success");
@@ -48,11 +48,11 @@ contract AccessRegistry is Pausable, IAccessRegistry {
 
 	// receive() external payable {
 	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-	//     payable(ds.contractOwner).transfer(_msgValue());
+	//     payable(ds.upgradeAdmin).transfer(_msgValue());
 	// }
 	// fallback() external payable {
 	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-	//     payable(ds.contractOwner).transfer(_msgValue());
+	//     payable(ds.upgradeAdmin).transfer(_msgValue());
 	// }
 	function hasRole(bytes32 role, address account) public view override returns (bool) {
 		return roles[role]._members[account];

@@ -39,8 +39,8 @@ library LibOpen {
 // =========== OracleOpen events ===============
 	event FairPriceCall(uint requestId, bytes32 market, uint amount);
 
-	function contractOwner() internal view returns (address contractOwner_) {
-		contractOwner_ = diamondStorage().contractOwner;
+	function upgradeAdmin() internal view returns (address upgradeAdmin_) {
+		upgradeAdmin_ = diamondStorage().upgradeAdmin;
 	}
 
 	function _addFairPriceAddress(bytes32 _market, address _address) internal {

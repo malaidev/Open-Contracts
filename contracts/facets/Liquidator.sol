@@ -14,11 +14,11 @@ contract Liquidator is Pausable, ILiquidator {
 	}
 	
 	receive() external payable {
-		payable(LibOpen.contractOwner()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
 	}
 
 	fallback() external payable {
-		payable(LibOpen.contractOwner()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
 	}
 	
 	function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) external override returns (uint256 receivedAmount) {

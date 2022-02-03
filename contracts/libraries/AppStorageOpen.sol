@@ -131,9 +131,9 @@ struct AppStorageOpen {
     mapping(bytes4 => uint) facetIndex;
 	address reserveAddress;
     // ===========  admin addresses ===========
-    bytes32 superAdmin; // superAdmin address backed in function setContractOwner()
+    bytes32 superAdmin; // superAdmin address backed in function setupgradeAdmin()
     address superAdminAddress; // Address of AccessRegistry
-    address contractOwner; 
+    address upgradeAdmin; 
 
     // =========== TokenList state variables ===========
     bytes32 adminTokenList;

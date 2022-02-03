@@ -29,11 +29,11 @@ contract Comptroller is Pausable, IComptroller {
 	}
 	
 	receive() external payable {
-		payable(LibOpen.contractOwner()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
 	}
 
 	fallback() external payable {
-		payable(LibOpen.contractOwner()).transfer(_msgValue());
+		payable(LibOpen.upgradeAdmin()).transfer(_msgValue());
 	}
 	
 	function getAPR(bytes32 _commitment) external view override returns (uint) {

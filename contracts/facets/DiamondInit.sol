@@ -25,8 +25,8 @@ contract DiamondInit {
         s.superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8; //keccak256("AccessRegistry.admin");
         s.superAdminAddress = accessRegistry;
         s.reserveAddress = reserveAddr;
-        s.contractOwner = account;
-        ds.contractOwner = account;
+        s.upgradeAdmin = account;
+        ds.upgradeAdmin = account;
         
     }
 }

@@ -28,7 +28,7 @@ describe(" Oracle Test ", function () {
 	let library
 	let liquidator
 	let accounts
-	let contractOwner
+	let upgradeAdmin
 	let bepUsdt
 	let bepBtc
 	let bepUsdc
@@ -52,7 +52,7 @@ describe(" Oracle Test ", function () {
 
     before(async function () {
         accounts = await ethers.getSigners()
-		contractOwner = accounts[0]
+		upgradeAdmin = accounts[0]
 
 		diamondAddress = "0xf87B4A3eD47416De6096d1eE183e86dAbcFc8Cc8";
 
@@ -69,7 +69,7 @@ describe(" Oracle Test ", function () {
 	})
 
     it("Check diamond", async () => {
-        expect(await tokenList.connect(contractOwner).isMarketSupported(symbolUsdt, {gasLimit: 5000000})).to.be.equal(true)
+        expect(await tokenList.connect(upgradeAdmin).isMarketSupported(symbolUsdt, {gasLimit: 5000000})).to.be.equal(true)
     })
 
     it("GetLatestPrice Check", async () => {

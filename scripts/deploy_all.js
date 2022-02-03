@@ -10,10 +10,10 @@ async function main() {
 
 async function deployDiamond() {
     const accounts = await ethers.getSigners()
-    const contractOwner = accounts[0]
+    const upgradeAdmin = accounts[0]
 
 	const superAdmin = 0x72b5b8ca10202b2492d7537bf1f6abcda23a980f7acf51a1ec8a0ce96c7d7ca8;
-    console.log(`contractOwner ${contractOwner.address}`)
+    console.log(`upgradeAdmin ${upgradeAdmin.address}`)
 
     // deploy DiamondCutFacet
     const DiamondCutFacet = await ethers.getContractFactory('DiamondCutFacet')
@@ -43,7 +43,7 @@ async function deployDiamond() {
     }
 
     const AccessRegistry = await ethers.getContractFactory("AccessRegistry");
-    const accessRegistry = await AccessRegistry.deploy(contractOwner.address)
+    const accessRegistry = await AccessRegistry.deploy(upgradeAdmin.address)
     console.log("AccessRegistry deployed at ", accessRegistry.address)
 
     console.log("Begin deploying facets");
@@ -85,7 +85,7 @@ async function deployDiamond() {
 
     // deploy Diamond
      const Diamond = await ethers.getContractFactory('OpenDiamond')
-     const diamond = await Diamond.deploy(contractOwner.address, diamondCutFacet.address)
+     const diamond = await Diamond.deploy(upgradeAdmin.address, diamondCutFacet.address)
      await diamond.deployed()
      console.log('Diamond deployed:', diamond.address)
 
@@ -97,7 +97,7 @@ async function deployDiamond() {
     let tx
     let receipt
     let args = []
-    args.push(contractOwner.address)
+    args.push(upgradeAdmin.address)
     args.push(opencut[3]["facetAddress"])
     args.push(accessRegistry.address)
     console.log(args)
@@ -132,7 +132,7 @@ async function deployDiamond() {
 
 // async function deployOpenFacets(diamondAddress) {
 //     const accounts = await ethers.getSigners()
-//     const contractOwner = accounts[0]
+//     const upgradeAdmin = accounts[0]
 //     console.log(" ==== Begin deployOpenFacets === ");
 //     diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
 //     diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -180,7 +180,7 @@ async function deployDiamond() {
 
 async function addMarkets(diamondAddress) {
     const accounts = await ethers.getSigners()
-    const contractOwner = accounts[0]
+    const upgradeAdmin = accounts[0]
 
     const diamond = await ethers.getContractAt('OpenDiamond', diamondAddress)
     const tokenList = await ethers.getContractAt('TokenList', diamondAddress)
@@ -209,28 +209,28 @@ async function addMarkets(diamondAddress) {
     await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
 
     console.log("setCommitment begin");
-    await comptroller.connect(contractOwner).setCommitment(comit_NONE);
-    await comptroller.connect(contractOwner).setCommitment(comit_TWOWEEKS);
-    await comptroller.connect(contractOwner).setCommitment(comit_ONEMONTH);
-    await comptroller.connect(contractOwner).setCommitment(comit_THREEMONTHS);
+    await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
+    await comptroller.connect(upgradeAdmin).setCommitment(comit_TWOWEEKS);
+    await comptroller.connect(upgradeAdmin).setCommitment(comit_ONEMONTH);
+    await comptroller.connect(upgradeAdmin).setCommitment(comit_THREEMONTHS);
     
     console.log("updateAPY begin");
-    await comptroller.connect(contractOwner).updateAPY(comit_NONE, 780);
-    await comptroller.connect(contractOwner).updateAPY(comit_TWOWEEKS, 1000);
-    await comptroller.connect(contractOwner).updateAPY(comit_ONEMONTH, 1500);
-    await comptroller.connect(contractOwner).updateAPY(comit_THREEMONTHS, 1800);
+    await comptroller.connect(upgradeAdmin).updateAPY(comit_NONE, 780);
+    await comptroller.connect(upgradeAdmin).updateAPY(comit_TWOWEEKS, 1000);
+    await comptroller.connect(upgradeAdmin).updateAPY(comit_ONEMONTH, 1500);
+    await comptroller.connect(upgradeAdmin).updateAPY(comit_THREEMONTHS, 1800);
 
     console.log("updateAPR");
-    await comptroller.connect(contractOwner).updateAPR(comit_NONE, 1800);
-    await comptroller.connect(contractOwner).updateAPR(comit_TWOWEEKS, 1800);
-    await comptroller.connect(contractOwner).updateAPR(comit_ONEMONTH, 1500);
-    await comptroller.connect(contractOwner).updateAPR(comit_THREEMONTHS, 1500);
+    await comptroller.connect(upgradeAdmin).updateAPR(comit_NONE, 1800);
+    await comptroller.connect(upgradeAdmin).updateAPR(comit_TWOWEEKS, 1800);
+    await comptroller.connect(upgradeAdmin).updateAPR(comit_ONEMONTH, 1500);
+    await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
 
 
     console.log("Deploy test tokens");
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
-    const admin_ = contractOwner.address;
+    const admin_ = upgradeAdmin.address;
     const Mockup = await ethers.getContractFactory('MockBep20')
     const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, admin_, 21000000)
     await tbtc.deployed()
@@ -263,7 +263,7 @@ async function addMarkets(diamondAddress) {
     const tWBNBAddress = twbnb.address
 
     console.log("addMarket");
-    await tokenList.connect(contractOwner).addMarketSupport(
+    await tokenList.connect(upgradeAdmin).addMarketSupport(
         symbolUsdt,
         18,
         tUsdtAddress, // USDT.t
@@ -273,7 +273,7 @@ async function addMarkets(diamondAddress) {
     console.log("tusdt added");
 
 
-    await tokenList.connect(contractOwner).addMarketSupport(
+    await tokenList.connect(upgradeAdmin).addMarketSupport(
         symbolUsdc,
         18,
         tUsdcAddress, // USDC.t
@@ -282,7 +282,7 @@ async function addMarkets(diamondAddress) {
     ) 
     console.log("tusdc added");
 
-    await tokenList.connect(contractOwner).addMarketSupport(
+    await tokenList.connect(upgradeAdmin).addMarketSupport(
         symbolBtc,
         8,
         tBtcAddress, // BTC.t
@@ -291,7 +291,7 @@ async function addMarkets(diamondAddress) {
     )
     console.log("tbtc added");
 
-    await tokenList.connect(contractOwner).addMarketSupport(
+    await tokenList.connect(upgradeAdmin).addMarketSupport(
         symbolWBNB,
         18,
         tWBNBAddress,
@@ -303,42 +303,42 @@ async function addMarkets(diamondAddress) {
 
 
     console.log("addMarket2");
-    await tokenList.connect(contractOwner).addMarket2Support(
+    await tokenList.connect(upgradeAdmin).addMarket2Support(
         symbolUsdt,
         18,
         tUsdtAddress, // USDT.t
         { gasLimit: 800000 }
     )
 
-    await tokenList.connect(contractOwner).addMarket2Support(
+    await tokenList.connect(upgradeAdmin).addMarket2Support(
         symbolUsdc,
         18,
         tUsdcAddress, // USDC.t
         { gasLimit: 800000 }
     ) 
 
-    await tokenList.connect(contractOwner).addMarket2Support(
+    await tokenList.connect(upgradeAdmin).addMarket2Support(
         symbolBtc,
         8,
         tBtcAddress, // BTC.t
         { gasLimit: 800000 }
     )
 
-    await tokenList.connect(contractOwner).addMarket2Support(
+    await tokenList.connect(upgradeAdmin).addMarket2Support(
         symbolSxp,
         8,
         tSxpAddress,
         { gasLimit: 800000 }
     )
 
-    await tokenList.connect(contractOwner).addMarket2Support(
+    await tokenList.connect(upgradeAdmin).addMarket2Support(
         symbolWBNB,
         18,
         tWBNBAddress,
         { gasLimit: 800000 }
     )
 
-    await tokenList.connect(contractOwner).addMarket2Support(
+    await tokenList.connect(upgradeAdmin).addMarket2Support(
         symbolCAKE,
         18,
         tCakeAddress,
@@ -350,7 +350,7 @@ async function addMarkets(diamondAddress) {
 
 // async function addMarkets(diamondAddress) {
 //     const accounts = await ethers.getSigners()
-//     const contractOwner = accounts[0]
+//     const upgradeAdmin = accounts[0]
     
 
 //     const diamond = await ethers.getContractAt('OpenDiamond', diamondAddress)
@@ -380,28 +380,28 @@ async function addMarkets(diamondAddress) {
 //     await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
 
 //     console.log("setCommitment begin");
-//     await comptroller.connect(contractOwner).setCommitment(comit_NONE);
-//     await comptroller.connect(contractOwner).setCommitment(comit_TWOWEEKS);
-//     await comptroller.connect(contractOwner).setCommitment(comit_ONEMONTH);
-//     await comptroller.connect(contractOwner).setCommitment(comit_THREEMONTHS);
+//     await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
+//     await comptroller.connect(upgradeAdmin).setCommitment(comit_TWOWEEKS);
+//     await comptroller.connect(upgradeAdmin).setCommitment(comit_ONEMONTH);
+//     await comptroller.connect(upgradeAdmin).setCommitment(comit_THREEMONTHS);
     
 //     console.log("updateAPY begin");
-//     await comptroller.connect(contractOwner).updateAPY(comit_NONE, 780);
-//     await comptroller.connect(contractOwner).updateAPY(comit_TWOWEEKS, 1000);
-//     await comptroller.connect(contractOwner).updateAPY(comit_ONEMONTH, 1500);
-//     await comptroller.connect(contractOwner).updateAPY(comit_THREEMONTHS, 1800);
+//     await comptroller.connect(upgradeAdmin).updateAPY(comit_NONE, 780);
+//     await comptroller.connect(upgradeAdmin).updateAPY(comit_TWOWEEKS, 1000);
+//     await comptroller.connect(upgradeAdmin).updateAPY(comit_ONEMONTH, 1500);
+//     await comptroller.connect(upgradeAdmin).updateAPY(comit_THREEMONTHS, 1800);
 
 //     console.log("updateAPR");
-//     await comptroller.connect(contractOwner).updateAPR(comit_NONE, 1800);
-//     await comptroller.connect(contractOwner).updateAPR(comit_TWOWEEKS, 1800);
-//     await comptroller.connect(contractOwner).updateAPR(comit_ONEMONTH, 1500);
-//     await comptroller.connect(contractOwner).updateAPR(comit_THREEMONTHS, 1500);
+//     await comptroller.connect(upgradeAdmin).updateAPR(comit_NONE, 1800);
+//     await comptroller.connect(upgradeAdmin).updateAPR(comit_TWOWEEKS, 1800);
+//     await comptroller.connect(upgradeAdmin).updateAPR(comit_ONEMONTH, 1500);
+//     await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
 
 
 //     console.log("Deploy test tokens");
 //     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
 //     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
-//     const admin_ = contractOwner.address;
+//     const admin_ = upgradeAdmin.address;
 //     // const tBTC = await ethers.getContractFactory('tBTC')
 //     // const tbtc = await tBTC.deploy(admin_)
 //     // await tbtc.deployed()
@@ -435,7 +435,7 @@ async function addMarkets(diamondAddress) {
      
 
 //     console.log("addMarket");
-//     await tokenList.connect(contractOwner).addMarketSupport(
+//     await tokenList.connect(upgradeAdmin).addMarketSupport(
 //         symbolUsdt,
 //         18,
 //         tUsdtAddress, // USDT.t
@@ -445,7 +445,7 @@ async function addMarkets(diamondAddress) {
 //     console.log("tusdt added");
 
 
-//     await tokenList.connect(contractOwner).addMarketSupport(
+//     await tokenList.connect(upgradeAdmin).addMarketSupport(
 //         symbolUsdc,
 //         18,
 //         tUsdcAddress, // USDC.t
@@ -454,7 +454,7 @@ async function addMarkets(diamondAddress) {
 //     ) 
 //     console.log("tusdc added");
 
-//     await tokenList.connect(contractOwner).addMarketSupport(
+//     await tokenList.connect(upgradeAdmin).addMarketSupport(
 //         symbolBtc,
 //         8,
 //         tBtcAddress, // BTC.t
@@ -463,7 +463,7 @@ async function addMarkets(diamondAddress) {
 //     )
 //     console.log("tbtc added");
 
-//     await tokenList.connect(contractOwner).addMarketSupport(
+//     await tokenList.connect(upgradeAdmin).addMarketSupport(
 //         symbolWBNB,
 //         18,
 //         '0x359A0A7DffEa6B95a436d5E558d20EC8972EbC4B',
@@ -472,14 +472,14 @@ async function addMarkets(diamondAddress) {
 //     )
 //     console.log("wbnb added");
 //     console.log("addMarket2");
-//     await tokenList.connect(contractOwner).addMarket2Support(
+//     await tokenList.connect(upgradeAdmin).addMarket2Support(
 //         symbolSxp,
 //         8,
 //         tSxpAddress,
 //         { gasLimit: 800000 }
 //     )
 
-//     await tokenList.connect(contractOwner).addMarket2Support(
+//     await tokenList.connect(upgradeAdmin).addMarket2Support(
 //         symbolCAKE,
 //         18,
 //         tCakeAddress,
