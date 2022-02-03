@@ -112,7 +112,7 @@ contract MockBep20 is Context{
         _checkPauseState();
 
         if (_allowances[_msgSender()][_spender] == 0)   {
-            return _approve(_spender, _value);
+            _approve(_spender, _value);
         }
 
         _allowances[_msgSender()][_spender] += _value;
@@ -144,7 +144,7 @@ contract MockBep20 is Context{
         totalSupply += _value;
 
         emit Transfer(address(0), _to, _value);
-        bool success;
+        return success;
     }
 
     function burn(address _account, uint256 _value) public auth() nonReentrant() returns (bool success) {
@@ -179,7 +179,7 @@ contract MockBep20 is Context{
     }
     
     function _transfer(address sender, address recipient, uint256 _value) private {
-        require(_spender != address(0), "ERROR: Zero address");
+        require(recipient != address(0), "ERROR: Zero address");
         require(_balances[sender] >= _value, "ERROR: Insufficient balance");
 
         _balances[sender] -= _value;
@@ -200,7 +200,7 @@ contract MockBep20 is Context{
         
         _allowances[_msgSender()][_spender] = _value;
 
-        emit Approval(_msgSender(), _spender, _value);        
+        emit Approval(_msgSender(), _spender, _value);   
     }
 
     modifier nonReentrant() {
