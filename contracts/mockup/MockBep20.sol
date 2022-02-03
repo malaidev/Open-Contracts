@@ -52,7 +52,7 @@ contract MockBep20 is Context{
     function transferAnyERC20(address _token,address _recipient,uint256 _value) external auth() nonReentrant() returns(bool success)   {
         IERC20(_token).transfer(_recipient, _value);
 
-        return bool success;
+        return success;
     }
 
     function balanceOf(address _account) external view returns (uint256) {
