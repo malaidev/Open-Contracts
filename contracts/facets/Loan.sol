@@ -42,30 +42,27 @@ contract Loan is Pausable, ILoan {
 	}
 
 	/// Swap loan to a secondary market.
-	function swapLoan(
-		bytes32 _market,
-		bytes32 _commitment,
-		bytes32 _swapMarket
-	) external override nonReentrant() returns (bool) {
-		AppStorageOpen storage ds = LibOpen.diamondStorage();
-    LibOpen._hasLoanAccount(msg.sender);
+	function swapLoan(bytes32 _loanMarket,bytes32 _commitment,bytes32 _swapMarket) external override nonReentrant() returns (bool success) {
 		
-		LibOpen._isMarketSupported(_market);
+		AppStorageOpen storage ds = LibOpen.diamondStorage();
+		
+		LibOpen._hasLoanAccount(msg.sender);
+		LibOpen._isMarketSupported(_loanMarket);
 		LibOpen._isMarket2Supported(_swapMarket);
 
 		LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
-		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
-		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_market][_commitment];
+		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
 
 		require(loan.id != 0, "ERROR: No loan");
-		require(loan.isSwapped == false && loanState.currentMarket == _market, "ERROR: Already swapped");
+		require(loan.isSwapped == false && loanState.currentMarket == _loanMarket, "ERROR: Already swapped");
 
 		uint256 _swappedAmount;
 		uint256 num = loan.id - 1;
 
-		_swappedAmount = LibOpen._swap(_market, _swapMarket, loan.amount, 0, msg.sender);
+		_swappedAmount = LibOpen._swap(_loanMarket, _swapMarket, loan.amount, 0, msg.sender);
 
 		/// Updating LoanRecord
 		loan.isSwapped = true;
@@ -80,29 +77,25 @@ contract Loan is Pausable, ILoan {
 		loanAccount.loanState[num].currentMarket = _swapMarket;
 		loanAccount.loanState[num].currentAmount = _swappedAmount;
 
-		LibOpen._accruedInterest(msg.sender, _market, _commitment);
+		LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
 		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
 
-		emit MarketSwapped(msg.sender,loan.id,_market,_swapMarket, loan.amount);
-		return true;
+		emit MarketSwapped(msg.sender,loan.id,_loanMarket,_swapMarket, loan.amount);
+		return success;
 	}
 
 /// SwapToLoan
-	function swapToLoan(
-		bytes32 _swapMarket,
-		bytes32 _commitment,
-		bytes32 _market
-	) public nonReentrant() returns (uint swappedAmount) {
+	function swapToLoan(bytes32 _swapMarket,bytes32 _commitment,bytes32 _loanMarket) public nonReentrant() returns (uint swappedAmount) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LibOpen._hasLoanAccount(msg.sender);
 		
-		LibOpen._isMarketSupported(_market);
+		LibOpen._isMarketSupported(_loanMarket);
 		LibOpen._isMarket2Supported(_swapMarket);
 
-		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
-		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_market][_commitment];
+		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
 
 		require(loan.id != 0, "ERROR: No loan");
 		require(loan.isSwapped == true && loanState.currentMarket == _swapMarket, "ERROR: Swapped market does not exist");
@@ -110,36 +103,37 @@ contract Loan is Pausable, ILoan {
 
 		uint256 num = loan.id - 1;
 
-		swappedAmount = LibOpen._swap(_swapMarket,_market,loanState.currentAmount, 1, msg.sender);
+		swappedAmount = LibOpen._swap(_swapMarket,_loanMarket,loanState.currentAmount, 1, msg.sender);
 
 		/// Updating LoanRecord
 		loan.isSwapped = false;
 		loan.lastUpdate = block.timestamp;
 
 		/// updating the LoanState
-		loanState.currentMarket = _market;
+		loanState.currentMarket = _loanMarket;
 		loanState.currentAmount = swappedAmount;
 
 		/// Updating LoanAccount
 		ds.loanPassbook[msg.sender].loans[num].isSwapped = false;
 		ds.loanPassbook[msg.sender].loans[num].lastUpdate = block.timestamp;
-		ds.loanPassbook[msg.sender].loanState[num].currentMarket = _market;
+		ds.loanPassbook[msg.sender].loanState[num].currentMarket = _loanMarket;
 		ds.loanPassbook[msg.sender].loanState[num].currentAmount = swappedAmount;
 
-		LibOpen._accruedInterest(msg.sender, _market, _commitment);
+		LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
 		LibOpen._accruedYield(ds.loanPassbook[msg.sender], collateral, cYield);
 
-		emit MarketSwapped(msg.sender,loan.id,_swapMarket,_market,swappedAmount);
+		emit MarketSwapped(msg.sender,loan.id,_swapMarket,_loanMarket,swappedAmount);
 	}
 
-	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override nonReentrant() returns (bool) {
+	function withdrawCollateral(bytes32 _loanMarket, bytes32 _commitment) external override nonReentrant() returns (bool success) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
-		// LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
-
-		LibOpen._isMarketSupported(_market);
-		require(ds.marketReservesLoan[collateral.market] >= collateral.amount, "Not enough fund in reserve");
+		
+		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
+		// LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		
+		LibOpen._isMarketSupported(_loanMarket);
+		require(ds.marketReservesLoan[collateral.market] >= collateral.amount, "ERROR: Amount exceeds balance");
 		//Below are checked in _collateralPointer
 
 		// _hasLoanAccount(msg.sender);
@@ -153,7 +147,7 @@ contract Loan is Pausable, ILoan {
 
         uint collateralAmount;
 
-		(, collateralAmount) = LibOpen._collateralPointer(msg.sender,_market,_commitment);
+		(, collateralAmount) = LibOpen._collateralPointer(msg.sender,_loanMarket,_commitment);
 		ds.token = IBEP20(LibOpen._connectMarket(collateral.market));
 		// ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
     	// ds.token.transferFrom(ds.reserveAddress, msg.sender, collateralAmount);
@@ -170,143 +164,143 @@ contract Loan is Pausable, ILoan {
 
 		emit CollateralReleased(msg.sender, collateral.amount, collateral.market, block.timestamp);
 
-		return true;
+		return success;
 	}
 
-	function repayLoan(bytes32 _market,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool success) {
+	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool success) {
 		// AppStorageOpen storage ds = diamondStorage(); 
         LibOpen._hasLoanAccount(msg.sender);
-		// LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
-		// LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
-		// CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
-		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[msg.sender][_market][_commitment];
-		// CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_market][_commitment];		
+		// LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
+		// LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
+		// CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[msg.sender][_loanMarket][_commitment];
+		// CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];		
 		
-		require(LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id != 0,"ERROR: No Loan");
-		LibOpen._isMarketSupported(_market);
+		require(LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].id != 0,"ERROR: No Loan");
+		LibOpen._isMarketSupported(_loanMarket);
 		
-		LibOpen._accruedInterest(msg.sender, _market, _commitment);
-		LibOpen._accruedYield(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment], LibOpen.diamondStorage().indAccruedAPY[msg.sender][_market][_commitment]);
+		LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
+		LibOpen._accruedYield(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment], LibOpen.diamondStorage().indAccruedAPY[msg.sender][_loanMarket][_commitment]);
 
 		if (_repayAmount == 0) {
 			// converting the current market into loanMarket for repayment.
-			if (LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket == _market)	_repayAmount = LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentAmount;
-			else if (LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket != _market)	_repayAmount = LibOpen._swap(LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket, _market, LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentAmount, 1, msg.sender);
+			if (LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentMarket == _loanMarket)	_repayAmount = LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentAmount;
+			else if (LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentMarket != _loanMarket)	_repayAmount = LibOpen._swap(LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentMarket, _loanMarket, LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentAmount, 1, msg.sender);
 			
 			repaymentProcess(
 				msg.sender,
 				_repayAmount, 
 				LibOpen.diamondStorage().loanPassbook[msg.sender],
-				LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment],
-				LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment],
-				LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment],
-				LibOpen.diamondStorage().indAccruedAPR[msg.sender][_market][_commitment], 
-				LibOpen.diamondStorage().indAccruedAPY[msg.sender][_market][_commitment]);
+				LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment],
+				LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment],
+				LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment],
+				LibOpen.diamondStorage().indAccruedAPR[msg.sender][_loanMarket][_commitment], 
+				LibOpen.diamondStorage().indAccruedAPY[msg.sender][_loanMarket][_commitment]);
 			
-			// if (loanState.currentMarket == _market) {
+			// if (loanState.currentMarket == _loanMarket) {
 			// 	_repayAmount = loanState.currentAmount;
 			// 	_repaymentProcess(msg.sender,_repayAmount,loanPassbook[msg.sender],loan,loanState,collateral,deductibleInterest,cYield);
 				
-			// } else if (loanState.currentMarket != _market) {
-			// 	_repayAmount = liquidator.swap(loanState.currentMarket,_market,loanState.currentAmount, 1);
+			// } else if (loanState.currentMarket != _loanMarket) {
+			// 	_repayAmount = liquidator.swap(loanState.currentMarket,_loanMarket,loanState.currentAmount, 1);
 			// 	_repaymentProcess(msg.sender,_repayAmount,loanPassbook[msg.sender],loan,loanState,collateral,deductibleInterest,cYield);
 			// }
 		}
 		else if (_repayAmount > 0) {
 			/// transfering the repayAmount to the reserve contract.
-			LibOpen.diamondStorage().loanToken = IBEP20(LibOpen._connectMarket(_market));
-			// _quantifyAmount(_market, _repayAmount);
+			LibOpen.diamondStorage().loanToken = IBEP20(LibOpen._connectMarket(_loanMarket));
+			// _quantifyAmount(_loanMarket, _repayAmount);
 
-			LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount += (LibOpen.diamondStorage().indAccruedAPY[msg.sender][_market][_commitment].accruedYield - LibOpen.diamondStorage().indAccruedAPR[msg.sender][_market][_commitment].accruedInterest);
+			LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount += (LibOpen.diamondStorage().indAccruedAPY[msg.sender][_loanMarket][_commitment].accruedYield - LibOpen.diamondStorage().indAccruedAPR[msg.sender][_loanMarket][_commitment].accruedInterest);
 			
 			uint256 _swappedAmount;
 			uint256 _remnantAmount;
 
-			if (_repayAmount >= LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount) {
-				_remnantAmount = _repayAmount - LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount;
-				if (LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket == _market){
-					_remnantAmount += LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentAmount;
+			if (_repayAmount >= LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].amount) {
+				_remnantAmount = _repayAmount - LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].amount;
+				if (LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentMarket == _loanMarket){
+					_remnantAmount += LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentAmount;
 				}
 				else {
-					_swappedAmount = swapToLoan(LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket, _commitment, _market);
+					_swappedAmount = swapToLoan(LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentMarket, _commitment, _loanMarket);
 					_repayAmount += _swappedAmount;
 				}
 
-				updateDebtRecords(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment], LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment]/*, deductibleInterest, cYield*/);
+				updateDebtRecords(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment], LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment]/*, deductibleInterest, cYield*/);
 				// LibOpen.diamondStorage().loanToken.approveFrom(LibOpen.diamondStorage().reserveAddress, address(this), _remnantAmount);
 				// LibOpen.diamondStorage().loanToken.transferFrom(LibOpen.diamondStorage().reserveAddress, LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
 				LibOpen.diamondStorage().loanToken.transfer(LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
 
-				emit LoanRepaid(msg.sender, LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id, LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].market, block.timestamp);
+				emit LoanRepaid(msg.sender, LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].id, LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].market, block.timestamp);
 				
 				if (_commitment == LibOpen._getCommitment(0)) {
 					/// transfer collateral.amount from reserve contract to the msg.sender
 					// collateralToken = IBEP20(markets.connectMarket(collateral.market));
-					LibOpen._transferAnyBEP20(LibOpen._connectMarket(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market), msg.sender, LibOpen.diamondStorage().loanPassbook[msg.sender].account, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount);
+					LibOpen._transferAnyBEP20(LibOpen._connectMarket(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].market), msg.sender, LibOpen.diamondStorage().loanPassbook[msg.sender].account, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount);
 
 			/// delete loan Entries, loanRecord, loanstate, collateralrecords
 					// delete loanState;
 					// delete loan;
 					// delete collateral;
 
-					delete LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment];
-					delete LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment];
-					delete LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment];
+					delete LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment];
+					delete LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment];
+					delete LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment];
 
-					delete LibOpen.diamondStorage().loanPassbook[msg.sender].loanState[LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id - 1];
-					delete LibOpen.diamondStorage().loanPassbook[msg.sender].loans[LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id - 1];
-					delete LibOpen.diamondStorage().loanPassbook[msg.sender].collaterals[LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id - 1];
+					delete LibOpen.diamondStorage().loanPassbook[msg.sender].loanState[LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].id - 1];
+					delete LibOpen.diamondStorage().loanPassbook[msg.sender].loans[LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].id - 1];
+					delete LibOpen.diamondStorage().loanPassbook[msg.sender].collaterals[LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].id - 1];
 					
-					LibOpen._updateReservesLoan(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount, 1);
-					emit CollateralReleased(msg.sender, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market,block.timestamp);
+					LibOpen._updateReservesLoan(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].market, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount, 1);
+					emit CollateralReleased(msg.sender, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].market,block.timestamp);
 				}
-			} else if (_repayAmount < LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount) {
+			} else if (_repayAmount < LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].amount) {
 
-				if (LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket == _market)	_repayAmount += LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentAmount;
-				else if (LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket != _market) {
-					_swappedAmount = swapToLoan(LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment].currentMarket, _commitment, _market);
+				if (LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentMarket == _loanMarket)	_repayAmount += LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentAmount;
+				else if (LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentMarket != _loanMarket) {
+					_swappedAmount = swapToLoan(LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment].currentMarket, _commitment, _loanMarket);
 					_repayAmount += _swappedAmount;
 				}
 				
-				if (_repayAmount > LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount) {
-					_remnantAmount = _repayAmount - LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount;
+				if (_repayAmount > LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].amount) {
+					_remnantAmount = _repayAmount - LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].amount;
 					// LibOpen.diamondStorage().loanToken.approveFrom(LibOpen.diamondStorage().reserveAddress, address(this), _remnantAmount);
 					// LibOpen.diamondStorage().loanToken.transferFrom(LibOpen.diamondStorage().reserveAddress, LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
 					LibOpen.diamondStorage().loanToken.transfer(LibOpen.diamondStorage().loanPassbook[msg.sender].account, _remnantAmount);
-				} else if (_repayAmount <= LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount) {
+				} else if (_repayAmount <= LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].amount) {
 					
-					_repayAmount += LibOpen._swap(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market,_market, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount, 1, msg.sender);
-					// _repayAmount += _swapToLoan(loanState.currentMarket, _commitment, _market);
-					_remnantAmount = _repayAmount - LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount;
-					LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount += LibOpen._swap(LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].market, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market,_remnantAmount, 2, msg.sender);
+					_repayAmount += LibOpen._swap(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].market,_loanMarket, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount, 1, msg.sender);
+					// _repayAmount += _swapToLoan(loanState.currentMarket, _commitment, _loanMarket);
+					_remnantAmount = _repayAmount - LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].amount;
+					LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount += LibOpen._swap(LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].market, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].market,_remnantAmount, 2, msg.sender);
 				}
-				updateDebtRecords(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment], LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment]/*, deductibleInterest, cYield*/);
+				updateDebtRecords(LibOpen.diamondStorage().loanPassbook[msg.sender], LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment], LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment], LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment]/*, deductibleInterest, cYield*/);
 				
 				if (_commitment == LibOpen._getCommitment(0)) {
 					
 					// collateralToken = IBEP20(markets.connectMarket(collateral.market));
-					LibOpen._transferAnyBEP20(LibOpen._connectMarket(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market), msg.sender, LibOpen.diamondStorage().loanPassbook[msg.sender].account, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount);
+					LibOpen._transferAnyBEP20(LibOpen._connectMarket(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].market), msg.sender, LibOpen.diamondStorage().loanPassbook[msg.sender].account, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount);
 
 
 				/// delete loan Entries, loanRecord, loanstate, collateralrecords
 					// delete loanState;
 					// delete loan;
 					// delete collateral;
-					delete LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment];
-					delete LibOpen.diamondStorage().indLoanState[msg.sender][_market][_commitment];
-					delete LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment];
+					delete LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment];
+					delete LibOpen.diamondStorage().indLoanState[msg.sender][_loanMarket][_commitment];
+					delete LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment];
 
-					delete LibOpen.diamondStorage().loanPassbook[msg.sender].loanState[LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id - 1];
-					delete LibOpen.diamondStorage().loanPassbook[msg.sender].loans[LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id - 1];
-					delete LibOpen.diamondStorage().loanPassbook[msg.sender].collaterals[LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].id - 1];
+					delete LibOpen.diamondStorage().loanPassbook[msg.sender].loanState[LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].id - 1];
+					delete LibOpen.diamondStorage().loanPassbook[msg.sender].loans[LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].id - 1];
+					delete LibOpen.diamondStorage().loanPassbook[msg.sender].collaterals[LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].id - 1];
 					
-					LibOpen._updateReservesLoan(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount, 1);
-					emit CollateralReleased(msg.sender, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].amount, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_market][_commitment].market,block.timestamp);
+					LibOpen._updateReservesLoan(LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].market, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount, 1);
+					emit CollateralReleased(msg.sender, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].amount, LibOpen.diamondStorage().indCollateralRecords[msg.sender][_loanMarket][_commitment].market,block.timestamp);
 				}
 			}
 		}
 		
-		LibOpen._updateUtilisationLoan(LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].market, LibOpen.diamondStorage().indLoanRecords[msg.sender][_market][_commitment].amount, 1);
+		LibOpen._updateUtilisationLoan(LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].market, LibOpen.diamondStorage().indLoanRecords[msg.sender][_loanMarket][_commitment].amount, 1);
 
 		return true;
 	}
@@ -383,13 +377,13 @@ contract Loan is Pausable, ILoan {
 	function updateDebtRecords(LoanAccount storage loanAccount,LoanRecords storage loan, LoanState storage loanState, CollateralRecords storage collateral/*, DeductibleInterest storage deductibleInterest, CollateralYield storage cYield*/) private {
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		uint256 num = loan.id - 1;
-		bytes32 _market = loan.market;
+		bytes32 _loanMarket = loan.market;
 
 		loan.amount = 0;
 		loan.isSwapped = false;
 		loan.lastUpdate = block.timestamp;
 		
-		loanState.currentMarket = _market;
+		loanState.currentMarket = _loanMarket;
 		loanState.currentAmount = 0;
 		loanState.actualLoanAmount = 0;
 		loanState.state = ILoan.STATE.REPAID;
@@ -408,7 +402,7 @@ contract Loan is Pausable, ILoan {
 		loanAccount.loans[num].isSwapped = false;
 		loanAccount.loans[num].lastUpdate = block.timestamp;
 
-		loanAccount.loanState[num].currentMarket = _market;
+		loanAccount.loanState[num].currentMarket = _loanMarket;
 		loanAccount.loanState[num].currentAmount = 0;
 		loanAccount.loanState[num].actualLoanAmount = 0;
 		loanAccount.loanState[num].state = ILoan.STATE.REPAID;
@@ -422,12 +416,12 @@ contract Loan is Pausable, ILoan {
 		delete loanAccount.accruedAPR[num];
 	}
 
-  function getFairPriceLoan(uint _requestId) external view override returns (uint price){
-		price = LibOpen._getFairPrice(_requestId);
-	}
+	function getFairPriceLoan(uint _requestId) external view override returns (uint price){
+        price = LibOpen._getFairPrice(_requestId);
+    }
 
-	function collateralPointer(address _account, bytes32 _market, bytes32 _commitment) external view override returns (bool) {
-    	LibOpen._collateralPointer(_account, _market, _commitment);
+	function collateralPointer(address _account, bytes32 _loanMarket, bytes32 _commitment) external view override returns (bool) {
+    	LibOpen._collateralPointer(_account, _loanMarket, _commitment);
 		return true;
 	}
 

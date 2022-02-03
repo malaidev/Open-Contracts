@@ -304,13 +304,8 @@ library LibOpen {
 		//     path[2] = addrToMarket;
 		// }
 
-		IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(
-				_fromAmount,
-				_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),
-				path,
-				address(this),
-				block.timestamp
-		);
+		IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),path,address(this),block.timestamp);
+		
 		return receivedAmount;
 	}
 
@@ -427,10 +422,12 @@ library LibOpen {
 		//require(loan.id !=0, "ERROR: No Loan");
 		require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
 		//if (_commitment != _getCommitment(0)) {
-			require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
+		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
 		//}		
 		collateralMarket = collateral.market;
 		collateralAmount = collateral.amount;
+
+		return collateralMarket, collateralAmount;
 	}
 
 	function _accruedYield(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
