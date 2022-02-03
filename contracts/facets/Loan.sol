@@ -47,7 +47,7 @@ contract Loan is Pausable, ILoan {
 		bytes32 _commitment,
 		bytes32 _swapMarket
 	) external override nonReentrant() returns (bool) {
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		AppStorageOpen storage ds = LibOpen.diamondStorage();
     LibOpen._hasLoanAccount(msg.sender);
 		
 		LibOpen._isMarketSupported(_market);

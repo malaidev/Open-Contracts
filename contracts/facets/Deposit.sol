@@ -149,44 +149,46 @@ contract Deposit is Pausable, IDeposit{
 	}
 
 	function addToDeposit(bytes32 _market, bytes32 _commitment, uint _amount) external override nonReentrant() returns(bool) {
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+        AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
-		preDepositProcess(_market, _amount);
+        preDepositProcess(_market, _amount);
+        console.log("addToDeposit sender address is %s", msg.sender);
 
-		console.log("addToDeposit sender address is %s", msg.sender);
-		if (!LibOpen._hasDeposit(msg.sender, _market, _commitment))	{
-			createNewDeposit(_market, _commitment, _amount, msg.sender);
-			return false;
-		}
-		
-		// ds.token.approveFrom(msg.sender, address(this), _amount);
-		ds.token.transferFrom(msg.sender, address(this), _amount);
+        ds.token.approve(address(this), _amount); // allowance from the user to the contract(deposit).
 
-		processDeposit(msg.sender, _market, _commitment, _amount);
-		LibOpen._updateReservesDeposit(_market, _amount, 0);
-		emit DepositAdded(msg.sender, _market, _commitment, _amount, ds.indDepositRecord[msg.sender][_market][_commitment].id);
+        if (!LibOpen._hasDeposit(msg.sender, _market, _commitment))    {
+            createNewDeposit(_market, _commitment, _amount, msg.sender);
+            return false;
+        }
 
-		return true;
-	}
+        // ds.token.approveFrom(msg.sender, address(this), _amount);
+        ds.token.transferFrom(msg.sender, address(this), _amount); // change the address(this) to the diamond address.
 
-	function createNewDeposit(bytes32 _market,bytes32 _commitment,uint256 _amount, address _sender) private {
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+        processDeposit(msg.sender, _market, _commitment, _amount);
+        LibOpen._updateReservesDeposit(_market, _amount, 0);
+        emit DepositAdded(msg.sender, _market, _commitment, _amount, ds.indDepositRecord[msg.sender][_market][_commitment].id);
 
-		SavingsAccount storage savingsAccount = ds.savingsPassbook[_sender];
-		DepositRecords storage deposit = ds.indDepositRecord[_sender][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_sender][_market][_commitment];
-		
-		LibOpen._ensureSavingsAccount(_sender,savingsAccount);
+        return true;
+    }
 
-		ds.token.transferFrom(_sender, address(this), _amount);
+    function createNewDeposit(bytes32 _market,bytes32 _commitment,uint256 _amount, address _sender) private {
+        AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
-		console.log("From lib address is %s", address(this));
-		
-		processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
-		LibOpen._updateReservesDeposit(_market, _amount, 0);
-		emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id);
-	}
+        SavingsAccount storage savingsAccount = ds.savingsPassbook[_sender];
+        DepositRecords storage deposit = ds.indDepositRecord[_sender][_market][_commitment];
+        YieldLedger storage yield = ds.indYieldRecord[_sender][_market][_commitment];
 
+        LibOpen._ensureSavingsAccount(_sender,savingsAccount);
+
+        ds.token.transferFrom(_sender, address(this), _amount);
+
+        console.log("From lib address is %s", address(this));
+
+        processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
+        LibOpen._updateReservesDeposit(_market, _amount, 0);
+        emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id);
+    }
+	
 	function processDeposit(
 		address _account,
 		bytes32 _market,
