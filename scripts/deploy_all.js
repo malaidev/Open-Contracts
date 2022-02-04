@@ -227,10 +227,28 @@ async function addMarkets(diamondAddress) {
     await comptroller.connect(upgradeAdmin).updateAPR(comit_THREEMONTHS, 1500);
 
 
-    console.log("Deploy test tokens");
+    // console.log("Deploy test tokens");
+
+    const tBtcAddress = "0xe97C64CD9Ab8e8BcB077C59f6121381d129D3F27";
+    console.log("tBTC used: ", tBtcAddress)
+
+    const tUsdcAddress = "0xC3F0414C9a849C52Eb508a7eeFEaDB4D65A3d944";
+    console.log("tUSDC used: ", tUsdcAddress)
+
+    const tUsdtAddress = "0x3d2b1f363c79BaB4320DD0522239617aF31DaFde";
+    console.log("tUSDT used: ", tUsdtAddress)
+
+    const tSxpAddress = "0xC60904295Bac181be6E9aFB3d6C36aa691516ec8";
+    console.log("tSxp used: ", tSxpAddress)
+
+    const tCakeAddress = "0x6857EfAa30Bc52C75F76fE47EADd6C79C8B80AC4";
+    console.log("tCake used: ", tCakeAddress)
+
+    const tWBNBAddress = "0x426699E9B9ad3a1d37554965618d5f3cFC872eE4";
+    console.log("tWBNB used: ", tWBNBAddress)
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
-    const admin_ = upgradeAdmin.address;
+    /*const admin_ = upgradeAdmin.address;
     const Mockup = await ethers.getContractFactory('MockBep20')
     const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, admin_, 21000000)
     await tbtc.deployed()
@@ -260,7 +278,7 @@ async function addMarkets(diamondAddress) {
     const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, admin_, 4000000)
     await twbnb.deployed()
     console.log("tWBNB deployed: ", twbnb.address)
-    const tWBNBAddress = twbnb.address
+    const tWBNBAddress = twbnb.address*/
 
     console.log("addMarket");
     await tokenList.connect(upgradeAdmin).addMarketSupport(
@@ -345,7 +363,7 @@ async function addMarkets(diamondAddress) {
         { gasLimit: 800000 }
     )
 
-    const Faucet = await ethers.getContractFactory("Faucet");
+    /*const Faucet = await ethers.getContractFactory("Faucet");
     const faucet = await Faucet.deploy(tUsdtAddress,tUsdcAddress,tBtcAddress,tWBNBAddress)
     console.log("Faucet deployed at ", faucet.address)
 
@@ -360,7 +378,7 @@ async function addMarkets(diamondAddress) {
 
     await twbnb.transfer(faucet.address,"1200000000000000000000000")
     console.log("1200000 twbnb transfered to faucet. Token being :", tWBNBAddress)
-    console.log(await twbnb.balanceOf(faucet.address));
+    console.log(await twbnb.balanceOf(faucet.address));*/
 
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
     
@@ -437,33 +455,36 @@ exports.addMarkets = addMarkets
 //     const admin_ = upgradeAdmin.address;
 //     // const tBTC = await ethers.getContractFactory('tBTC')
 //     // const tbtc = await tBTC.deploy(admin_)
-//     // await tbtc.deployed()
-//     const tBtcAddress = "0x664aABd659Ae578454c7A7FC5b850DFB2203a87C";
-//     // console.log("tBTC deployed: ", tbtc.address)
+// //     // await tbtc.deployed()
+//     const tBtcAddress = "0xe97C64CD9Ab8e8BcB077C59f6121381d129D3F27";
+//     console.log("tBTC used: ", tBtcAddress)
 
-//     // const tUSDC = await ethers.getContractFactory('tUSDC')
-//     // const tusdc = await tUSDC.deploy(admin_)
-//     // await tusdc.deployed()
-//     const tUsdcAddress = "0x07D293cFc6E76430af18Ab6Ac3f41828e202D159";
-//     // console.log("tUSDC deployed: ", tusdc.address)
+// //     // const tUSDC = await ethers.getContractFactory('tUSDC')
+// //     // const tusdc = await tUSDC.deploy(admin_)
+// //     // await tusdc.deployed()
+//     const tUsdcAddress = "0xC3F0414C9a849C52Eb508a7eeFEaDB4D65A3d944";
+//     console.log("tUSDC used: ", tUsdcAddress)
 
-//     // const tUSDT = await ethers.getContractFactory('tUSDT')
-//     // const tusdt = await tUSDT.deploy(admin_)
-//     // await tusdt.deployed()
+// //     // const tUSDT = await ethers.getContractFactory('tUSDT')
+// //     // const tusdt = await tUSDT.deploy(admin_)
+// //     // await tusdt.deployed()
 //     const tUsdtAddress = "0x3d2b1f363c79BaB4320DD0522239617aF31DaFde";
-//     // console.log("tUSDT deployed: ", tusdt.address)
+//     console.log("tUSDT used: ", tUsdtAddress)
 
-//     // const tSxp = await ethers.getContractFactory('tSxp')
-//     // const tsxp = await tSxp.deploy(admin_)
-//     // await tsxp.deployed()
-//     const tSxpAddress = "0xb6c2c0764e69FBb1CeC2254ec927Ddc7fe42738F";
-//     // console.log("tSxp deployed: ", tsxp.address)
+// //     // const tSxp = await ethers.getContractFactory('tSxp')
+// //     // const tsxp = await tSxp.deploy(admin_)
+// //     // await tsxp.deployed()
+//     const tSxpAddress = "0xC60904295Bac181be6E9aFB3d6C36aa691516ec8";
+//     console.log("tSxp used: ", tSxpAddress)
 
-//     // const tCake = await ethers.getContractFactory('tCake')
-//     // const tcake = await tCake.deploy(admin_)
-//     // await tcake.deployed()
-//     const tCakeAddress = "0x498D69f8ddf475E21C3d036F0bf0C6Ef82FEF2Ea";
-//     // console.log("tCake deployed: ", tcake.address)
+// //     // const tCake = await ethers.getContractFactory('tCake')
+// //     // const tcake = await tCake.deploy(admin_)
+// //     // await tcake.deployed()
+//     const tCakeAddress = "0x6857EfAa30Bc52C75F76fE47EADd6C79C8B80AC4";
+//     console.log("tCake used: ", tCakeAddress)
+
+//     const tWBNBAddress = "0x426699E9B9ad3a1d37554965618d5f3cFC872eE4";
+//     console.log("tWBNB used: ", tWBNBAddress)
 
      
 
