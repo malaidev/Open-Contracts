@@ -104,8 +104,10 @@ library LibOpen {
 	}
 
 	function _connectMarket(bytes32 _loanMarket) internal view returns (address addr) {
+		
 		AppStorageOpen storage ds = diamondStorage(); 
 		MarketData memory marketData = ds.indMarketData[_loanMarket];
+
 		addr = marketData.tokenAddress;
 	}
 	
