@@ -35,7 +35,7 @@ contract LoanExt is Pausable, ILoanExt {
 		uint256 time
 	);
 
-	event WithdrawalProcessed(
+	event WithdrawPartialLoan(
 		address indexed account,
 		uint256 indexed id,
 		uint256 indexed amount,
@@ -358,9 +358,10 @@ contract LoanExt is Pausable, ILoanExt {
 	}
 
 	
-	function permissibleWithdrawal(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private returns (bool) {
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-    LibOpen._hasLoanAccount(_sender);
+	function withdrawPartialLoan(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) external returns (bool) {
+    
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		LibOpen._hasLoanAccount(_sender);
 
 		LoanRecords storage loan = ds.indLoanRecords[_sender][_loanMarket][_commitment];
 		LoanState storage loanState = ds.indLoanState[_sender][_loanMarket][_commitment];
@@ -370,12 +371,13 @@ contract LoanExt is Pausable, ILoanExt {
 		ds.withdrawToken = IBEP20(LibOpen._connectMarket(loanState.currentMarket));
 		ds.withdrawToken.transfer(_sender,_amount);
 
-		emit WithdrawalProcessed(_sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
+		emit WithdrawPartialLoan(_sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
 
 		return true;
   }
 
 	function checkPermissibleWithdrawal(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private /*authContract(LOAN_ID)*/ {
+		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		// LoanRecords storage loan = ds.indLoanRecords[_sender][_loanMarket][_commitment];
 		LoanState storage loanState = ds.indLoanState[_sender][_loanMarket][_commitment];
