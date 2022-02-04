@@ -24,14 +24,14 @@ contract Reserve is Pausable, IReserve {
 	function transferAnyBEP20(
 		address _token,
 		address _recipient,
-		uint256 _value) external override authReserve() nonReentrant returns(bool success)   
+		uint256 _value) external override authReserve() nonReentrant() returns(bool success)   
 	{
 		IBEP20(_token).transfer(_recipient, _value);
 		return success = true;
 	}
-	
+
 	// function transferMarket(address _token, address _recipient, uint256 _value, uint256 nFacetIndex)
-	// 	public nonReentrant authTransfer(nFacetIndex) returns (bool success) {
+	// 	public nonReentrant() authTransfer(nFacetIndex) returns (bool success) {
 
 	// 	IBEP20(_token).transfer(_recipient, _value);
 	// 	success = true;
@@ -52,13 +52,12 @@ contract Reserve is Pausable, IReserve {
 		return LibOpen._marketReserves(_market);
 	}
 
-	
 	function marketUtilisation(bytes32 _market) external view override returns(uint)	{
 		return LibOpen._marketUtilisation(_market);
 	}
 
 	function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override returns (bool){
-    AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
 		bytes32 collateralMarket;
 		uint collateralAmount;
