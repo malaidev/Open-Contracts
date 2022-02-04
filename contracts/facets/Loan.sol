@@ -46,12 +46,12 @@ contract Loan is Pausable, ILoan {
 		bytes32 _loanMarket,
 		bytes32 _commitment,
 		bytes32 _swapMarket
-	) external override nonReentrant() returns (bool) {
+	) external override nonReentrant() returns (bool success) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LibOpen._swapLoan(msg.sender, _loanMarket, _commitment, _swapMarket);
 		emit MarketSwapped(msg.sender,loan.id,_loanMarket,_swapMarket, loan.amount);
-		return true;
+		return success;
 	}
 
 /// SwapToLoan
@@ -64,7 +64,7 @@ contract Loan is Pausable, ILoan {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		
-		uint _swappedAmount = return LibOpen._swapToLoan(msg.sender, _swapMarket, _commitment, _loanMarket);
+		uint _swappedAmount = LibOpen._swapToLoan(msg.sender, _swapMarket, _commitment, _loanMarket);
 		
 		emit MarketSwapped(msg.sender,loan.id,_swapMarket,_loanMarket,_swappedAmount);
 		return success;

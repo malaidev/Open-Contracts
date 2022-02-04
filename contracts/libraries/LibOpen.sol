@@ -514,7 +514,7 @@ library LibOpen {
 		collateralMarket = collateral.market;
 		collateralAmount = collateral.amount;
 
-		return collateralMarket, collateralAmount;
+		return (collateralMarket, collateralAmount);
 	}
 
 	function _accruedYield(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
