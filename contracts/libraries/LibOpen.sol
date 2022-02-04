@@ -41,14 +41,14 @@ library LibOpen {
 		upgradeAdmin_ = diamondStorage().upgradeAdmin;
 	}
 
-	function _addFairPriceAddress(bytes32 _market, address _address) internal {
+	function _addFairPriceAddress(bytes32 _loanMarket, address _address) internal {
 		AppStorageOpen storage ds = diamondStorage();
-		ds.pairAddresses[_market] = _address;
+		ds.pairAddresses[_loanMarket] = _address;
 	}
 
-	function _getFairPriceAddress(bytes32 _market) internal view returns (address){
+	function _getFairPriceAddress(bytes32 _loanMarket) internal view returns (address){
 		AppStorageOpen storage ds = diamondStorage();
-		return ds.pairAddresses[_market];
+		return ds.pairAddresses[_loanMarket];
 	}
 
 	function setReserveAddress(address _reserve) internal {
@@ -62,50 +62,50 @@ library LibOpen {
 			}
 	}
 
-	function _isMarketSupported(bytes32  _market) internal view {
+	function _isMarketSupported(bytes32  _loanMarket) internal view {
 		AppStorageOpen storage ds = diamondStorage(); 
-		require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
+		require(ds.tokenSupportCheck[_loanMarket] == true, "ERROR: Unsupported market");
 	}
 
-	function _getMarketAddress(bytes32 _market) internal view returns (address) {
+	function _getMarketAddress(bytes32 _loanMarket) internal view returns (address) {
 		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.indMarketData[_market].tokenAddress;
+		return ds.indMarketData[_loanMarket].tokenAddress;
 	}
 
-	function _getMarketDecimal(bytes32 _market) internal view returns (uint) {
+	function _getMarketDecimal(bytes32 _loanMarket) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.indMarketData[_market].decimals;
+		return ds.indMarketData[_loanMarket].decimals;
 	}
 
-	function _minAmountCheck(bytes32 _market, uint _amount) internal view {
+	function _minAmountCheck(bytes32 _loanMarket, uint _amount) internal view {
 		AppStorageOpen storage ds = diamondStorage(); 
-		MarketData memory marketData = ds.indMarketData[_market];
+		MarketData memory marketData = ds.indMarketData[_loanMarket];
 		require(marketData.minAmount <= _amount, "ERROR: Less than minimum deposit");
 	}
 
-	// function _quantifyAmount(bytes32 _market, uint _amount) internal view returns (uint amount) {
+	// function _quantifyAmount(bytes32 _loanMarket, uint _amount) internal view returns (uint amount) {
 	// 	AppStorageOpen storage ds = diamondStorage(); 
-	//     MarketData memory marketData = ds.indMarketData[_market];
+	//     MarketData memory marketData = ds.indMarketData[_loanMarket];
     // 	amount = _amount * marketData.decimals;
 	// }
 
-	function _isMarket2Supported(bytes32  _market) internal view {
-		require(diamondStorage().token2SupportCheck[_market] == true, "Secondary Token is not supported");
+	function _isMarket2Supported(bytes32  _loanMarket) internal view {
+		require(diamondStorage().token2SupportCheck[_loanMarket] == true, "Secondary Token is not supported");
 	}
 
-	function _getMarket2Address(bytes32 _market) internal view returns (address) {
+	function _getMarket2Address(bytes32 _loanMarket) internal view returns (address) {
 		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.indMarket2Data[_market].tokenAddress;
+		return ds.indMarket2Data[_loanMarket].tokenAddress;
 	}
 
-	function _getMarket2Decimal(bytes32 _market) internal view returns (uint) {
+	function _getMarket2Decimal(bytes32 _loanMarket) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage();
-		return ds.indMarket2Data[_market].decimals;
+		return ds.indMarket2Data[_loanMarket].decimals;
 	}
 
-	function _connectMarket(bytes32 _market) internal view returns (address addr) {
+	function _connectMarket(bytes32 _loanMarket) internal view returns (address addr) {
 		AppStorageOpen storage ds = diamondStorage(); 
-		MarketData memory marketData = ds.indMarketData[_market];
+		MarketData memory marketData = ds.indMarketData[_loanMarket];
 		addr = marketData.tokenAddress;
 	}
 	
@@ -263,29 +263,29 @@ library LibOpen {
 // =========== Loan functions ==============
 	function _swapLoan(
 		address _sender,
-        bytes32 _market,
+        bytes32 _loanMarket,
 		bytes32 _commitment,
 		bytes32 _swapMarket
     ) internal authContract(LOAN_ID) {
         AppStorageOpen storage ds = diamondStorage(); 
         _hasLoanAccount(_sender);
 		
-		_isMarketSupported(_market);
+		_isMarketSupported(_loanMarket);
 		_isMarket2Supported(_swapMarket);
 
 		LoanAccount storage loanAccount = ds.loanPassbook[_sender];
-		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
-		CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];
+		LoanRecords storage loan = ds.indLoanRecords[_sender][_loanMarket][_commitment];
+		LoanState storage loanState = ds.indLoanState[_sender][_loanMarket][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_loanMarket][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[_sender][_loanMarket][_commitment];
 
 		require(loan.id != 0, "ERROR: No loan");
-		require(loan.isSwapped == false && loanState.currentMarket == _market, "ERROR: Already swapped");
+		require(loan.isSwapped == false && loanState.currentMarket == _loanMarket, "ERROR: Already swapped");
 
 		uint256 _swappedAmount;
 		uint256 num = loan.id - 1;
 
-		_swappedAmount = _swap(_sender, _market, _swapMarket, loan.amount, 0);
+		_swappedAmount = _swap(_sender, _loanMarket, _swapMarket, loan.amount, 0);
 
 		/// Updating LoanRecord
 		loan.isSwapped = true;
@@ -300,7 +300,7 @@ library LibOpen {
 		loanAccount.loanState[num].currentMarket = _swapMarket;
 		loanAccount.loanState[num].currentAmount = _swappedAmount;
 
-		_accruedInterest(_sender, _market, _commitment);
+		_accruedInterest(_sender, _loanMarket, _commitment);
 		if (collateral.isCollateralisedDeposit) _accruedYield(loanAccount, collateral, cYield);
     }
 
@@ -308,40 +308,40 @@ library LibOpen {
 		address _account,
 		bytes32 _swapMarket,
 		bytes32 _commitment,
-		bytes32 _market
+		bytes32 _loanMarket
 	) internal authContract(LOAN_ID) returns (uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
 		_hasLoanAccount(_account);
-		_isMarketSupported(_market);
+		_isMarketSupported(_loanMarket);
 		_isMarket2Supported(_swapMarket);
 
-		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
-		// CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
-		// CollateralYield storage cYield = ds.indAccruedAPY[_account][_market][_commitment];
+		LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
+		LoanState storage loanState = ds.indLoanState[_account][_loanMarket][_commitment];
+		// CollateralRecords storage collateral = ds.indCollateralRecords[_account][_loanMarket][_commitment];
+		// CollateralYield storage cYield = ds.indAccruedAPY[_account][_loanMarket][_commitment];
 
 		require(loan.id != 0, "ERROR: No loan");
 		require(loan.isSwapped == true && loanState.currentMarket == _swapMarket, "ERROR: Swapped market does not exist");
 		// require(loan.isSwapped == true, "Swapped market does not exist");
 
-		uint swappedAmount = _swap(_account, _swapMarket,_market,loanState.currentAmount, 1);
+		uint swappedAmount = _swap(_account, _swapMarket,_loanMarket,loanState.currentAmount, 1);
 
 		/// Updating LoanRecord
 		loan.isSwapped = false;
 		loan.lastUpdate = block.timestamp;
 
 		/// updating the LoanState
-		loanState.currentMarket = _market;
+		loanState.currentMarket = _loanMarket;
 		loanState.currentAmount = swappedAmount;
 
 		/// Updating LoanAccount
 		ds.loanPassbook[_account].loans[loan.id - 1].isSwapped = false;
 		ds.loanPassbook[_account].loans[loan.id - 1].lastUpdate = block.timestamp;
-		ds.loanPassbook[_account].loanState[loan.id - 1].currentMarket = _market;
+		ds.loanPassbook[_account].loanState[loan.id - 1].currentMarket = _loanMarket;
 		ds.loanPassbook[_account].loanState[loan.id - 1].currentAmount = swappedAmount;
 
-		_accruedInterest(_account, _market, _commitment);
-		_accruedYield(ds.loanPassbook[_account], ds.indCollateralRecords[_account][_market][_commitment], ds.indAccruedAPY[_account][_market][_commitment]);
+		_accruedInterest(_account, _loanMarket, _commitment);
+		_accruedYield(ds.loanPassbook[_account], ds.indCollateralRecords[_account][_loanMarket][_commitment], ds.indAccruedAPY[_account][_loanMarket][_commitment]);
 		return swappedAmount;
 	}
 // =========== Liquidator Functions ===========
@@ -421,21 +421,21 @@ library LibOpen {
   }
 
 // =========== Deposit Functions ===========
-	function _hasDeposit(address _account, bytes32 _market, bytes32 _commitment) internal view returns(bool ret) {
+	function _hasDeposit(address _account, bytes32 _loanMarket, bytes32 _commitment) internal view returns(bool ret) {
 		AppStorageOpen storage ds = diamondStorage();
-		ret = ds.indDepositRecord[_account][_market][_commitment].id != 0;
-		// require (ds.indDepositRecord[_account][_market][_commitment].id != 0, "ERROR: No deposit");
+		ret = ds.indDepositRecord[_account][_loanMarket][_commitment].id != 0;
+		// require (ds.indDepositRecord[_account][_loanMarket][_commitment].id != 0, "ERROR: No deposit");
 		// return true;
 	}
 
-	function _avblReservesDeposit(bytes32 _market) internal view returns (uint) {
+	function _avblReservesDeposit(bytes32 _loanMarket) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.marketReservesDeposit[_market];
+		return ds.marketReservesDeposit[_loanMarket];
 	}
 
-	function _utilisedReservesDeposit(bytes32 _market) internal view returns (uint) {
+	function _utilisedReservesDeposit(bytes32 _loanMarket) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.marketUtilisationDeposit[_market];
+		return ds.marketUtilisationDeposit[_loanMarket];
 	}
 
 	function _hasAccount(address _account) internal view {
@@ -447,12 +447,12 @@ library LibOpen {
 		require(yield.id !=0, "ERROR: No Yield");
 	}
 
-	function _updateReservesDeposit(bytes32 _market, uint _amount, uint _num) internal authContract(DEPOSIT_ID) {
+	function _updateReservesDeposit(bytes32 _loanMarket, uint _amount, uint _num) internal authContract(DEPOSIT_ID) {
 		AppStorageOpen storage ds = diamondStorage();
 		if (_num == 0)	{
-			ds.marketReservesDeposit[_market] += _amount;
+			ds.marketReservesDeposit[_loanMarket] += _amount;
 		} else if (_num == 1)	{
-			ds.marketReservesDeposit[_market] -= _amount;
+			ds.marketReservesDeposit[_loanMarket] -= _amount;
 		}
 	}
 
@@ -467,42 +467,42 @@ library LibOpen {
 
 // =========== Loan Functions ===========
 	
-	function _avblReservesLoan(bytes32 _market) internal view returns (uint) {
+	function _avblReservesLoan(bytes32 _loanMarket) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.marketReservesLoan[_market];
+		return ds.marketReservesLoan[_loanMarket];
 	}
 
-	function _utilisedReservesLoan(bytes32 _market) internal view returns (uint) {
+	function _utilisedReservesLoan(bytes32 _loanMarket) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
-		return ds.marketUtilisationLoan[_market];
+		return ds.marketUtilisationLoan[_loanMarket];
 	}
 
-	function _updateReservesLoan(bytes32 _market, uint256 _amount, uint256 _num) internal {
+	function _updateReservesLoan(bytes32 _loanMarket, uint256 _amount, uint256 _num) internal {
 		AppStorageOpen storage ds = diamondStorage(); 
 		if (_num == 0) {
-			ds.marketReservesLoan[_market] += _amount;
+			ds.marketReservesLoan[_loanMarket] += _amount;
 		} else if (_num == 1) {
-			ds.marketReservesLoan[_market] -= _amount;
+			ds.marketReservesLoan[_loanMarket] -= _amount;
 		}
 	}
 
-	function _updateUtilisationLoan(bytes32 _market, uint256 _amount, uint256 _num) internal {
+	function _updateUtilisationLoan(bytes32 _loanMarket, uint256 _amount, uint256 _num) internal {
 		AppStorageOpen storage ds = diamondStorage(); 
 		if (_num == 0)	{
-			ds.marketUtilisationLoan[_market] += _amount;
+			ds.marketUtilisationLoan[_loanMarket] += _amount;
 		} else if (_num == 1)	{
-			ds.marketUtilisationLoan[_market] -= _amount;
+			ds.marketUtilisationLoan[_loanMarket] -= _amount;
 		}
 	}
 
-	function _collateralPointer(address _account, bytes32 _market, bytes32 _commitment) internal view returns (bytes32 collateralMarket, uint collateralAmount) {
+	function _collateralPointer(address _account, bytes32 _loanMarket, bytes32 _commitment) internal view returns (bytes32 collateralMarket, uint collateralAmount) {
 		AppStorageOpen storage ds = diamondStorage(); 
 		
 		_hasLoanAccount(_account);
 
-		// LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
+		// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
+		LoanState storage loanState = ds.indLoanState[_account][_loanMarket][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_loanMarket][_commitment];
 
 		//require(loan.id !=0, "ERROR: No Loan");
 		require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
@@ -575,24 +575,24 @@ library LibOpen {
 	    IBEP20(_token).transferFrom(_sender, _recipient, _value);
 	}
 
-	function _avblMarketReserves(bytes32 _market) internal view returns (uint) {
-		require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "Mathematical error");
-		return _marketReserves(_market) - _marketUtilisation(_market);
+	function _avblMarketReserves(bytes32 _loanMarket) internal view returns (uint) {
+		require((_loanMarketReserves(_loanMarket) - _loanMarketUtilisation(_loanMarket)) >=0, "Mathematical error");
+		return _loanMarketReserves(_loanMarket) - _loanMarketUtilisation(_loanMarket);
   }
 
-	function _marketReserves(bytes32 _market) internal view returns (uint) {
-		return _avblReservesDeposit(_market) + _avblReservesLoan(_market);
+	function _loanMarketReserves(bytes32 _loanMarket) internal view returns (uint) {
+		return _avblReservesDeposit(_loanMarket) + _avblReservesLoan(_loanMarket);
 	}
 
-	function _marketUtilisation(bytes32 _market) internal view returns (uint) {
-		return _utilisedReservesDeposit(_market) + _utilisedReservesLoan(_market);
+	function _loanMarketUtilisation(bytes32 _loanMarket) internal view returns (uint) {
+		return _utilisedReservesDeposit(_loanMarket) + _utilisedReservesLoan(_loanMarket);
 	}
 
 // =========== OracleOpen Functions =================
-	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
+	function _getLatestPrice(bytes32 _loanMarket) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage();
-		require(ds.pairAddresses[_market] != address(0), "Invalid pair address given");
-		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		require(ds.pairAddresses[_loanMarket] != address(0), "Invalid pair address given");
+		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_loanMarket]).latestRoundData();
 		return uint256(price);
 	}
 
@@ -602,10 +602,10 @@ library LibOpen {
 		retPrice = ds.priceData[_requestId].price;
 	}
 
-	function _fairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) internal {
+	function _fairPrice(uint _requestId, uint _fPrice, bytes32 _loanMarket, uint _amount) internal {
 		AppStorageOpen storage ds = diamondStorage();
 		PriceData storage newPrice = ds.priceData[_requestId];
-		newPrice.market = _market;
+		newPrice.market = _loanMarket;
 		newPrice.amount = _amount;
 		newPrice.price = _fPrice;
 	}

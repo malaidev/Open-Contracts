@@ -64,9 +64,9 @@ contract Loan is Pausable, ILoan {
 
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		
-		uint swappedAmount = LibOpen._swapToLoan(msg.sender, _swapMarket, _commitment, _loanMarket);
+		uint _swappedAmount = return LibOpen._swapToLoan(msg.sender, _swapMarket, _commitment, _loanMarket);
 		
-		emit MarketSwapped(msg.sender,loan.id,_swapMarket,_loanMarket,swappedAmount);
+		emit MarketSwapped(msg.sender,loan.id,_swapMarket,_loanMarket,_swappedAmount);
 		return success;
 	}
 
