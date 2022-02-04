@@ -289,9 +289,11 @@ contract LoanExt is Pausable, ILoanExt {
 	}
 
 
-	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool) {
+	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool success) {
+		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-        bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
+        
+		bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
 		bytes32 _loanMarket = ds.loanPassbook[_account].loans[_id-1].market;
 
 		LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
@@ -334,7 +336,7 @@ contract LoanExt is Pausable, ILoanExt {
 
 		emit LoanRepaid(_account, _id, loan.market, block.timestamp);
 		emit Liquidation(_account,_loanMarket, _commitment, loan.amount, block.timestamp);
-		return true;
+		return success = true;
 	}
 
 	function preAddCollateralProcess(
