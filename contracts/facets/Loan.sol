@@ -356,7 +356,6 @@ contract Loan is Pausable, ILoan {
 		loanAccount.collaterals[num].isTimelockActivated = true;
 		loanAccount.collaterals[num].activationTime = block.timestamp;
 
-		
 		delete loanAccount.accruedAPY[num];
 		delete loanAccount.accruedAPR[num];
 	}

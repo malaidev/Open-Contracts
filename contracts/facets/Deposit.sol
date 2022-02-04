@@ -5,6 +5,8 @@ import "../util/Pausable.sol";
 // import "./mockup/IMockBep20.sol";
 import "../libraries/LibOpen.sol";
 
+import "hardhat/console.sol";
+
 contract Deposit is Pausable, IDeposit{
 		
 	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
@@ -153,7 +155,7 @@ contract Deposit is Pausable, IDeposit{
         preDepositProcess(_market, _amount);
 
         if (!LibOpen._hasDeposit(msg.sender, _market, _commitment))    {
-            createNewDeposit(_market, _commitment, _amount, msg.sender);
+            createNewDeposit(msg.sender, _market, _commitment, _amount);
             return false;
         }
 
@@ -167,7 +169,7 @@ contract Deposit is Pausable, IDeposit{
         return true;
     }
 
-    function createNewDeposit(bytes32 _market,bytes32 _commitment,uint256 _amount, address _sender) private {
+    function createNewDeposit(address _sender, bytes32 _market,bytes32 _commitment,uint256 _amount) private {
         AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
         SavingsAccount storage savingsAccount = ds.savingsPassbook[_sender];
