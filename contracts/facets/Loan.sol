@@ -46,12 +46,12 @@ contract Loan is Pausable, ILoan {
 		bytes32 _loanMarket,
 		bytes32 _commitment,
 		bytes32 _swapMarket
-	) external override nonReentrant() returns (bool success) {
+	) external override nonReentrant() returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LibOpen._swapLoan(msg.sender, _loanMarket, _commitment, _swapMarket);
 		emit MarketSwapped(msg.sender,loan.id,_loanMarket,_swapMarket, loan.amount);
-		return success;
+		return true;
 	}
 
 /// SwapToLoan
@@ -59,7 +59,7 @@ contract Loan is Pausable, ILoan {
 		bytes32 _swapMarket,
 		bytes32 _commitment,
 		bytes32 _loanMarket
-	) external override nonReentrant() returns (bool success) {
+	) external override nonReentrant() returns (bool) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -67,10 +67,10 @@ contract Loan is Pausable, ILoan {
 		uint _swappedAmount = LibOpen._swapToLoan(msg.sender, _swapMarket, _commitment, _loanMarket);
 		
 		emit MarketSwapped(msg.sender,loan.id,_swapMarket,_loanMarket,_swappedAmount);
-		return success;
+		return true;
 	}
 
-	function withdrawCollateral(bytes32 _loanMarket, bytes32 _commitment) external override nonReentrant() returns (bool success) {
+	function withdrawCollateral(bytes32 _loanMarket, bytes32 _commitment) external override nonReentrant() returns (bool) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -109,10 +109,10 @@ contract Loan is Pausable, ILoan {
 
 		emit CollateralReleased(msg.sender, collateral.amount, collateral.market, block.timestamp);
 
-		return success;
+		return true;
 	}
 
-	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool success) {
+	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool) {
 		// AppStorageOpen storage ds = diamondStorage(); 
         LibOpen._hasLoanAccount(msg.sender);
 		// LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
