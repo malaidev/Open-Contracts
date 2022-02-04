@@ -56,7 +56,7 @@ contract Faucet {
         td.unlockTime = block.timestamp + waitTime;
 
         emit TokensIssued(tokenInstance, msg.sender);
-        return success;
+        return success = true;
     }
 
     modifier nonReentrant() {
