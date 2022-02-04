@@ -178,6 +178,8 @@ contract Deposit is Pausable, IDeposit{
 
         LibOpen._ensureSavingsAccount(_sender,savingsAccount);
 
+		console.log("createNewDeposit/address(this) is %s", address(this));
+
         ds.token.transferFrom(_sender, address(this), _amount);
 
         processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);

@@ -495,7 +495,7 @@ library LibOpen {
 		}
 	}
 
-	function _collateralPointer(address _account, bytes32 _loanMarket, bytes32 _commitment) internal view returns (bytes32 collateralMarket, uint collateralAmount) {
+	function _collateralPointer(address _account, bytes32 _loanMarket, bytes32 _commitment) internal view returns (bytes32, uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
 		
 		_hasLoanAccount(_account);
@@ -509,10 +509,10 @@ library LibOpen {
 		//if (_commitment != _getCommitment(0)) {
 		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
 		//}		
-		collateralMarket = collateral.market;
-		collateralAmount = collateral.amount;
+		bytes32 collateralMarket = collateral.market;
+		uint collateralAmount = collateral.amount;
 
-		return collateralMarket, collateralAmount;
+		return (collateralMarket, collateralAmount);
 	}
 
 	function _accruedYield(LoanAccount storage loanAccount, CollateralRecords storage collateral, CollateralYield storage cYield) internal {
@@ -586,6 +586,14 @@ library LibOpen {
 
 	function _loanMarketUtilisation(bytes32 _loanMarket) internal view returns (uint) {
 		return _utilisedReservesDeposit(_loanMarket) + _utilisedReservesLoan(_loanMarket);
+	}
+
+	function _marketReserves(bytes32 _market) internal view returns (uint) {
+        return _avblReservesDeposit(_market) + _avblReservesLoan(_market);
+	}
+
+	function _marketUtilisation(bytes32 _market) internal view returns (uint) {
+		return _utilisedReservesDeposit(_market) + _utilisedReservesLoan(_market);
 	}
 
 // =========== OracleOpen Functions =================
