@@ -92,7 +92,7 @@ contract Loan is Pausable, ILoan {
 
         uint collateralAmount;
 
-		(, collateralAmount) = return LibOpen._collateralPointer(msg.sender,_loanMarket,_commitment);
+		(, collateralAmount) = LibOpen._collateralPointer(msg.sender,_loanMarket,_commitment);
 		ds.token = IBEP20(LibOpen._connectMarket(collateral.market));
 		// ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
     	// ds.token.transferFrom(ds.reserveAddress, msg.sender, collateralAmount);

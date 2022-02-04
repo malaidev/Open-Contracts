@@ -108,7 +108,7 @@ library LibOpen {
 		AppStorageOpen storage ds = diamondStorage(); 
 		MarketData memory marketData = ds.indMarketData[_loanMarket];
 
-		addr = marketData.tokenAddress;
+		return addr = marketData.tokenAddress;
 	}
 	
 // =========== Comptroller Functions ===========
