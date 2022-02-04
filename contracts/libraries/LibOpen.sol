@@ -541,8 +541,8 @@ library LibOpen {
 		// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
 		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_loanMarket][_commitment];
 
-		require(ds.indLoanState[_account][_loanMarket][_commitment].state == ILoan.STATE.ACTIVE, "ERROR: INACTIVE LOAN");
-		require(ds.indAccruedAPR[_account][_loanMarket][_commitment].id != 0, "ERROR: APR does not exist");
+		require(ds.indLoanState[_account][_loanMarket][_commitment].state == ILoan.STATE.ACTIVE, "ERROR: Inactive Loan");
+		// require(ds.indAccruedAPR[_account][_loanMarket][_commitment].id != 0, "ERROR: APR does not exist");
 
 		uint256 aggregateYield;
 		uint256 deductibleUSDValue;
@@ -581,17 +581,26 @@ library LibOpen {
 	}
 
 	function _avblMarketReserves(bytes32 _loanMarket) internal view returns (uint) {
-		require((_loanMarketReserves(_loanMarket) - _loanMarketUtilisation(_loanMarket)) >=0, "Mathematical error");
-		return _loanMarketReserves(_loanMarket) - _loanMarketUtilisation(_loanMarket);
+		// require((_loanMarketReserves(_loanMarket) - _loanMarketUtilisation(_loanMarket)) >=0, "Mathematical error");
+		// return _loanMarketReserves(_loanMarket) - _loanMarketUtilisation(_loanMarket);
+		IBEP20 token = IBEP20(LibOpen._connectMarket(_loanMarket));
+		uint balance = token.balanceOf(address(this));
+
+		require(balance >= (_marketReserves(_market) - _marketUtilisation(_market)), "ERROR: Reserve imbalance");
+		require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "ERROR: Mathematical error");
+		if (balance > (_marketReserves(_market) - _marketUtilisation(_market))) {
+			return balance;
+		}
+		return (_marketReserves(_market) - _marketUtilisation(_market));
   }
 
-	function _loanMarketReserves(bytes32 _loanMarket) internal view returns (uint) {
-		return _avblReservesDeposit(_loanMarket) + _avblReservesLoan(_loanMarket);
-	}
+	// function _loanMarketReserves(bytes32 _loanMarket) internal view returns (uint) {
+	// 	return _avblReservesDeposit(_loanMarket) + _avblReservesLoan(_loanMarket);
+	// }
 
-	function _loanMarketUtilisation(bytes32 _loanMarket) internal view returns (uint) {
-		return _utilisedReservesDeposit(_loanMarket) + _utilisedReservesLoan(_loanMarket);
-	}
+	// function _loanMarketUtilisation(bytes32 _loanMarket) internal view returns (uint) {
+	// 	return _utilisedReservesDeposit(_loanMarket) + _utilisedReservesLoan(_loanMarket);
+	// }
 
 	function _marketReserves(bytes32 _market) internal view returns (uint) {
         return _avblReservesDeposit(_market) + _avblReservesLoan(_market);

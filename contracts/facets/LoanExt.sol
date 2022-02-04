@@ -214,7 +214,7 @@ contract LoanExt is Pausable, ILoanExt {
 		bytes32 _commitment,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
-	) external override returns (bool) {
+	) external override returns (bool success) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     	LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -229,18 +229,19 @@ contract LoanExt is Pausable, ILoanExt {
 		ds.collateralToken.transferFrom(msg.sender, address(this), _collateralAmount);
 		LibOpen._updateReservesLoan(_collateralMarket, _collateralAmount, 0);
 		
-		addCollateralAmount(loanAccount, collateral, _collateralAmount, loan.id-1);
+		updateCollateral(loanAccount, collateral, _collateralAmount, loan.id-1);
 		LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
 
 		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
 
 		emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
-
-		return true;
+		return success = true;
 	}
 
 	function ensureLoanAccount(address _account) private {
+		
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
+		
 		LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		if (loanAccount.accOpenTime == 0) {
 			loanAccount.accOpenTime = block.timestamp;
@@ -248,7 +249,7 @@ contract LoanExt is Pausable, ILoanExt {
 		}
 	}
 
-	function addCollateralAmount(
+	function updateCollateral(
 		LoanAccount storage loanAccount,
 		CollateralRecords storage collateral,
 		uint256 _collateralAmount,
@@ -269,17 +270,17 @@ contract LoanExt is Pausable, ILoanExt {
 
 		uint256 loanByCollateral;
 		uint256 amount = LibOpen._avblMarketReserves(_loanMarket) - _loanAmount ;
-		uint rF = LibOpen._getReserveFactor()* LibOpen._loanMarketReserves(_loanMarket);
+		uint rF = LibOpen._getReserveFactor()* LibOpen._avblMarketReserves(_loanMarket);
 
 		uint256 usdLoan = (LibOpen._getLatestPrice(_loanMarket)) * _loanAmount;
 		uint256 usdCollateral = (LibOpen._getLatestPrice(_collateralMarket)) * _collateralAmount;
 
 		require(amount > 0, "ERROR: Loan exceeds reserves");
-		require(LibOpen._loanMarketReserves(_loanMarket) >= rF + amount, "ERROR: Minimum reserve exeception");
+		require(LibOpen._avblMarketReserves(_loanMarket) >= rF + amount, "ERROR: Minimum reserve exeception");
 		require (usdLoan/usdCollateral <=3, "ERROR: Exceeds permissible CDR");
 
 		// calculating cdrPermissible.
-		if (LibOpen._loanMarketReserves(_loanMarket) >= amount + 3*LibOpen._loanMarketReserves(_loanMarket)/4)    {
+		if (LibOpen._avblMarketReserves(_loanMarket) >= amount + 3*LibOpen._avblMarketReserves(_loanMarket)/4)    {
 				loanByCollateral = 3;
 		} else     {
 				loanByCollateral = 2;
@@ -343,7 +344,7 @@ contract LoanExt is Pausable, ILoanExt {
 		LoanState storage loanState,
 		CollateralRecords storage collateral
 	) private view {
-		require(loanAccount.accOpenTime != 0, "ERROR: No Loan account");
+		// require(loanAccount.accOpenTime != 0, "ERROR: No Loan account"); // redundant
 		require(loan.id != 0, "ERROR: No loan");
 		require(loanState.state == ILoan.STATE.ACTIVE, "ERROR: Inactive loan");
 		require(collateral.market == _collateralMarket, "ERROR: Mismatch collateral market");
