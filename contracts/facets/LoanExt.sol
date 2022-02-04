@@ -407,7 +407,7 @@ contract LoanExt is Pausable, ILoanExt {
 		require(permissibleAmount > (_amount), "ERROR:Request exceeds funds");
 		
 		// calcualted in usdterms
-		require((usdCollateral*collateralAvbl + usdLoanCurrent*loanState.currentAmount - (_amount*usdLoanCurrent)) >= (11*(usdLoan*ds.indLoanRecords[_sender][_loanMarket][_commitment].amount)/10), "ERROR: Risks liquidation");
+		require(((usdCollateral*collateralAvbl) + (usdLoanCurrent*loanState.currentAmount) - (_amount*usdLoanCurrent)) >= (11*(usdLoan*ds.indLoanRecords[_sender][_loanMarket][_commitment].amount)/10), "ERROR: Liquidation risk");
 	}
 	
 	function pauseLoanExt() external override authLoanExt() nonReentrant() {
