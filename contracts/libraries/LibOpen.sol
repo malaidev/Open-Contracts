@@ -566,9 +566,11 @@ library LibOpen {
 	}
 
   function _hasLoanAccount(address _account) internal view returns (bool) {
-    AppStorageOpen storage ds = diamondStorage(); 
-    require(ds.loanPassbook[_account].accOpenTime !=0, "ERROR: No Loan Account");
-		return true;
+    
+	AppStorageOpen storage ds = diamondStorage(); 
+
+	require(ds.loanPassbook[_account].accOpenTime !=0, "ERROR: No Loan Account");
+	return true;
   }
 
 // =========== Reserve Functions =====================
