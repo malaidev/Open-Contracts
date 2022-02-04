@@ -222,7 +222,7 @@ contract LoanExt is Pausable, ILoanExt {
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
 
-		preAddCollateralProcess(_collateralMarket, _collateralAmount, loanAccount, loan,loanState, collateral);
+		preAddCollateralProcess(_collateralMarket, _collateralAmount /* loanAccount */, loan,loanState, collateral);
 
 		ds.collateralToken = IBEP20(LibOpen._connectMarket(_collateralMarket));
 		// _quantifyAmount(_collateralMarket, _collateralAmount);
@@ -341,7 +341,7 @@ contract LoanExt is Pausable, ILoanExt {
 	function preAddCollateralProcess(
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount,
-		LoanAccount storage loanAccount,
+		// LoanAccount storage loanAccount,
 		LoanRecords storage loan,
 		LoanState storage loanState,
 		CollateralRecords storage collateral

@@ -580,14 +580,16 @@ library LibOpen {
 	    IBEP20(_token).transferFrom(_sender, _recipient, _value);
 	}
 
-	function _avblMarketReserves(bytes32 _loanMarket) internal view returns (uint) {
+	function _avblMarketReserves(bytes32 _market) internal view returns (uint) {
 		// require((_loanMarketReserves(_loanMarket) - _loanMarketUtilisation(_loanMarket)) >=0, "Mathematical error");
 		// return _loanMarketReserves(_loanMarket) - _loanMarketUtilisation(_loanMarket);
-		IBEP20 token = IBEP20(LibOpen._connectMarket(_loanMarket));
+		IBEP20 token = IBEP20(_connectMarket(_market));
 		uint balance = token.balanceOf(address(this));
 
 		require(balance >= (_marketReserves(_market) - _marketUtilisation(_market)), "ERROR: Reserve imbalance");
+
 		require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "ERROR: Mathematical error");
+
 		if (balance > (_marketReserves(_market) - _marketUtilisation(_market))) {
 			return balance;
 		}
