@@ -56,19 +56,21 @@ contract Reserve is Pausable, IReserve {
 		return LibOpen._marketUtilisation(_market);
 	}
 
-	function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override returns (bool){
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+/// Duplicate: withdrawCollateral() in Loan.sol
 
-		bytes32 collateralMarket;
-		uint collateralAmount;
+// 	function collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) external override returns (bool){
+// 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
-		(collateralMarket, collateralAmount) = LibOpen._collateralPointer(_account,_market,_commitment);
-		ds.token = IBEP20(LibOpen._connectMarket(collateralMarket));
-		// ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
-		// ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
-		ds.token.transfer(_account, collateralAmount);
-		return true;
-  }
+// 		bytes32 collateralMarket;
+// 		uint collateralAmount;
+
+// 		(collateralMarket, collateralAmount) = LibOpen._collateralPointer(_account,_market,_commitment);
+// 		ds.token = IBEP20(LibOpen._connectMarket(collateralMarket));
+// 		// ds.token.approveFrom(ds.reserveAddress, address(this), collateralAmount);
+// 		// ds.token.transferFrom(ds.reserveAddress, _account, collateralAmount);
+// 		ds.token.transfer(_account, collateralAmount);
+// 		return true;
+//   }
 
 	modifier authReserve()  {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
