@@ -363,16 +363,15 @@ contract LoanExt is Pausable, ILoanExt {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LibOpen._hasLoanAccount(msg.sender);
 
-		LoanRecords storage loan = ds.indLoanRecords[_sender][_loanMarket][_commitment];
-		LoanState storage loanState = ds.indLoanState[_sender][_loanMarket][_commitment];
+		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
+		LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
 		
 		checkPermissibleWithdrawal(msg.sender, _loanMarket, _commitment, _collateralMarket, _amount);
 		
 		ds.withdrawToken = IBEP20(LibOpen._connectMarket(loanState.currentMarket));
-		ds.withdrawToken.transfer(_sender,_amount);
+		ds.withdrawToken.transfer(msg.sender,_amount);
 
-		emit WithdrawPartialLoan(_sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
-
+		emit WithdrawPartialLoan(msg.sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
 		return success = true;
   }
 
