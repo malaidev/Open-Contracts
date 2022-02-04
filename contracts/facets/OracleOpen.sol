@@ -30,8 +30,9 @@ contract OracleOpen is Pausable, IOracleOpen {
 			return LibOpen._getFairPrice(_requestId);
 	}
 
-	function setFairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) external {
+	function setFairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) external authOracleOpen() returns(bool success){
 			LibOpen._fairPrice(_requestId, _fPrice, _market, _amount);
+			return success = true;
 	}
 
 	// function liquidationTrigger(address account, uint loanId) external override authOracleOpen() nonReentrant() returns(bool) {
