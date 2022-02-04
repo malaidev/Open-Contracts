@@ -57,9 +57,9 @@ library LibOpen {
 	}
 
 	function diamondStorage() internal pure returns (AppStorageOpen storage ds) {
-			assembly {
-					ds.slot := 0
-			}
+		assembly {
+				ds.slot := 0
+		}
 	}
 
 	function _isMarketSupported(bytes32  _loanMarket) internal view {
@@ -103,13 +103,12 @@ library LibOpen {
 		return ds.indMarket2Data[_loanMarket].decimals;
 	}
 
-	function _connectMarket(bytes32 _loanMarket) internal view returns (address addr) {
+	function _connectMarket(bytes32 _loanMarket) internal view returns (address) {
 		
 		AppStorageOpen storage ds = diamondStorage(); 
 		MarketData memory marketData = ds.indMarketData[_loanMarket];
 
-		addr = marketData.tokenAddress;
-		return addr;
+		return marketData.tokenAddress;
 	}
 	
 // =========== Comptroller Functions ===========
@@ -348,7 +347,7 @@ library LibOpen {
 		return swappedAmount;
 	}
 // =========== Liquidator Functions ===========
-	function _swap(address sender, bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256 receivedAmount) {
+	function _swap(address sender, bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256) {
 		address addrFromMarket;
 		address addrToMarket;
 
@@ -392,9 +391,10 @@ library LibOpen {
 		//     path[2] = addrToMarket;
 		// }
 
-		IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),path,address(this),block.timestamp);
+		uint[] memory ret;
+		ret = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),path,address(this),block.timestamp);
+		return ret[ret.length-1];
 		
-		return receivedAmount;
 	}
 
 	function _getAmountOutMin(
