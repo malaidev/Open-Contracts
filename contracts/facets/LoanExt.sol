@@ -74,7 +74,7 @@ contract LoanExt is Pausable, ILoanExt {
 		uint256 _loanAmount,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
-	) external override nonReentrant() returns (bool success) {
+	) external override nonReentrant() returns (bool) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		
@@ -94,7 +94,7 @@ contract LoanExt is Pausable, ILoanExt {
 		LibOpen._updateReservesLoan(_collateralMarket,_collateralAmount, 0);
 		emit NewLoan(msg.sender, _loanMarket, _commitment, _loanAmount, _collateralMarket, _collateralAmount, ds.loanPassbook[msg.sender].loans.length+1);
 
-		return success;
+		return true;
 	}
 
 	function processNewLoan(
@@ -291,7 +291,7 @@ contract LoanExt is Pausable, ILoanExt {
 
 	function GetisReentrant() public view returns (bool) { return isReentrant; }
 
-	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool success) {
+	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
 		bytes32 _loanMarket = ds.loanPassbook[_account].loans[_id-1].market;
@@ -357,7 +357,7 @@ contract LoanExt is Pausable, ILoanExt {
 	}
 
 	
-	function permissibleWithdrawal(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private returns (bool success) {
+	function permissibleWithdrawal(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private returns (bool) {
     AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     LibOpen._hasLoanAccount(_sender);
 
@@ -371,7 +371,7 @@ contract LoanExt is Pausable, ILoanExt {
 
 		emit WithdrawalProcessed(_sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
 
-		success = true;
+		return true;
   }
 
 	function checkPermissibleWithdrawal(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount, address _sender) private /*authContract(LOAN_ID)*/ {
