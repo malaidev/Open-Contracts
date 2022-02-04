@@ -3,6 +3,7 @@ const { ethers } = require('hardhat')
 const utils = require('ethers').utils
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 
+
 async function main() {
     const diamondAddress = await deployDiamond();
     await addMarkets(diamondAddress)
@@ -345,8 +346,16 @@ async function addMarkets(diamondAddress) {
         { gasLimit: 800000 }
     )
 
+    const Faucet = await ethers.getContractFactory("Faucet");
+    const faucet = await Faucet.deploy(tUsdtAddress,tUsdcAddress,tBtcAddress,tWBNBAddress)
+    console.log("Faucet deployed at ", faucet.address)
+
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
+
+    
 }
+
+
 
 // async function addMarkets(diamondAddress) {
 //     const accounts = await ethers.getSigners()
