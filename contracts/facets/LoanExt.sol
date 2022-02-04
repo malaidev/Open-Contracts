@@ -188,10 +188,8 @@ contract LoanExt is Pausable, ILoanExt {
 		uint256 _collateralAmount
 	) private {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		require(
-			_loanAmount != 0 && _collateralAmount != 0,
-			"Loan or collateral cannot be zero"
-		);
+		require(_loanAmount != 0,"ERROR: Loan amount can not be zero");
+		require(_collateralAmount != 0,"ERROR: Collateral can not be zero");
 
 		permissibleCDR(_loanMarket,_collateralMarket,_loanAmount,_collateralAmount);
 
