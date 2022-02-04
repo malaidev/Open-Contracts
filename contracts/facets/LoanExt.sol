@@ -288,7 +288,6 @@ contract LoanExt is Pausable, ILoanExt {
 		require (usdLoan/usdCollateral <= loanByCollateral, "ERROR: Exceeds permissible CDR");
 	}
 
-	function GetisReentrant() public view returns (bool) { return isReentrant; }
 
 	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
