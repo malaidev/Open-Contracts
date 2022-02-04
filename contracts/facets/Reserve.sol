@@ -24,12 +24,12 @@ contract Reserve is Pausable, IReserve {
 	function transferAnyBEP20(
 		address _token,
 		address _recipient,
-		uint256 _value) external override authReserve() nonReentrant returns(bool)   
+		uint256 _value) external override authReserve() nonReentrant returns(bool success)   
 	{
 		IBEP20(_token).transfer(_recipient, _value);
-		return true;
+		return success = true;
 	}
-
+	
 	// function transferMarket(address _token, address _recipient, uint256 _value, uint256 nFacetIndex)
 	// 	public nonReentrant authTransfer(nFacetIndex) returns (bool success) {
 
