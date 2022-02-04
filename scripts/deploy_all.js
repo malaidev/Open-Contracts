@@ -113,7 +113,6 @@ async function deployDiamond() {
     }
 
     console.log('Completed diamond cut')
-
     console.log("Begin diamondcut facets");
 
     diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamond.address)
