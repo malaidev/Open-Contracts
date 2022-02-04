@@ -46,12 +46,12 @@ contract Loan is Pausable, ILoan {
 		bytes32 _loanMarket,
 		bytes32 _commitment,
 		bytes32 _swapMarket
-	) external override nonReentrant() returns (bool) {
+	) external override nonReentrant() returns (bool success) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LibOpen._swapLoan(msg.sender, _loanMarket, _commitment, _swapMarket);
 		emit MarketSwapped(msg.sender,loan.id,_loanMarket,_swapMarket, loan.amount);
-		return true;
+		return success;
 	}
 
 /// SwapToLoan
@@ -60,8 +60,8 @@ contract Loan is Pausable, ILoan {
 		bytes32 _commitment,
 		bytes32 _loanMarket
 	) external override nonReentrant() returns (bool success) {
+		
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
-
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		
 		uint _swappedAmount = LibOpen._swapToLoan(msg.sender, _swapMarket, _commitment, _loanMarket);
@@ -71,11 +71,11 @@ contract Loan is Pausable, ILoan {
 	}
 
 	function withdrawCollateral(bytes32 _loanMarket, bytes32 _commitment) external override nonReentrant() returns (bool success) {
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
-		// LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		// LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
 		
 		LibOpen._isMarketSupported(_loanMarket);
 		require(ds.marketReservesLoan[collateral.market] >= collateral.amount, "ERROR: Amount exceeds balance");
