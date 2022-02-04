@@ -350,17 +350,18 @@ async function addMarkets(diamondAddress) {
     const faucet = await Faucet.deploy(tUsdtAddress,tUsdcAddress,tBtcAddress,tWBNBAddress)
     console.log("Faucet deployed at ", faucet.address)
 
-    await tusdt.transfer(faucet.address,3000000000000000000000000000)
+    await tusdt.transfer(faucet.address,"3000000000000000000000000000")
     console.log("3000000000 Usdt transfered to faucet. Token being :", tUsdtAddress)
 
-    await tusdc.transfer(faucet.address,3000000000000000000000000000)
+    await tusdc.transfer(faucet.address,"3000000000000000000000000000")
     console.log("3000000000 tusdc transfered to faucet. Token being :", tUsdcAddress)
 
     await tbtc.transfer(faucet.address,630000000000000)
     console.log("6300000 tbtc transfered to faucet. Token being :", tBtcAddress)
 
-    await twbnb.transfer(faucet.address,1200000000000000000000000)
+    await twbnb.transfer(faucet.address,"1200000000000000000000000")
     console.log("1200000 twbnb transfered to faucet. Token being :", tWBNBAddress)
+    console.log(await twbnb.balanceOf(faucet.address));
 
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
 
