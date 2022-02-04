@@ -305,7 +305,7 @@ contract LoanExt is Pausable, ILoanExt {
 		// emit FairPriceCall(ds.requestEventId++, collateral.market, collateral.amount);
 		// emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);
 
-		require(loan.id == _id, "ERROR: id mismatch");
+		require(loan.id == _id, "ERROR: Mismatch LoanID");
 
 		LibOpen._accruedInterest(_account, _loanMarket, _commitment);
 		
@@ -316,8 +316,9 @@ contract LoanExt is Pausable, ILoanExt {
 
 		delete ds.indAccruedAPY[_account][_loanMarket][_commitment];
 		delete ds.indAccruedAPR[_account][_loanMarket][_commitment];
-		delete ds.loanPassbook[_account].accruedAPR[loan.id - 1];
+
 		delete ds.loanPassbook[_account].accruedAPY[loan.id - 1];
+		delete ds.loanPassbook[_account].accruedAPR[loan.id - 1];
 
 		// uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
 		// uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;

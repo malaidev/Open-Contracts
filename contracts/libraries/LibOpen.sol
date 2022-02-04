@@ -263,12 +263,7 @@ library LibOpen {
 	}
 
 // =========== Loan functions ==============
-	function _swapLoan(
-		address _sender,
-        bytes32 _loanMarket,
-		bytes32 _commitment,
-		bytes32 _swapMarket
-    ) internal authContract(LOAN_ID) {
+	function _swapLoan(address _sender,bytes32 _loanMarket,bytes32 _commitment,bytes32 _swapMarket) internal authContract(LOAN_ID) {
         AppStorageOpen storage ds = diamondStorage(); 
         _hasLoanAccount(_sender);
 		
