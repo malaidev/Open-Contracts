@@ -363,9 +363,21 @@ async function addMarkets(diamondAddress) {
     console.log(await twbnb.balanceOf(faucet.address));
 
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
-
     
 }
+
+if (require.main === module) {
+    main()
+      .then(() => process.exit(0))
+      .catch(error => {
+        console.error(error)
+        process.exit(1)
+      })
+}
+exports.deployDiamond = deployDiamond
+// exports.deployOpenFacets = deployOpenFacets
+
+exports.addMarkets = addMarkets
 
 
 
@@ -509,18 +521,4 @@ async function addMarkets(diamondAddress) {
 
 //     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress}
 // }
-
-
-if (require.main === module) {
-    main()
-      .then(() => process.exit(0))
-      .catch(error => {
-        console.error(error)
-        process.exit(1)
-      })
-}
-exports.deployDiamond = deployDiamond
-// exports.deployOpenFacets = deployOpenFacets
-
-exports.addMarkets = addMarkets
 
