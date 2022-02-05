@@ -308,10 +308,10 @@ contract LoanExt is Pausable, ILoanExt {
 
 		LibOpen._accruedInterest(_account, _loanMarket, _commitment);
 		
-		// if (loan.commitment == LibOpen._getCommitment(2))
-		// 	collateral.amount += ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield - ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
-		// else if (loan.commitment != LibOpen._getCommitment(2))
-		// 	collateral.amount -= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
+		if (loan.commitment == LibOpen._getCommitment(2))
+			collateral.amount += ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield - ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
+		else if (loan.commitment != LibOpen._getCommitment(2))
+			collateral.amount -= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
 
 		// delete ds.indAccruedAPY[_account][_loanMarket][_commitment];
 		// delete ds.indAccruedAPR[_account][_loanMarket][_commitment];
