@@ -1,4 +1,5 @@
-pragma solidity 0.5.16;
+// SPDX-License-Identifier: MIT
+pragma solidity 0.8.1;
 
 interface IBEP20 {
   /**
@@ -104,9 +105,9 @@ interface IBEP20 {
 contract Context {
   // Empty internal constructor, to prevent people from mistakenly deploying
   // an instance of this contract, which should be used via inheritance.
-  constructor () internal { }
+  constructor () { }
 
-  function _msgSender() internal view returns (address payable) {
+  function _msgSender() internal view returns (address) {
     return msg.sender;
   }
 
@@ -285,7 +286,7 @@ contract Ownable is Context {
   /**
    * @dev Initializes the contract setting the deployer as the initial owner.
    */
-  constructor () internal {
+  constructor () {
     address msgSender = _msgSender();
     _owner = msgSender;
     emit OwnershipTransferred(address(0), msgSender);
@@ -348,55 +349,59 @@ contract BEP20Token is Context, IBEP20, Ownable {
   string private _symbol;
   string private _name;
 
-  constructor() public {
-    _name = {{TOKEN_NAME}};
-    _symbol = {{TOKEN_SYMBOL}};
-    _decimals = {{DECIMALS}};
-    _totalSupply = {{TOTAL_SUPPLY}};
-    _balances[msg.sender] = _totalSupply;
+    uint256 cappedSupply;
 
-    emit Transfer(address(0), msg.sender, _totalSupply);
-  }
+    bool isReentrant = false;
+    bool isPaused = false;
+
+  constructor(string memory name_,string memory symbol_,uint8 decimal_,uint256 _cappedSupply) {
+        _name = name_;
+        _symbol = symbol_;
+        _decimals = decimal_;
+
+        cappedSupply = _cappedSupply*10**_decimals;
+        mint(50000000000*10**_decimals);
+    }
 
   /**
    * @dev Returns the bep token owner.
    */
-  function getOwner() external view returns (address) {
+  function getOwner() external view override returns (address) {
     return owner();
   }
 
   /**
    * @dev Returns the token decimals.
    */
-  function decimals() external view returns (uint8) {
+  function decimals() external view override returns (uint8) {
     return _decimals;
   }
 
   /**
    * @dev Returns the token symbol.
    */
-  function symbol() external view returns (string memory) {
+  function symbol() external view override returns (string memory) {
     return _symbol;
   }
 
   /**
   * @dev Returns the token name.
   */
-  function name() external view returns (string memory) {
+  function name() external view override returns (string memory) {
     return _name;
   }
 
   /**
    * @dev See {BEP20-totalSupply}.
    */
-  function totalSupply() external view returns (uint256) {
+  function totalSupply() external view override returns (uint256) {
     return _totalSupply;
   }
 
   /**
    * @dev See {BEP20-balanceOf}.
    */
-  function balanceOf(address account) external view returns (uint256) {
+  function balanceOf(address account) external view override returns (uint256) {
     return _balances[account];
   }
 
@@ -408,7 +413,7 @@ contract BEP20Token is Context, IBEP20, Ownable {
    * - `recipient` cannot be the zero address.
    * - the caller must have a balance of at least `amount`.
    */
-  function transfer(address recipient, uint256 amount) external returns (bool) {
+  function transfer(address recipient, uint256 amount) external override returns (bool) {
     _transfer(_msgSender(), recipient, amount);
     return true;
   }
@@ -416,7 +421,7 @@ contract BEP20Token is Context, IBEP20, Ownable {
   /**
    * @dev See {BEP20-allowance}.
    */
-  function allowance(address owner, address spender) external view returns (uint256) {
+  function allowance(address owner, address spender) external view override returns (uint256) {
     return _allowances[owner][spender];
   }
 
@@ -427,7 +432,7 @@ contract BEP20Token is Context, IBEP20, Ownable {
    *
    * - `spender` cannot be the zero address.
    */
-  function approve(address spender, uint256 amount) external returns (bool) {
+  function approve(address spender, uint256 amount) external override returns (bool) {
     _approve(_msgSender(), spender, amount);
     return true;
   }
@@ -444,7 +449,7 @@ contract BEP20Token is Context, IBEP20, Ownable {
    * - the caller must have allowance for `sender`'s tokens of at least
    * `amount`.
    */
-  function transferFrom(address sender, address recipient, uint256 amount) external returns (bool) {
+  function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
     _transfer(sender, recipient, amount);
     _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "BEP20: transfer amount exceeds allowance"));
     return true;
