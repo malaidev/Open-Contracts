@@ -176,33 +176,33 @@ async function addMarkets(diamondAddress) {
     /// PREVIOUSLY COMMENTED
     // const admin_ = '0x14e7bBbDAc66753AcABcbf3DFDb780C6bD357d8E';
     const admin_ = upgradeAdmin.address;
-    const Mockup = await ethers.getContractFactory('MockBep20')
-    const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, admin_, 21000000)
+    const Mockup = await ethers.getContractFactory('BEP20Token')
+    const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, 21000000)
     await tbtc.deployed()
     const tBtcAddress = tbtc.address;
     // console.log("tBTC deployed: ", tbtc.address)
 
-    const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, admin_, 10000000000)
+    const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, 10000000000)
     await tusdc.deployed()
     const tUsdcAddress = tusdc.address;
     // console.log("tUSDC deployed: ", tusdc.address)
 
-    const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 18, admin_, 10000000000)
+    const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 18, 10000000000)
     await tusdt.deployed()
     const tUsdtAddress = tusdt.address;
     // console.log("tUSDT deployed: ", tusdt.address)
 
-    const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, admin_, 1000000000)
+    const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, 1000000000)
     await tsxp.deployed()
     const tSxpAddress = tsxp.address;
     // console.log("tSxp deployed: ", tsxp.address)
 
-    const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, admin_, 2700000000)
+    const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, 2700000000)
     await tcake.deployed()
     const tCakeAddress = tcake.address;
     // console.log("tCake deployed: ", tcake.address)
 
-    const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, admin_, 90000000)
+    const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, 90000000)
     await twbnb.deployed()
     const tWBNBAddress = twbnb.address;
     // console.log("tWBNB deployed: ", twbnb.address)
