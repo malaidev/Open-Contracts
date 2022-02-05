@@ -101,6 +101,7 @@ describe(" Complex Test ", function () {
         // expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
         // expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
         console.log(accounts[1], "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
         console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
     })
 
