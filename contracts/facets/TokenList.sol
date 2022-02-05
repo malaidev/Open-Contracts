@@ -57,7 +57,7 @@ contract TokenList is Pausable, ITokenList {
     marketData.market = _market;
     marketData.tokenAddress = tokenAddress_;
     marketData.decimals = _decimals;
-    marketData.minAmount = _amount*_decimals; // not multiply decmial for amount < 1
+    marketData.minAmount = _amount; // not multiply decmial for amount < 1
     
     ds.pMarkets.push(_market);
     ds.tokenSupportCheck[_market] = true;

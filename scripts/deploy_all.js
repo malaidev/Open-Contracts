@@ -4,7 +4,6 @@ const { ethers } = require('hardhat')
 const utils = require('ethers').utils
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 
-
 async function main() {
     const diamondAddress = await deployDiamond();
     await addMarkets(diamondAddress)
@@ -172,9 +171,9 @@ async function addMarkets(diamondAddress) {
     const symbolUsdt = "0x555344542e740000000000000000000000000000000000000000000000000000"; // USDT.t
     const symbolUsdc = "0x555344432e740000000000000000000000000000000000000000000000000000"; // USDC.t
     const symbolBtc = "0x4254432e74000000000000000000000000000000000000000000000000000000"; // BTC.t
-    const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
     const symbolSxp = "0x5358500000000000000000000000000000000000000000000000000000000000"; // SXP
     const symbolCAKE = "0x43414b4500000000000000000000000000000000000000000000000000000000"; // CAKE
+    // const symbolEth = "0x4554480000000000000000000000000000000000000000000000000000000000";
    
     const comit_NONE = "0x636f6d69745f4e4f4e4500000000000000000000000000000000000000000000";
     const comit_TWOWEEKS = "0x636f6d69745f54574f5745454b53000000000000000000000000000000000000";
@@ -276,23 +275,30 @@ async function addMarkets(diamondAddress) {
     await diamond.addFairPriceAddress(symbolCAKE,tCakeAddress);
     
     
-    console.log("addMarket");
+    console.log("addMarket & minAmount");
     
     // 100 USDT [minAmount]
-    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,1e20, { gasLimit: 800000 })
-    console.log("tusdt added");
+    // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,1e20, { gasLimit: 800000 })
+    const res = BigNumber.from('100000000000000000000');
+    const resBTC = BigNumber.from('1000000');
+    const resBNB = BigNumber.from('250000000000000000');
+
+    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,res, { gasLimit: 800000 })
+    console.log(`tUSDT added ${res}`);
 
     // 100 USDC [minAmount]
-    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdc,18,tUsdcAddress, 1e20, { gasLimit: 800000 }) 
-    console.log("tusdc added");
+    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdc,18,tUsdcAddress, res, { gasLimit: 800000 }) 
+    console.log(`tUSDC added ${res}`);
 
     // 0.1 BTC [minAmount]
-    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc,8,tBtcAddress, 10000000, { gasLimit: 800000 })
-    console.log("tbtc added");
+    // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc,8,tBtcAddress, 10000000, { gasLimit: 800000 })
+    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc,8,tBtcAddress, resBTC, { gasLimit: 800000 })
+    console.log(`tBTC added ${resBTC}`);
 
     // 0.25 BNB
-    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB,18,tWBNBAddress,25e16,{ gasLimit: 800000 })
-    console.log("wbnb added");
+    // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB,18,tWBNBAddress,25e16,{ gasLimit: 800000 })
+    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB,18,tWBNBAddress,resBNB,{ gasLimit: 800000 })
+    console.log(`twBNB added ${resBNB}`);
     
     console.log("primary markets added");
 
