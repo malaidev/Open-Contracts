@@ -120,45 +120,6 @@ async function deployDiamond() {
     return diamond.address
 }
 
-// async function deployOpenFacets(diamondAddress) {
-//     const accounts = await ethers.getSigners()
-//     const upgradeAdmin = accounts[0]
-//     console.log(" ==== Begin deployOpenFacets === ");
-//     diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
-//     diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
-
-//     console.log("Begin deploying facets");
-//     const OpenNames = ['TokenList','Comptroller','Liquidator','Reserve','OracleOpen','Loan','LoanExt','Deposit','AccessRegistry'
-//     ]
-//     const opencut = []
-//     let facetId = 10;
-//     for (const FacetName of OpenNames) {
-//         const Facet = await ethers.getContractFactory(FacetName)
-//         const facet = await Facet.deploy()
-//         await facet.deployed()
-//         console.log(`${FacetName} deployed: ${facet.address}`)
-//         opencut.push({
-//             facetAddress: facet.address,
-//             action: FacetCutAction.Add,
-//             functionSelectors: getSelectors(facet),
-//             facetId :facetId
-//         })
-//         facetId ++;
-//     }
-
-//     console.log("Begin diamondcut facets");
-
-//     tx = await diamondCutFacet.diamondCut(
-//         opencut, ethers.constants.AddressZero, '0x', { gasLimit: 8000000 }
-//     )
-//     receipt = await tx.wait()
-
-
-//     if (!receipt.status) {
-//         throw Error(`Diamond upgrade failed: ${tx.hash}`)
-//     }
-// }
-
 async function addMarkets(diamondAddress) {
     const accounts = await ethers.getSigners()
     const upgradeAdmin = accounts[0]
@@ -180,14 +141,14 @@ async function addMarkets(diamondAddress) {
     const comit_ONEMONTH = "0x636f6d69745f4f4e454d4f4e5448000000000000000000000000000000000000";
     const comit_THREEMONTHS = "0x636f6d69745f54485245454d4f4e544853000000000000000000000000000000";
 
-    // console.log("Add fairPrice addresses");
-    // await diamond.addFairPriceAddress(symbolWBNB, '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526');
-    // await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
-    // await diamond.addFairPriceAddress(symbolUsdc, '0x90c069C4538adAc136E051052E14c1cD799C41B7');
-    // await diamond.addFairPriceAddress(symbolBtc, '0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf');
-    // await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
-    // await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
-    // await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
+    console.log("Add fairPrice addresses");
+    await diamond.addFairPriceAddress(symbolWBNB, '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526');
+    await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
+    await diamond.addFairPriceAddress(symbolUsdc, '0x90c069C4538adAc136E051052E14c1cD799C41B7');
+    await diamond.addFairPriceAddress(symbolBtc, '0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf');
+    await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
+    await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
+    await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
 
     console.log("setCommitment begin");
     await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
@@ -266,14 +227,13 @@ async function addMarkets(diamondAddress) {
         CAKE: ${tCakeAddress}`
     );
 
-        
-    console.log("Add fairPrice addresses");
-    await diamond.addFairPriceAddress(symbolWBNB,tWBNBAddress );
-    await diamond.addFairPriceAddress(symbolUsdt, tUsdtAddress );
-    await diamond.addFairPriceAddress(symbolUsdc, tUsdcAddress);
-    await diamond.addFairPriceAddress(symbolBtc,tBtcAddress );
-    await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
-    await diamond.addFairPriceAddress(symbolCAKE,tCakeAddress);
+    // console.log("Add fairPrice addresses");
+    // await diamond.addFairPriceAddress(symbolWBNB,tWBNBAddress );
+    // await diamond.addFairPriceAddress(symbolUsdt, tUsdtAddress );
+    // await diamond.addFairPriceAddress(symbolUsdc, tUsdcAddress);
+    // await diamond.addFairPriceAddress(symbolBtc,tBtcAddress );
+    // await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
+    // await diamond.addFairPriceAddress(symbolCAKE,tCakeAddress);
     
     
     console.log("addMarket & minAmount");
