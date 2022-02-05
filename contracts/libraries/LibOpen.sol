@@ -31,7 +31,8 @@ library LibOpen {
 	uint8 constant DEPOSIT_ID = 17; 
 	// address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x10ED43C718714eb63d5aA57B78B54704E256024E ; // pancakeswap bsc testnet router address
-
+ 	address internal constant factory = 0x6725F303b657a9451d8BA641348b6761A6CC7a17;
+    address internal constant router = 0xD99D1c33F9fC3444f8101754aBC46c52416550D1;
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
 // =========== Liquidator events ===============
@@ -371,8 +372,8 @@ library LibOpen {
 
 		//PancakeSwap
 		// IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
-		IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
-		IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
+		// IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
+		// IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
 		//WBNB as other test tokens
 		address[] memory path;
@@ -393,6 +394,20 @@ library LibOpen {
 		return ret[ret.length-1];
 		
 	}
+
+	function _createPair(address tokenA, address tokenB) external returns (address pair){}
+	function _addLiquidity(
+   address tokenA,
+   address tokenB,
+   uint amountADesired,
+   uint amountBDesired,
+   uint amountAMin,
+   uint amountBMin,
+   address to,
+   uint deadline
+  ) external returns(uint amountA, uint amountB, uint liquidity){}
+
+  	function _balanceOf(address owner) external view returns(uint){}
 
 	function _getAmountOutMin(
 		address _tokenIn,

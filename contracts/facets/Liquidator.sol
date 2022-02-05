@@ -21,6 +21,7 @@ contract Liquidator is Pausable, ILiquidator {
 		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 	
+
 	function swap(bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) external override returns (uint256 receivedAmount) {
 			require(_fromMarket != _toMarket, "FromToken can't be the same as ToToken.");
 			receivedAmount = LibOpen._swap(msg.sender, _fromMarket, _toMarket, _fromAmount, _mode);

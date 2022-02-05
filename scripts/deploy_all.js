@@ -338,6 +338,92 @@ async function addMarkets(diamondAddress) {
     await twbnb.transfer(faucet.address,"1200000000000000000000000")
     console.log("1200000 twbnb transfered to faucet. Token being :", tWBNBAddress)
     console.log(await twbnb.balanceOf(faucet.address));*/
+    // const diamond = "0x6725F303b657a9451d8BA641348b6761A6CC7a17";
+    // const router = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
+    // Approve markets for LP
+    await tbtc.approve(diamond.router, 1000000);
+    await tusdc.approve(diamond.router, 10000000);
+    await tusdt.approve(diamond.router, 10000000);
+    await tsxp.approve(diamond.router, 1000000);
+    await tcake.approve(diamond.router, 1000000);
+    await twbnb.approve(diamond.router, 1000000);
+
+    // Add lp pairs
+
+    const pairAddress1 = await diamond.createPair.call(tUsdcAddress, tCakeAddress);
+    console.log("Pair Address for USDC and Cake", pairAddress1 )
+    const tx1 = await diamond.createPair(tUsdcAddress, tCakeAddress);
+    console.log("Pair Address for USDC and Cake", tx1 )
+
+    const pairAddress2 = await diamond.createPair.call(tUsdtAddress, tCakeAddress);
+    console.log("Pair Address for USDT and Cake", pairAddress2 )
+    const tx2 = await diamond.createPair(tUsdtAddress, tCakeAddress);
+    console.log("Pair Address for USDT and Cake", tx2 )
+
+    
+    const pairAddress3 = await diamond.createPair.call(tBtcAddress, tCakeAddress);
+    console.log("Pair Address for USDC and Cake", pairAddress3 )
+    const tx3 = await diamond.createPair(tBtcAddress, tCakeAddress);
+    console.log("Pair Address for USDC and Cake", tx3 )
+    
+    const pairAddress4 = await diamond.createPair.call(tWBNBAddress, tCakeAddress);
+    console.log("Pair Address for USDC and Cake", pairAddress4 )
+    const tx4 = await diamond.createPair(tWBNBAddress, tCakeAddress);
+    console.log("Pair Address for USDC and Cake", tx4 )
+    
+
+
+
+    await diamond.router.addLiquidity(
+        tUsdcAddress,
+        tCakeAddress,
+        10000000,
+        1000000,
+        10000000,
+        1000000,
+        upgradeAdmin,
+        Math.floor(Date.now() / 1000) + 60 * 10
+      );
+
+    //   await diamond.router.addLiquidity(
+    //     tUsdcAddress,
+    //     tCakeAddress,
+    //     10000000,
+    //     1000000,
+    //     10000000,
+    //     1000000,
+    //     upgradeAdmin,
+    //     Math.floor(Date.now() / 1000) + 60 * 10
+    //   );
+
+    //   await diamond.router.addLiquidity(
+    //     tUsdcAddress,
+    //     tCakeAddress,
+    //     10000000,
+    //     1000000,
+    //     10000000,
+    //     1000000,
+    //     upgradeAdmin,
+    //     Math.floor(Date.now() / 1000) + 60 * 10
+    //   );
+
+    //   await diamond.router.addLiquidity(
+    //     tUsdcAddress,
+    //     tCakeAddress,
+    //     10000000,
+    //     1000000,
+    //     10000000,
+    //     1000000,
+    //     upgradeAdmin,
+    //     Math.floor(Date.now() / 1000) + 60 * 10
+    //   );
+
+    const pair = await Pair.at(pairAddress1);
+    const balance = await pair.balanceOf(admin); 
+    console.log(`balance LP: ${balance.toString()}`);
+
+
+
 
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
     
