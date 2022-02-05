@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
+import "../util/AddLibs.sol";
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
 
 contract Loan is Pausable, ILoan {
-	
+	using SafeMath for uint;
 	event CollateralReleased(
 		address indexed account,
 		uint256 indexed amount,

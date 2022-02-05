@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.1;
 
+import "../util/AddLibs.sol";
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
 
 import "hardhat/console.sol";
 
 contract LoanExt is Pausable, ILoanExt {
+	using SafeMath for uint;
 	event NewLoan(
 		address indexed account,
 		bytes32 loanMarket,
