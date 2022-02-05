@@ -53,7 +53,7 @@ describe(" Complex Test ", function () {
 		upgradeAdmin = accounts[0]
 		console.log("account1 is ", accounts[1].address)
 		
-		diamondAddress = "0xeaEf5B43537745182A405c7dc4dFde5E6bd59385"
+		diamondAddress = "0x906E51F90f99D12b0c7B558A630540f97F728bFB"
 
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
 		diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -68,8 +68,8 @@ describe(" Complex Test ", function () {
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)
 
-		bepUsdc = await ethers.getContractAt('BEP20Token', "0x4124E4fEAbC7A50019bDBa76388699a16Fd864d6")
-        bepCake = await ethers.getContractAt('BEP20Token', "0x324d98170BdD9D35eb9DF29Bd8337B414E965cF7")
+		bepUsdc = await ethers.getContractAt('BEP20Token', "0xFBF9A0d4e94CbFec78e6236C1c92A41a4570d8dF")
+        bepCake = await ethers.getContractAt('BEP20Token', "0x3d12955183e7fe82d81Ce1D6c0Fcc1f3Fd299a69")
 	})
 
     it('should have three facets -- call to facetAddresses function', async () => {
@@ -88,82 +88,69 @@ describe(" Complex Test ", function () {
         assert.sameMembers(result, selectors)
     })
 
-    it("Check Deposit", async () => {
-        const depositAmount = "500000000000000000000";
-
-        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
-        // USDC
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
-        await deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000})
-        // expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
-        // expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
-        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
+    it("getlatestprice", async () => {
+        console.log("cake price is ", await oracle.getLatestPrice(symbolCAKE), {gasLimit: 5000000})
     })
 
-    it("Check loan", async () => {
-        const loanAmount = "300000000000000000000"
-        const collateralAmount = "200000000000000000000"
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await loanExt.connect(accounts[1]).loanRequest(symbolUsdc, comit_ONEMONTH, loanAmount, symbolUsdc, collateralAmount, {gasLimit: 5000000})
+    // it("Check Deposit", async () => {
+    //     const depositAmount = "500000000000000000000";
 
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
-    })
-
-    it("Swap", async () => {
-        const loanAmount = "300000000000000000000"
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
-        
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await bepCake.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await loan.connect(accounts[1]).swapLoan(symbolUsdc, comit_ONEMONTH, symbolCAKE, {gasLimit: 5000000,})
-
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
-
-    })
-
-    it("SwapToLoan", async () => {
-        const loanAmount = "300000000000000000000"
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
-
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await bepCake.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await loan.connect(accounts[1]).swapToLoan(symbolCAKE, comit_ONEMONTH, symbolUsdc, {gasLimit: 5000000,})
-
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
-
-    })
-
-
-    // it("Check addCollateral", async () => {
-    //     await expect(loanExt.connect(accounts[1]).addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 0x100, {gasLimit: 5000000}))
-    //         .to.emit(loanExt, "AddCollateral")
-    //     expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfb00)
-    //     expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x300)
-    //     console.log("after addCollateral isReentrant is ", await loanExt.GetisReentrant());
+    //     console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
+    //     // USDC
+    //     await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+    //     await deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000})
+    //     // expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
+    //     // expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
+    //     console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
     // })
 
-    // it("Check repayLoan", async () => {
-    //     console.log(await reserve.avblMarketReserves(symbolUsdt))
-	//     await (loan.connect(accounts[1]).repayLoan(symbolUsdt, comit_ONEMONTH, 0x100, {gasLimit: 5000000}));
-    //     console.log(await reserve.avblMarketReserves(symbolUsdt))
-    //     console.log("after repayLoan isReentrant is ", await loanExt.GetisReentrant());
-	// })
+    // it("Check loan", async () => {
+    //     const loanAmount = "300000000000000000000"
+    //     const collateralAmount = "200000000000000000000"
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
+    //     await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
+    //     await loanExt.connect(accounts[1]).loanRequest(symbolUsdc, comit_ONEMONTH, loanAmount, symbolUsdc, collateralAmount, {gasLimit: 5000000})
 
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
+    // })
+
+    // it("Swap", async () => {
+    //     const loanAmount = "300000000000000000000"
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
+        
+    //     await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
+    //     await bepCake.connect(accounts[1]).approve(diamondAddress, loanAmount);
+    //     await loan.connect(accounts[1]).swapLoan(symbolUsdc, comit_ONEMONTH, symbolCAKE, {gasLimit: 5000000,})
+
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
+
+    // })
+
+    // it("SwapToLoan", async () => {
+    //     const loanAmount = "300000000000000000000"
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
+
+    //     await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
+    //     await bepCake.connect(accounts[1]).approve(diamondAddress, loanAmount);
+    //     await loan.connect(accounts[1]).swapToLoan(symbolCAKE, comit_ONEMONTH, symbolUsdc, {gasLimit: 5000000,})
+
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
+
+    // })
    
-    it("Check liquidation1", async () => {
-        const loanAmount = "300000000000000000000"
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 1);
-    })
+    // it("Check liquidation1", async () => {
+    //     const loanAmount = "300000000000000000000"
+    //     await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
+    //     await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 1);
+    // })
 })

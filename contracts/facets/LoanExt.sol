@@ -4,6 +4,8 @@ pragma solidity 0.8.1;
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
 
+import "hardhat/console.sol";
+
 contract LoanExt is Pausable, ILoanExt {
 	event NewLoan(
 		address indexed account,
@@ -308,39 +310,41 @@ contract LoanExt is Pausable, ILoanExt {
 
 		LibOpen._accruedInterest(_account, _loanMarket, _commitment);
 		
-		if (loan.commitment == LibOpen._getCommitment(2)){
-			require(ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield >= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest, "Commit2 sub result minus");
-			collateral.amount += ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield - ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
-		}
-		else if (loan.commitment != LibOpen._getCommitment(2)) {
-			require(collateral.amount >= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest, "Sub causes minus");
-			collateral.amount -= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
-		}
+		// if (loan.commitment == LibOpen._getCommitment(2)){
+		// 	console.log("First %s Second %s", ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield,
+		// 	ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest);
+		// 	require(ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield >= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest, "Commit2 sub result minus");
+		// 	collateral.amount += ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield - ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
+		// }
+		// else if (loan.commitment != LibOpen._getCommitment(2)) {
+		// 	require(collateral.amount >= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest, "Sub causes minus");
+		// 	collateral.amount -= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
+		// }
 
-		// delete ds.indAccruedAPY[_account][_loanMarket][_commitment];
-		// delete ds.indAccruedAPR[_account][_loanMarket][_commitment];
+		delete ds.indAccruedAPY[_account][_loanMarket][_commitment];
+		delete ds.indAccruedAPR[_account][_loanMarket][_commitment];
 
-		// delete ds.loanPassbook[_account].accruedAPY[loan.id - 1];
-		// delete ds.loanPassbook[_account].accruedAPR[loan.id - 1];
+		delete ds.loanPassbook[_account].accruedAPY[loan.id - 1];
+		delete ds.loanPassbook[_account].accruedAPR[loan.id - 1];
 
-		// // uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
-		// // uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
-		// // convert collateral & loanCurrent into loanActual
+		// uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
+		// uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
+		// convert collateral & loanCurrent into loanActual
 
-		// uint256 _repaymentAmount = LibOpen._swap(_account, collateral.market, loan.market, LibOpen._getLatestPrice(collateral.market)*collateral.amount, 2);
-		// _repaymentAmount += LibOpen._swap(_account, loanState.currentMarket, loan.market, LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount, 1);
+		uint256 _repaymentAmount = LibOpen._swap(_account, collateral.market, loan.market, LibOpen._getLatestPrice(collateral.market)*collateral.amount, 2);
+		_repaymentAmount += LibOpen._swap(_account, loanState.currentMarket, loan.market, LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount, 1);
 
-		// delete ds.indLoanState[_account][_loanMarket][_commitment];
-		// delete ds.indLoanRecords[_account][_loanMarket][_commitment];
-		// delete ds.indCollateralRecords[_account][_loanMarket][_commitment];
+		delete ds.indLoanState[_account][_loanMarket][_commitment];
+		delete ds.indLoanRecords[_account][_loanMarket][_commitment];
+		delete ds.indCollateralRecords[_account][_loanMarket][_commitment];
 
-		// delete ds.loanPassbook[_account].loanState[_id - 1];
-		// delete ds.loanPassbook[_account].loans[_id - 1];
-		// delete ds.loanPassbook[_account].collaterals[_id - 1];
-		// LibOpen._updateUtilisationLoan(loan.market, loan.amount, 1);
+		delete ds.loanPassbook[_account].loanState[_id - 1];
+		delete ds.loanPassbook[_account].loans[_id - 1];
+		delete ds.loanPassbook[_account].collaterals[_id - 1];
+		LibOpen._updateUtilisationLoan(loan.market, loan.amount, 1);
 
-		// emit LoanRepaid(_account, _id, loan.market, block.timestamp);
-		// emit Liquidation(_account,_loanMarket, _commitment, loan.amount, block.timestamp);
+		emit LoanRepaid(_account, _id, loan.market, block.timestamp);
+		emit Liquidation(_account,_loanMarket, _commitment, loan.amount, block.timestamp);
 		return true;
 	}
 
