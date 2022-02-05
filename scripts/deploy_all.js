@@ -279,9 +279,9 @@ async function addMarkets(diamondAddress) {
     
     // 100 USDT [minAmount]
     // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,1e20, { gasLimit: 800000 })
-    const res = BigNumber.from('100000000000000000000');
-    const resBTC = BigNumber.from('1000000');
-    const resBNB = BigNumber.from('250000000000000000');
+    const res = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
+    const resBTC = BigNumber.from('1000000'); // 0.1 BTC
+    const resBNB = BigNumber.from('250000000000000000'); // 0.25
 
     await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,res, { gasLimit: 800000 })
     console.log(`tUSDT added ${res}`);
