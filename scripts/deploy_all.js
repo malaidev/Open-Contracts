@@ -3,6 +3,8 @@ const { BigNumber } = require('ethers');
 const { ethers } = require('hardhat')
 const utils = require('ethers').utils
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
+const router = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
+
 
 async function main() {
     const diamondAddress = await deployDiamond();
@@ -165,6 +167,7 @@ async function addMarkets(diamondAddress) {
 
     const diamond = await ethers.getContractAt('OpenDiamond', diamondAddress)
     const tokenList = await ethers.getContractAt('TokenList', diamondAddress)
+    const liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
     const comptroller = await ethers.getContractAt('Comptroller', diamondAddress);
 
     const symbolWBNB = "0x57424e4200000000000000000000000000000000000000000000000000000000"; // WBNB
@@ -341,42 +344,45 @@ async function addMarkets(diamondAddress) {
     // const diamond = "0x6725F303b657a9451d8BA641348b6761A6CC7a17";
     // const router = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
     // Approve markets for LP
-    await tbtc.approve(diamond.router, 1000000);
-    await tusdc.approve(diamond.router, 10000000);
-    await tusdt.approve(diamond.router, 10000000);
-    await tsxp.approve(diamond.router, 1000000);
-    await tcake.approve(diamond.router, 1000000);
-    await twbnb.approve(diamond.router, 1000000);
+    await tbtc.approve(router, 1000000);
+    console.log("bug", router)
+    await tusdc.approve(router, 10000000);
+    await tusdt.approve(router, 10000000);
+    await tsxp.approve(router, 1000000);
+    await tcake.approve(router, 1000000);
+    await twbnb.approve(router, 1000000);
+    console.log("bug check")
+
 
     // Add lp pairs
-
-    const pairAddress1 = await diamond.createPair.call(tUsdcAddress, tCakeAddress);
-    console.log("Pair Address for USDC and Cake", pairAddress1 )
-    const tx1 = await diamond.createPair(tUsdcAddress, tCakeAddress);
+    console.log("Check LP")
+    // const pairAddress1 = await diamond.createPair.call(tusdc, tCake);
+    // console.log("Pair Address for USDC and Cake", pairAddress1 )
+    const tx1 = await liquidator.createPair(tUsdcAddress, tCakeAddress);
     console.log("Pair Address for USDC and Cake", tx1 )
 
-    const pairAddress2 = await diamond.createPair.call(tUsdtAddress, tCakeAddress);
-    console.log("Pair Address for USDT and Cake", pairAddress2 )
-    const tx2 = await diamond.createPair(tUsdtAddress, tCakeAddress);
+    // const pairAddress2 = await diamond.createPair.call(tUsdtAddress, tCakeAddress);
+    // console.log("Pair Address for USDT and Cake", pairAddress2 )
+    const tx2 = await liquidator.createPair(tUsdtAddress, tCakeAddress);
     console.log("Pair Address for USDT and Cake", tx2 )
 
     
-    const pairAddress3 = await diamond.createPair.call(tBtcAddress, tCakeAddress);
-    console.log("Pair Address for USDC and Cake", pairAddress3 )
-    const tx3 = await diamond.createPair(tBtcAddress, tCakeAddress);
+    // const pairAddress3 = await diamond.createPair.call(tBtcAddress, tCakeAddress);
+    // console.log("Pair Address for USDC and Cake", pairAddress3 )
+    const tx3 = await liquidator.createPair(tBtcAddress, tCakeAddress);
     console.log("Pair Address for USDC and Cake", tx3 )
     
-    const pairAddress4 = await diamond.createPair.call(tWBNBAddress, tCakeAddress);
-    console.log("Pair Address for USDC and Cake", pairAddress4 )
-    const tx4 = await diamond.createPair(tWBNBAddress, tCakeAddress);
+    // const pairAddress4 = await diamond.createPair.call(tWBNBAddress, tCakeAddress);
+    // console.log("Pair Address for USDC and Cake", pairAddress4 )
+    const tx4 = await liquidator.createPair(tWBNBAddress, tCakeAddress);
     console.log("Pair Address for USDC and Cake", tx4 )
     
 
 
 
-    await diamond.router.addLiquidity(
-        tUsdcAddress,
-        tCakeAddress,
+    await liquidator.router.addLiquidity(
+        tusdc.address,
+        tcake.address,
         10000000,
         1000000,
         10000000,
@@ -385,7 +391,7 @@ async function addMarkets(diamondAddress) {
         Math.floor(Date.now() / 1000) + 60 * 10
       );
 
-    //   await diamond.router.addLiquidity(
+    //   await router.addLiquidity(
     //     tUsdcAddress,
     //     tCakeAddress,
     //     10000000,
@@ -396,7 +402,7 @@ async function addMarkets(diamondAddress) {
     //     Math.floor(Date.now() / 1000) + 60 * 10
     //   );
 
-    //   await diamond.router.addLiquidity(
+    //   await router.addLiquidity(
     //     tUsdcAddress,
     //     tCakeAddress,
     //     10000000,
@@ -407,7 +413,7 @@ async function addMarkets(diamondAddress) {
     //     Math.floor(Date.now() / 1000) + 60 * 10
     //   );
 
-    //   await diamond.router.addLiquidity(
+    //   await router.addLiquidity(
     //     tUsdcAddress,
     //     tCakeAddress,
     //     10000000,

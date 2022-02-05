@@ -390,24 +390,10 @@ library LibOpen {
 
 // https://github.com/pancakeswap/pancake-document/blob/c3531149a4b752a0cfdf94f2d276ac119f89774b/code/smart-contracts/pancakeswap-exchange/router-v2.md#swapexacttokensfortokens
 		uint[] memory ret;
-		ret = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),path,address(this),block.timestamp+15);
+		ret = IPancakeRouter01(router).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),path,address(this),block.timestamp+15);
 		return ret[ret.length-1];
 		
 	}
-
-	function _createPair(address tokenA, address tokenB) external returns (address pair){}
-	function _addLiquidity(
-   address tokenA,
-   address tokenB,
-   uint amountADesired,
-   uint amountBDesired,
-   uint amountAMin,
-   uint amountBMin,
-   address to,
-   uint deadline
-  ) external returns(uint amountA, uint amountB, uint liquidity){}
-
-  	function _balanceOf(address owner) external view returns(uint){}
 
 	function _getAmountOutMin(
 		address _tokenIn,

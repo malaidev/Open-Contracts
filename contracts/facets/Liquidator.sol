@@ -27,6 +27,20 @@ contract Liquidator is Pausable, ILiquidator {
 			receivedAmount = LibOpen._swap(msg.sender, _fromMarket, _toMarket, _fromAmount, _mode);
 	}
 
+	function createPair(address tokenA, address tokenB) external returns (address pair){}
+	function addLiquidity(
+   address tokenA,
+   address tokenB,
+   uint amountADesired,
+   uint amountBDesired,
+   uint amountAMin,
+   uint amountBMin,
+   address to,
+   uint deadline
+  ) external returns(uint amountA, uint amountB, uint liquidity){}
+
+  	function balanceOf(address owner) external view returns(uint){}
+
 	function pauseLiquidator() external override authLiquidator() nonReentrant() {
 			_pause();
 	}
