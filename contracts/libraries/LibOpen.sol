@@ -617,12 +617,11 @@ library LibOpen {
 		return uint256(price);
 	}
 
-	function _getFairPrice(uint _requestId) internal view returns (uint retPrice) {
+	function _getFairPrice(uint _requestId) internal view returns (uint) {
 		AppStorageOpen storage ds = diamondStorage();
 		require(ds.priceData[_requestId].price != 0, "ERROR: Price fetch failure");
 		
-		retPrice = ds.priceData[_requestId].price;
-		return retPrice;
+		return ds.priceData[_requestId].price;
 	}
 
 	function _fairPrice(uint _requestId, uint _fPrice, bytes32 _loanMarket, uint _amount) internal {
