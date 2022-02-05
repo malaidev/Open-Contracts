@@ -95,13 +95,13 @@ describe(" Complex Test ", function () {
         const depositAmount = "300000000000000000000";
 
         // USDC
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
-        await expect(deposit.connect(accounts[1]).addToDeposit(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000}))
+        await bepUsdc.connect(upgradeAdmin).approve(diamondAddress, depositAmount);
+        await expect(deposit.connect(upgradeAdmin).depositRequest(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000}))
             .emit(deposit, "NewDeposit")
         // expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
         // expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
-        console.log(accounts[1], "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+        console.log(upgradeAdmin, "USDC balance is ", await bepUsdc.balanceOf(upgradeAdmin.address))
+        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress.address))
         console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
     })
 

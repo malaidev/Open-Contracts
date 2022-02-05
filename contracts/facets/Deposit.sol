@@ -156,7 +156,7 @@ contract Deposit is Pausable, IDeposit{
 
         if (!LibOpen._hasDeposit(msg.sender, _market, _commitment))    {
             createNewDeposit(msg.sender, _market, _commitment, _amount);
-            return false;
+            return true;
         }
 
         // ds.token.approveFrom(msg.sender, address(this), _amount);
