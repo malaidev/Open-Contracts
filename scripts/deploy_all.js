@@ -249,7 +249,7 @@ async function addMarkets(diamondAddress) {
     /// TILL HERE
 
     
-    // console.log(`Deploying test tokens...`);
+    /// console.log(`Deploying test tokens...`);
     // const tBtcAddress = "0xe97C64CD9Ab8e8BcB077C59f6121381d129D3F27";
     // const tUsdcAddress = "0xC3F0414C9a849C52Eb508a7eeFEaDB4D65A3d944";
     // const tUsdtAddress = "0x3d2b1f363c79BaB4320DD0522239617aF31DaFde";
@@ -312,6 +312,13 @@ async function addMarkets(diamondAddress) {
     // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolWBNB,18,tWBNBAddress,{ gasLimit: 800000 })
     await tokenList.connect(upgradeAdmin).addMarket2Support(symbolSxp,8,tSxpAddress,{ gasLimit: 800000 })
     await tokenList.connect(upgradeAdmin).addMarket2Support(symbolCAKE,18,tCakeAddress,{ gasLimit: 800000 })
+
+
+    console.log(`Secondary markets
+        SXP: ${symbolSxp}: ${tSxpAddress}
+        CAKE: ${symbolCAKE}: ${tCakeAddress}`
+    );
+
     console.log("secondary markets added");
 
     /*const Faucet = await ethers.getContractFactory("Faucet");
