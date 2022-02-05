@@ -280,7 +280,7 @@ async function addMarkets(diamondAddress) {
 
     console.log("Approval for LP")
 
-    const pancakeRouterAddr = "0x10ED43C718714eb63d5aA57B78B54704E256024E"
+    const pancakeRouterAddr = "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
 
     console.log("admin balance is ", await tbtc.balanceOf(admin_));
     
@@ -291,6 +291,12 @@ async function addMarkets(diamondAddress) {
     await tcake.approve(pancakeRouterAddr, "5000000000000000000000000");
     await twbnb.approve(pancakeRouterAddr, "5000000000000000000000000");
 
+    await tbtc.approve(diamondAddress, "500000000000000");
+    await tusdc.approve(diamondAddress, "5000000000000000000000000");
+    await tusdt.approve(diamondAddress, "5000000000000000000000000");
+    await tsxp.approve(diamondAddress, "5000000000000000000000000");
+    await tcake.approve(diamondAddress, "5000000000000000000000000");
+    await twbnb.approve(diamondAddress, "5000000000000000000000000");
     /*const Faucet = await ethers.getContractFactory("Faucet");
     const faucet = await Faucet.deploy(tUsdtAddress,tUsdcAddress,tBtcAddress,tWBNBAddress)
     console.log("Faucet deployed at ", faucet.address)
