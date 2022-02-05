@@ -3,7 +3,7 @@ const { BigNumber } = require('ethers');
 const { ethers } = require('hardhat')
 const utils = require('ethers').utils
 const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
-const router = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
+// const router = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
 
 
 async function main() {
@@ -342,16 +342,16 @@ async function addMarkets(diamondAddress) {
     console.log("1200000 twbnb transfered to faucet. Token being :", tWBNBAddress)
     console.log(await twbnb.balanceOf(faucet.address));*/
     // const diamond = "0x6725F303b657a9451d8BA641348b6761A6CC7a17";
-    // const router = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
+    const router = "0xD99D1c33F9fC3444f8101754aBC46c52416550D1";
     // Approve markets for LP
     await tbtc.approve(router, 1000000);
-    console.log("bug", router)
+    // console.log("bug", router) 
     await tusdc.approve(router, 10000000);
     await tusdt.approve(router, 10000000);
     await tsxp.approve(router, 1000000);
     await tcake.approve(router, 1000000);
     await twbnb.approve(router, 1000000);
-    console.log("bug check")
+    // console.log("bug check")
 
 
     // Add lp pairs
@@ -380,20 +380,9 @@ async function addMarkets(diamondAddress) {
 
 
 
-    await liquidator.router.addLiquidity(
-        tusdc.address,
-        tcake.address,
-        10000000,
-        1000000,
-        10000000,
-        1000000,
-        upgradeAdmin,
-        Math.floor(Date.now() / 1000) + 60 * 10
-      );
-
-    //   await router.addLiquidity(
-    //     tUsdcAddress,
-    //     tCakeAddress,
+    // await router.addLiquidity(
+    //     tusdc.address,
+    //     tcake.address,
     //     10000000,
     //     1000000,
     //     10000000,
@@ -424,9 +413,20 @@ async function addMarkets(diamondAddress) {
     //     Math.floor(Date.now() / 1000) + 60 * 10
     //   );
 
-    const pair = await Pair.at(pairAddress1);
-    const balance = await pair.balanceOf(admin); 
-    console.log(`balance LP: ${balance.toString()}`);
+    //   await router.addLiquidity(
+    //     tUsdcAddress,
+    //     tCakeAddress,
+    //     10000000,
+    //     1000000,
+    //     10000000,
+    //     1000000,
+    //     upgradeAdmin,
+    //     Math.floor(Date.now() / 1000) + 60 * 10
+    //   );
+
+    // const pair = await liquidator.balanceOf.at(pairAddress1);
+    // const balance = await pair.balanceOf(admin); 
+    // console.log(`balance LP: ${balance.toString()}`);
 
 
 
