@@ -386,8 +386,9 @@ library LibOpen {
 		//     path[2] = addrToMarket;
 		// }
 
+// https://github.com/pancakeswap/pancake-document/blob/c3531149a4b752a0cfdf94f2d276ac119f89774b/code/smart-contracts/pancakeswap-exchange/router-v2.md#swapexacttokensfortokens
 		uint[] memory ret;
-		ret = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),path,address(this),block.timestamp);
+		ret = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).swapExactTokensForTokens(_fromAmount,_getAmountOutMin(addrFromMarket, addrToMarket, _fromAmount),path,address(this),block.timestamp+15);
 		return ret[ret.length-1];
 		
 	}
