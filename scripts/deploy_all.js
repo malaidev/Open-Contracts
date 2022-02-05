@@ -208,7 +208,6 @@ async function addMarkets(diamondAddress) {
     // console.log("tWBNB deployed: ", twbnb.address)
 
     /// TILL HERE
-
     
     /// console.log(`Deploying test tokens...`);
     // const tBtcAddress = "0xe97C64CD9Ab8e8BcB077C59f6121381d129D3F27";
@@ -234,7 +233,6 @@ async function addMarkets(diamondAddress) {
     // await diamond.addFairPriceAddress(symbolBtc,tBtcAddress );
     // await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
     // await diamond.addFairPriceAddress(symbolCAKE,tCakeAddress);
-    
     
     console.log("addMarket & minAmount");
     
@@ -265,8 +263,6 @@ async function addMarkets(diamondAddress) {
     
     console.log("primary markets added");
 
-
-
     console.log("adding secondary markets");
     // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolUsdt,18,tUsdtAddress, // USDT.t{ gasLimit: 800000 })
     // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolUsdc,18,tUsdcAddress, // USDC.t{ gasLimit: 800000 }) 
@@ -281,6 +277,17 @@ async function addMarkets(diamondAddress) {
         CAKE: ${symbolCAKE}: ${tCakeAddress}`
     );
     console.log("secondary markets added");
+
+    console.log("Approval for LP")
+
+    const pancakeRouterAddr = "0x10ED43C718714eb63d5aA57B78B54704E256024E"
+    
+    await tbtc.approve(pancakeRouterAddr, "1000000000000000000000000");
+    await tusdc.approve(pancakeRouterAddr, "10000000000000000000000000");
+    await tusdt.approve(pancakeRouterAddr, "10000000000000000000000000");
+    await tsxp.approve(pancakeRouterAddr, "1000000000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "1000000000000000000000000");
+    await twbnb.approve(pancakeRouterAddr, "1000000000000000000000000");
 
     /*const Faucet = await ethers.getContractFactory("Faucet");
     const faucet = await Faucet.deploy(tUsdtAddress,tUsdcAddress,tBtcAddress,tWBNBAddress)
@@ -300,7 +307,7 @@ async function addMarkets(diamondAddress) {
     console.log(await twbnb.balanceOf(faucet.address));*/
 
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
-    
+
 }
 
 if (require.main === module) {
