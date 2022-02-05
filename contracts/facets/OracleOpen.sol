@@ -23,16 +23,16 @@ contract OracleOpen is Pausable, IOracleOpen {
 
 
 	function getLatestPrice(bytes32 _market) external view override returns (uint) {    
-			return LibOpen._getLatestPrice(_market);
+		return LibOpen._getLatestPrice(_market);
 	}
 
 	function getFairPrice(uint _requestId) external view override returns (uint) {
-			return LibOpen._getFairPrice(_requestId);
+		return LibOpen._getFairPrice(_requestId);
 	}
 
-	function setFairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) external authOracleOpen() returns(bool success){
-			LibOpen._fairPrice(_requestId, _fPrice, _market, _amount);
-			return success = true;
+	function setFairPrice(uint _requestId, uint _fPrice, bytes32 _market, uint _amount) external authOracleOpen() returns(bool){
+		LibOpen._fairPrice(_requestId, _fPrice, _market, _amount);
+		return true;
 	}
 
 	// function liquidationTrigger(address account, uint loanId) external override authOracleOpen() nonReentrant() returns(bool) {
