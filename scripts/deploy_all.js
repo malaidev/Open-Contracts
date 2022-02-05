@@ -146,7 +146,7 @@ async function addMarkets(diamondAddress) {
     await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
     await diamond.addFairPriceAddress(symbolUsdc, '0x90c069C4538adAc136E051052E14c1cD799C41B7');
     await diamond.addFairPriceAddress(symbolBtc, '0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf');
-    await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
+    // await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
     await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
     await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
 
@@ -281,13 +281,15 @@ async function addMarkets(diamondAddress) {
     console.log("Approval for LP")
 
     const pancakeRouterAddr = "0x10ED43C718714eb63d5aA57B78B54704E256024E"
+
+    console.log("admin balance is ", await tbtc.balanceOf(admin_));
     
-    await tbtc.approve(pancakeRouterAddr, "1000000000000000000000000");
-    await tusdc.approve(pancakeRouterAddr, "10000000000000000000000000");
-    await tusdt.approve(pancakeRouterAddr, "10000000000000000000000000");
-    await tsxp.approve(pancakeRouterAddr, "1000000000000000000000000");
-    await tcake.approve(pancakeRouterAddr, "1000000000000000000000000");
-    await twbnb.approve(pancakeRouterAddr, "1000000000000000000000000");
+    await tbtc.approve(pancakeRouterAddr, "500000000000000");
+    await tusdc.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await tusdt.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await tsxp.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await twbnb.approve(pancakeRouterAddr, "5000000000000000000000000");
 
     /*const Faucet = await ethers.getContractFactory("Faucet");
     const faucet = await Faucet.deploy(tUsdtAddress,tUsdcAddress,tBtcAddress,tWBNBAddress)

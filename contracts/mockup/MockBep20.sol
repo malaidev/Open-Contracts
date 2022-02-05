@@ -5,6 +5,8 @@ import "../util/Context.sol";
 import "../util/Address.sol";
 import "../util/IERC20.sol";
 
+import "hardhat/console.sol";
+
 contract MockBep20 is Context{
     using Address for address;
 
@@ -83,7 +85,7 @@ contract MockBep20 is Context{
     }
 
     function approve(address _spender, uint256 _value) external nonReentrant() returns (bool success) {
-        
+        console.log("approve amount is %s", _value);
         _checkPauseState();
         _approve(_spender, _value);
         
