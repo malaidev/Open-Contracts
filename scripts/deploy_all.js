@@ -263,7 +263,8 @@ async function addMarkets(diamondAddress) {
         USDT: ${tUsdtAddress}
         WBNB: ${tWBNBAddress}
         SXP: ${tSxpAddress}
-        CAKE: ${tCakeAddress}`);
+        CAKE: ${tCakeAddress}`
+    );
 
         
     console.log("Add fairPrice addresses");
