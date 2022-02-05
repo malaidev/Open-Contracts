@@ -30,7 +30,7 @@ library LibOpen {
 	uint8 constant LOANEXT_ID = 16;
 	uint8 constant DEPOSIT_ID = 17; 
 	// address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
-	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0xD99D1c33F9fC3444f8101754aBC46c52416550D1 ; // pancakeswap bsc testnet router address
+	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
