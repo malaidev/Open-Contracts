@@ -280,26 +280,28 @@ async function addMarkets(diamondAddress) {
     
     // 100 USDT [minAmount]
     // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,1e20, { gasLimit: 800000 })
-    const res = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
-    const resBTC = BigNumber.from('1000000'); // 0.1 BTC
-    const resBNB = BigNumber.from('250000000000000000'); // 0.25
+    
+    const minUSDT = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
+    const minUSDC = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
+    const minBTC = BigNumber.from('1000000'); // 0.1 BTC
+    const minBNB = BigNumber.from('250000000000000000'); // 0.25
 
-    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,res, { gasLimit: 800000 })
-    console.log(`tUSDT added ${res}`);
+    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress, minUSDT, { gasLimit: 800000 })
+    console.log(`tUSDT added ${minUSDT}`);
 
     // 100 USDC [minAmount]
-    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdc,18,tUsdcAddress, res, { gasLimit: 800000 }) 
-    console.log(`tUSDC added ${res}`);
+    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdc,18,tUsdcAddress, minUSDC, { gasLimit: 800000 }) 
+    console.log(`tUSDC added ${minUSDC}`);
 
     // 0.1 BTC [minAmount]
     // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc,8,tBtcAddress, 10000000, { gasLimit: 800000 })
-    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc,8,tBtcAddress, resBTC, { gasLimit: 800000 })
-    console.log(`tBTC added ${resBTC}`);
+    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc,8,tBtcAddress, minBTC, { gasLimit: 800000 })
+    console.log(`tBTC added ${minBTC}`);
 
     // 0.25 BNB
     // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB,18,tWBNBAddress,25e16,{ gasLimit: 800000 })
-    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB,18,tWBNBAddress,resBNB,{ gasLimit: 800000 })
-    console.log(`twBNB added ${resBNB}`);
+    await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB,18,tWBNBAddress, minBNB,{ gasLimit: 800000 })
+    console.log(`twBNB added ${minBNB}`);
     
     console.log("primary markets added");
 
@@ -318,7 +320,6 @@ async function addMarkets(diamondAddress) {
         SXP: ${symbolSxp}: ${tSxpAddress}
         CAKE: ${symbolCAKE}: ${tCakeAddress}`
     );
-
     console.log("secondary markets added");
 
     /*const Faucet = await ethers.getContractFactory("Faucet");
