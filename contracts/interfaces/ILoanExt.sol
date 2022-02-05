@@ -12,4 +12,3 @@ interface ILoanExt {
     function unpauseLoanExt() external;
     function isPausedLoanExt() external view returns (bool);
 }
-$
