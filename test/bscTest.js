@@ -92,34 +92,40 @@ describe(" Complex Test ", function () {
     })
 
     it("Check Deposit", async () => {
-        const depositAmount = "300000000000000000000";
+        const depositAmount = "500000000000000000000";
 
+        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
+        
         // USDC
         await bepUsdc.connect(upgradeAdmin).approve(diamondAddress, depositAmount);
-        await expect(deposit.connect(upgradeAdmin).depositRequest(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000}))
-            .emit(deposit, "NewDeposit")
+        await deposit.connect(upgradeAdmin).depositRequest(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000})
         // expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
         // expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
-        console.log(upgradeAdmin, "USDC balance is ", await bepUsdc.balanceOf(upgradeAdmin.address))
-        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress.address))
+        console.log(upgradeAdmin.address, "USDC balance is ", await bepUsdc.balanceOf(upgradeAdmin.address))
+        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
         console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
     })
 
-    // it("Check loan", async () => {
-    //     await bepUsdt.connect(accounts[1]).approve(diamondAddress, 0x200);
-    //     await expect(loanExt.connect(accounts[1]).loanRequest(symbolUsdt, comit_ONEMONTH, 0x200, symbolUsdt, 0x100, {gasLimit: 5000000}))
-	// 		.to.emit(loanExt, "NewLoan");
+    it("Check loan", async () => {
+        const loanAmount = "300000000000000000000"
+        const collateralAmount = "200000000000000000000"
+        await bepUsdt.connect(upgradeAdmin).approve(diamondAddress, loanAmount);
+        await loanExt.connect(upgradeAdmin).loanRequest(symbolUsdc, comit_ONEMONTH, loanAmount, symbolUsdc, collateralAmount, {gasLimit: 5000000})
 
-    //     expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfc00)
-    //     expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x200)
+    })
 
-    //     await bepBtc.connect(accounts[1]).approve(diamondAddress, 0x200);
-    //     await expect(loanExt.connect(accounts[1]).loanRequest(symbolBtc, comit_ONEMONTH, 0x200, symbolBtc, 0x100, {gasLimit: 5000000}))
-    //     .to.emit(loanExt, "NewLoan");
+    
+    it("Swap", async () => {
+        console.log(upgradeAdmin.address, "CAKE balance is ", await bepCake.balanceOf(upgradeAdmin.address))
+        
+        await loan.connect(upgradeAdmin).swapLoan(symbolUsdc, comit_ONEMONTH, symbolCAKE, {gasLimit: 5000000,})
 
-    //     expect(await bepBtc.balanceOf(accounts[1].address)).to.equal(0xfb00)
-    //     expect(await reserve.avblMarketReserves(symbolBtc)).to.equal(0x300)
-    // })
+        console.log(upgradeAdmin.address, "USDC balance is ", await bepUsdc.balanceOf(upgradeAdmin.address))
+        console.log(upgradeAdmin.address, "CAKE balance is ", await bepCake.balanceOf(upgradeAdmin.address))
+
+    })
+
+
 
     // it("Check addCollateral", async () => {
     //     await expect(loanExt.connect(accounts[1]).addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 0x100, {gasLimit: 5000000}))
@@ -136,11 +142,10 @@ describe(" Complex Test ", function () {
     //     console.log("after repayLoan isReentrant is ", await loanExt.GetisReentrant());
 	// })
 
-    // it("Check liquidation", async () => {
-    //     console.log("before liquidation isReentrant is ", await loanExt.GetisReentrant());
-    //     await bepBtc.connect(accounts[1]).approve(diamondAddress, 0x200);
-
-    //     await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 2);
-    // })
+    it("Check liquidation", async () => {
+        const loanAmount = "300000000000000000000"
+        await bepUsdc.connect(upgradeAdmin).approve(diamondAddress, loanAmount);
+        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 1);
+    })
   
 })

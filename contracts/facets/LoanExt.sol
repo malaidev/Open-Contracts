@@ -289,7 +289,7 @@ contract LoanExt is Pausable, ILoanExt {
 	}
 
 
-	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool success) {
+	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         
@@ -358,7 +358,7 @@ contract LoanExt is Pausable, ILoanExt {
 	}
 
 	
-	function withdrawPartialLoan(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) external returns (bool success) {
+	function withdrawPartialLoan(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) external returns (bool) {
     
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LibOpen._hasLoanAccount(msg.sender);
@@ -372,7 +372,7 @@ contract LoanExt is Pausable, ILoanExt {
 		ds.withdrawToken.transfer(msg.sender,_amount);
 
 		emit WithdrawPartialLoan(msg.sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
-		return success = true;
+		return true;
   }
 
 	function checkPermissibleWithdrawal(address _sender,bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) private /*authContract(LOAN_ID)*/ {
