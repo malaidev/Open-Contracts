@@ -289,7 +289,7 @@ contract LoanExt is Pausable, ILoanExt {
 	}
 
 
-	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool) {
+	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool success) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         

@@ -141,6 +141,8 @@ async function addMarkets(diamondAddress) {
     const comit_ONEMONTH = "0x636f6d69745f4f4e454d4f4e5448000000000000000000000000000000000000";
     const comit_THREEMONTHS = "0x636f6d69745f54485245454d4f4e544853000000000000000000000000000000";
 
+    
+    /// CHAINLINK ORACLE ADDRESSES ADDED
     console.log("Add fairPrice addresses");
     await diamond.addFairPriceAddress(symbolWBNB, '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526');
     await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
@@ -150,6 +152,7 @@ async function addMarkets(diamondAddress) {
     await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
     await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
 
+    
     console.log("setCommitment begin");
     await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
     await comptroller.connect(upgradeAdmin).setCommitment(comit_TWOWEEKS);
@@ -263,6 +266,7 @@ async function addMarkets(diamondAddress) {
     
     console.log("primary markets added");
 
+
     console.log("adding secondary markets");
     // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolUsdt,18,tUsdtAddress, // USDT.t{ gasLimit: 800000 })
     // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolUsdc,18,tUsdcAddress, // USDC.t{ gasLimit: 800000 }) 
@@ -281,8 +285,7 @@ async function addMarkets(diamondAddress) {
     console.log("Approval for LP")
 
     const pancakeRouterAddr = "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
-
-    console.log("admin balance is ", await tbtc.balanceOf(admin_));
+    console.log(`admin balance is , ${await tbtc.balanceOf(admin_)}`);
     
     await tbtc.approve(pancakeRouterAddr, "500000000000000");
     await tusdc.approve(pancakeRouterAddr, "5000000000000000000000000");
