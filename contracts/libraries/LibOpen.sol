@@ -344,6 +344,8 @@ library LibOpen {
 	}
 // =========== Liquidator Functions ===========
 	function _swap(address sender, bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256) {
+
+		if(_fromMarket == _toMarket) return 0;
 		address addrFromMarket;
 		address addrToMarket;
 

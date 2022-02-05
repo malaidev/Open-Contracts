@@ -2,8 +2,6 @@
 pragma solidity 0.8.1;
 
 interface ILoanExt {
-	enum STATE {ACTIVE,REPAID}
-
     function hasLoanAccount(address _account) external view returns (bool);
     function avblReservesLoan(bytes32 _market) external view returns(uint);
     function utilisedReservesLoan(bytes32 _market) external view returns(uint);

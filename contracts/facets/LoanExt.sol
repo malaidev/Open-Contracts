@@ -214,7 +214,7 @@ contract LoanExt is Pausable, ILoanExt {
 		bytes32 _commitment,
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount
-	) external override returns (bool success) {
+	) external override returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     	LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -235,7 +235,7 @@ contract LoanExt is Pausable, ILoanExt {
 		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
 
 		emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
-		return success = true;
+		return true;
 	}
 
 	function ensureLoanAccount(address _account) private {
@@ -337,7 +337,7 @@ contract LoanExt is Pausable, ILoanExt {
 
 		emit LoanRepaid(_account, _id, loan.market, block.timestamp);
 		emit Liquidation(_account,_loanMarket, _commitment, loan.amount, block.timestamp);
-		return success = true;
+		return true;
 	}
 
 	function preAddCollateralProcess(
