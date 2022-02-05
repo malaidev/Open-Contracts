@@ -41,22 +41,17 @@ contract Loan is Pausable, ILoan {
 		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
-	function swap() external {
-		LibOpen._swap(msg.sender, 0x555344432e740000000000000000000000000000000000000000000000000000,
-		0x43414b4500000000000000000000000000000000000000000000000000000000, 100000000000000000000, 0);
-	}
-
 	/// Swap loan to a secondary market.
 	function swapLoan(
 		bytes32 _loanMarket,
 		bytes32 _commitment,
 		bytes32 _swapMarket
-	) external override nonReentrant() returns (bool success) {
+	) external override nonReentrant() returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage();
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LibOpen._swapLoan(msg.sender, _loanMarket, _commitment, _swapMarket);
 		emit MarketSwapped(msg.sender,loan.id,_loanMarket,_swapMarket, loan.amount);
-		return success=true;
+		return true;
 	}
 
 /// SwapToLoan

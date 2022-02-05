@@ -53,7 +53,7 @@ describe(" Complex Test ", function () {
 		upgradeAdmin = accounts[0]
 		console.log("account1 is ", accounts[1].address)
 		
-		diamondAddress = "0x486E1e0B3c3a3DF40823A4bBA77ab80B5A962337"
+		diamondAddress = "0x639985B29A9a9eE859C7ac703d5a67ba9ceb5F3F"
 
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
 		diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -68,11 +68,8 @@ describe(" Complex Test ", function () {
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)
 
-		bepUsdt = await ethers.getContractAt('MockBep20', "0xa31D58DFDd2b147aE2EeBD4269f3E377C11C1bA1")
-		bepBtc = await ethers.getContractAt('MockBep20', "0xBECE5FC6F0B47200c9265Ea20A540a42FfC5aB93")
-		bepUsdc = await ethers.getContractAt('MockBep20', "0x0a383d6c86583B5CfD2f5b177398c6Df9233D9E3")
-        bepWbnb = await ethers.getContractAt('MockBep20', "0xE22A5EeC4Db54F4d84E12046b9a0B24c258696f4")
-        bepCake = await ethers.getContractAt('MockBep20', "0x59AdD787613C95D77761EB051681Df5a9bd6702D")
+		bepUsdc = await ethers.getContractAt('BEP20Token', "0x839c7ed8986FF6a49bD80c70f467D8CDC3d9f83D")
+        bepCake = await ethers.getContractAt('BEP20Token', "0xabc187ebFf8D582d137Feae3f4D83668659115B6")
 	})
 
     it('should have three facets -- call to facetAddresses function', async () => {
@@ -133,6 +130,22 @@ describe(" Complex Test ", function () {
 
     // })
 
+    it("SwapToLoan", async () => {
+        const loanAmount = "300000000000000000000"
+        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+        console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
+
+        await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
+        await bepCake.connect(accounts[1]).approve(diamondAddress, loanAmount);
+        await loan.connect(accounts[1]).swapToLoan(symbolCAKE, comit_ONEMONTH, symbolUsdc, {gasLimit: 5000000,})
+
+        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+        console.log(accounts[1].address, "CAKE balance is ", await bepCake.balanceOf(accounts[1].address))
+
+    })
+
+    
+
 
 
     // it("Check addCollateral", async () => {
@@ -150,22 +163,11 @@ describe(" Complex Test ", function () {
     //     console.log("after repayLoan isReentrant is ", await loanExt.GetisReentrant());
 	// })
 
+   
     it("Check liquidation1", async () => {
         const loanAmount = "300000000000000000000"
         await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 0);
-    })
-
-    it("Check liquidation1", async () => {
-        const loanAmount = "300000000000000000000"
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 2);
-    })
-
-    it("Check liquidation1", async () => {
-        const loanAmount = "300000000000000000000"
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 50);
+        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 1);
     })
 
 })
