@@ -301,17 +301,17 @@ async function addMarkets(diamondAddress) {
     await tcake.approve(diamondAddress, "5000000000000000000000000");
     await twbnb.approve(diamondAddress, "5000000000000000000000000");
 
-    const pancakeRouter = await ethers.getContractAt('PancakeRouter', pancakeRouterAddr)
-    await pancakeRouter.addLiquidity(
-        tusdc.address, 
-        tcake.address, 
-        "1000000000000000000000",
-        "100000000000000000000",
-        1,
-        1,
-        upgradeAdmin.address,
-        Date.now() + 60*100
-        )
+    // const pancakeRouter = await ethers.getContractAt('PancakeRouter', pancakeRouterAddr)
+    // await pancakeRouter.addLiquidity(
+    //     tusdc.address, 
+    //     tcake.address, 
+    //     "1000000000000000000000",
+    //     "100000000000000000000",
+    //     1,
+    //     1,
+    //     upgradeAdmin.address,
+    //     Date.now() + 60*100
+    // )
 
     /*const Faucet = await ethers.getContractFactory("Faucet");
     const faucet = await Faucet.deploy(tUsdtAddress,tUsdcAddress,tBtcAddress,tWBNBAddress)

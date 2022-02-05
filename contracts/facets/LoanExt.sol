@@ -306,7 +306,7 @@ contract LoanExt is Pausable, ILoanExt {
 
 		require(loan.id == _id, "ERROR: Mismatch LoanID");
 
-		// LibOpen._accruedInterest(_account, _loanMarket, _commitment);
+		LibOpen._accruedInterest(_account, _loanMarket, _commitment);
 		
 		// if (loan.commitment == LibOpen._getCommitment(2))
 		// 	collateral.amount += ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield - ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;

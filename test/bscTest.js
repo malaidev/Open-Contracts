@@ -53,7 +53,7 @@ describe(" Complex Test ", function () {
 		upgradeAdmin = accounts[0]
 		console.log("account1 is ", accounts[1].address)
 		
-		diamondAddress = "0xf841edF9D810181726c605011142490b7A296D99"
+		diamondAddress = "0xB2D618BAdBa277656D24Fa1091797d5D5d3756d9"
 
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
 		diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -68,8 +68,8 @@ describe(" Complex Test ", function () {
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)
 
-		bepUsdc = await ethers.getContractAt('BEP20Token', "0x6C7ecA4b4045AAE1aDA1549B4A9bc92d93102573")
-        bepCake = await ethers.getContractAt('BEP20Token', "0x5a663c498e5e3f7C8D703A8Fea9b40A57f8748c5")
+		bepUsdc = await ethers.getContractAt('BEP20Token', "0x90d63Cc4904f07f8dB74b2680A13684C5D28e77B")
+        bepCake = await ethers.getContractAt('BEP20Token', "0x9B6Fc958b9d672E3f06A196616EF4A4a3fCc7eD2")
 	})
 
     it('should have three facets -- call to facetAddresses function', async () => {
@@ -166,5 +166,4 @@ describe(" Complex Test ", function () {
         await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
         await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 1);
     })
-
 })
