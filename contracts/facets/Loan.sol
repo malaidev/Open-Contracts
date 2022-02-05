@@ -41,6 +41,11 @@ contract Loan is Pausable, ILoan {
 		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
+	function swap() external {
+		LibOpen._swap(msg.sender, 0x555344432e740000000000000000000000000000000000000000000000000000,
+		0x43414b4500000000000000000000000000000000000000000000000000000000, 100000000000000000000, 0);
+	}
+
 	/// Swap loan to a secondary market.
 	function swapLoan(
 		bytes32 _loanMarket,
