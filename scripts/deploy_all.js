@@ -380,16 +380,16 @@ async function addMarkets(diamondAddress) {
     
 
 
-    await liquidator.addLiquidity(
-        tUsdcAddress,
-        tCakeAddress,
-        10000000,
-        1000000,
-        10000000,
-        1000000,
-        upgradeAdmin,
-        Math.floor(Date.now() / 1000) + 60 * 10
-      );
+    // await liquidator.addLiquidity(
+    //     tUsdcAddress,
+    //     tCakeAddress,
+    //     10000000,
+    //     1000000,
+    //     10000000,
+    //     1000000,
+    //     upgradeAdmin,
+    //     Math.floor(Date.now() / 1000) + 60 * 10
+    //   );
 
     //   await router.addLiquidity(
     //     tUsdcAddress,
