@@ -280,7 +280,7 @@ contract LoanExt is Pausable, ILoanExt {
 
 		require(amount > 0, "ERROR: Loan exceeds reserves");
 		require(LibOpen._avblMarketReserves(_loanMarket) >= rF + amount, "ERROR: Minimum reserve exeception");
-		require (usdLoan/usdCollateral <=3, "ERROR: Exceeds permissible CDR");
+		require (usdLoan * 100 / usdCollateral <=300, "ERROR: Exceeds permissible CDR");
 
 		// calculating cdrPermissible.
 		if (LibOpen._avblMarketReserves(_loanMarket) >= amount + 3*LibOpen._avblMarketReserves(_loanMarket)/4)    {
