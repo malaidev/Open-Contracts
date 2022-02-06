@@ -310,7 +310,7 @@ async function addMarkets(diamondAddress) {
     //     1,
     //     1,
     //     upgradeAdmin.address,
-    //     Date.now() + 60*100
+    //     Date.now() + 60*30
     // )
 
     /*const Faucet = await ethers.getContractFactory("Faucet");
@@ -334,8 +334,45 @@ async function addMarkets(diamondAddress) {
 
 }
 
+async function addLiquidityTest() {
+    const pancakeRouterAddr = "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
+    const tbtc = await ethers.getContractAt('BEP20Token', "0x91b9aF799827999e40437Ca266A1b3420e22ADBF")
+    const tusdc = await ethers.getContractAt('BEP20Token', "0x6311690CC4029FeAa8BB1C5177c49bCCD76e7CcC")
+    const tusdt = await ethers.getContractAt('BEP20Token', "0xb0bF6231Fd5bd37aDdB92Da629C615b7191BE302")
+    const twbnb = await ethers.getContractAt('BEP20Token', "0xb0256cb9cFD960eba13Ce05482a8B9e0D01388B2")
+    const tcake = await ethers.getContractAt('BEP20Token', "0xf1aFf646aeA826357A17E6cAb5F787dAcDeDB7b9")
+    const tsxp = await ethers.getContractAt('BEP20Token', "0xB55548e0A8A1A9794e0A9f7B48148aDAb8719789")
+    
+    await tbtc.approve(pancakeRouterAddr, "500000000000000");
+    await tusdc.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await tusdt.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await tsxp.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await twbnb.approve(pancakeRouterAddr, "5000000000000000000000000");
+
+    await tbtc.approve(diamondAddress, "500000000000000");
+    await tusdc.approve(diamondAddress, "5000000000000000000000000");
+    await tusdt.approve(diamondAddress, "5000000000000000000000000");
+    await tsxp.approve(diamondAddress, "5000000000000000000000000");
+    await tcake.approve(diamondAddress, "5000000000000000000000000");
+    await twbnb.approve(diamondAddress, "5000000000000000000000000");
+
+    const pancakeRouter = await ethers.getContractAt('PancakeRouter', pancakeRouterAddr)
+
+    await pancakeRouter.addLiquidity(
+        tusdt.address, 
+        tcake.address, 
+        "1000000000000000000000",
+        "100000000000000000000",
+        1,
+        1,
+        upgradeAdmin.address,
+        Date.now() + 60*30
+    )
+}
+
 if (require.main === module) {
-    main()
+    addLiquidityTest()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)
