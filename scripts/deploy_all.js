@@ -346,7 +346,7 @@ async function provideLiquidity(rets) {
     const twbnb = await ethers.getContractAt('BEP20Token', rets['tUsdcAddress'])
     const tcake = await ethers.getContractAt('BEP20Token', rets['tCakeAddress'])
     const tsxp = await ethers.getContractAt('BEP20Token', rets['tSxpAddress'])
-    
+
     // await tbtc.approve(pancakeRouterAddr, "500000000000000");
     // await tusdc.approve(pancakeRouterAddr, "5000000000000000000000000");
     // await tusdt.approve(pancakeRouterAddr, "5000000000000000000000000");
@@ -365,16 +365,9 @@ async function provideLiquidity(rets) {
     const pancakeRouter = await ethers.getContractAt('PancakeRouter', pancakeRouterAddr)
     // const pancakeFactory = await ethers.getContractAt('PancakeFactory', await pancakeRouter.factory());
 
-    // const pairUsdt_Cake = await pancakeFactory.createPair(tusdt.address, tsxp.address)
-    // console.log("USDT_CAKE pair address is ", pairUsdt_Cake.address)
-    // if(pairUsdt_Cake != "0x0000000000000000000000000000000000000000"){
-        // await tusdt.approve(pairUsdt_Cake, "5000000000000000000000000");
-        // await tcake.approve(pairUsdt_Cake, "5000000000000000000000000");
-    // }
-        
-    await tusdc.approve(pancakeRouterAddr, "10000000000000000000000000");
-    await tcake.approve(pancakeRouterAddr, "1000000000000000000000000");
-    await pancakeRouter.connect(upgradeAdmin).addLiquidity(
+    await tusdc.approve(pancakeRouterAddr, "100000000000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "10000000000000000000000000");
+    await pancakeRouter.addLiquidity(
         tusdc.address, 
         tcake.address, 
         "10000000000000000000000000",
@@ -382,12 +375,14 @@ async function provideLiquidity(rets) {
         1,
         1,
         upgradeAdmin.address,
-        Date.now() + 60*30
+        Date.now() + 60*30, { gasLimit: 8000000 }
     )
 
-    await tusdt.approve(pancakeRouterAddr, "10000000000000000000000000");
-    await tcake.approve(pancakeRouterAddr, "1000000000000000000000000");
-    await pancakeRouter.connect(upgradeAdmin).addLiquidity(
+    console.log("USDC <-> CAKE LP done")
+
+    await tusdt.approve(pancakeRouterAddr, "100000000000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "10000000000000000000000000");
+    await pancakeRouter.addLiquidity(
         tusdt.address, 
         tcake.address, 
         "10000000000000000000000000",
@@ -395,11 +390,12 @@ async function provideLiquidity(rets) {
         1,
         1,
         upgradeAdmin.address,
-        Date.now() + 60*30
+        Date.now() + 60*30, { gasLimit: 8000000 }
     )
+    console.log("USDT <-> CAKE LP done")
 
-    await tbtc.approve(pancakeRouterAddr, "12000000000");
-    await tcake.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await tbtc.approve(pancakeRouterAddr, "120000000000");
+    await tcake.approve(pancakeRouterAddr, "50000000000000000000000000");
     await pancakeRouter.connect(upgradeAdmin).addLiquidity(
         tbtc.address, 
         tcake.address, 
@@ -408,11 +404,11 @@ async function provideLiquidity(rets) {
         1,
         1,
         upgradeAdmin.address,
-        Date.now() + 60*30
+        Date.now() + 60*30, { gasLimit: 8000000 }
     )
 
-    await twbnb.approve(pancakeRouterAddr, "5000000000000000000");
-    await tcake.approve(pancakeRouterAddr, "250000000000000000000");
+    await twbnb.approve(pancakeRouterAddr, "50000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "2500000000000000000000");
     await pancakeRouter.connect(upgradeAdmin).addLiquidity(
         twbnb.address, 
         tcake.address, 
@@ -421,7 +417,7 @@ async function provideLiquidity(rets) {
         1,
         1,
         upgradeAdmin.address,
-        Date.now() + 60*30
+        Date.now() + 60*30, { gasLimit: 8000000 }
     )
 }
 
