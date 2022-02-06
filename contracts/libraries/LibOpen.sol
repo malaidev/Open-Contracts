@@ -3,7 +3,6 @@ pragma solidity 0.8.1;
 pragma experimental ABIEncoderV2;
 
 import "./AppStorageOpen.sol";
-import "../util/AddLibs.sol";
 import "../util/Address.sol";
 import "../util/IBEP20.sol";
 import "../interfaces/ITokenList.sol";
@@ -21,7 +20,6 @@ import "../interfaces/IPancakeRouter01.sol";
 
 library LibOpen {
 	using Address for address;
-    using SafeMath for uint;
 
 	uint8 constant TOKENLIST_ID = 10;
 	uint8 constant COMPTROLLER_ID = 11;
