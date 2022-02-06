@@ -6,7 +6,8 @@ const { getSelectors, FacetCutAction } = require('./libraries/diamond.js')
 
 async function main() {
     const diamondAddress = await deployDiamond();
-    await addMarkets(diamondAddress)
+    const rets = await addMarkets(diamondAddress)
+    await provideLiquidity(rets)
 }
 
 async function deployDiamond() {
@@ -334,31 +335,31 @@ async function addMarkets(diamondAddress) {
 
 }
 
-async function addLiquidityTest() {
+async function provideLiquidity(rets) {
+    console.log("Start LP making")
     const accounts = await ethers.getSigners()
     const upgradeAdmin = accounts[0]
-    const diamondAddress = "0xd2EC941aeb839b8fbeF98Fe24aBDf68A522bDCb1"
     const pancakeRouterAddr = "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
-    const tbtc = await ethers.getContractAt('BEP20Token', "0x91b9aF799827999e40437Ca266A1b3420e22ADBF")
-    const tusdc = await ethers.getContractAt('BEP20Token', "0x6311690CC4029FeAa8BB1C5177c49bCCD76e7CcC")
-    const tusdt = await ethers.getContractAt('BEP20Token', "0xb0bF6231Fd5bd37aDdB92Da629C615b7191BE302")
-    const twbnb = await ethers.getContractAt('BEP20Token', "0xb0256cb9cFD960eba13Ce05482a8B9e0D01388B2")
-    const tcake = await ethers.getContractAt('BEP20Token', "0xf1aFf646aeA826357A17E6cAb5F787dAcDeDB7b9")
-    const tsxp = await ethers.getContractAt('BEP20Token', "0xB55548e0A8A1A9794e0A9f7B48148aDAb8719789")
+    const tbtc = await ethers.getContractAt('BEP20Token', rets['tBtcAddress'])
+    const tusdc = await ethers.getContractAt('BEP20Token', rets['tUsdcAddress'])
+    const tusdt = await ethers.getContractAt('BEP20Token', rets['tUsdtAddress'])
+    const twbnb = await ethers.getContractAt('BEP20Token', rets['tUsdcAddress'])
+    const tcake = await ethers.getContractAt('BEP20Token', rets['tCakeAddress'])
+    const tsxp = await ethers.getContractAt('BEP20Token', rets['tSxpAddress'])
     
-    await tbtc.approve(pancakeRouterAddr, "500000000000000");
-    await tusdc.approve(pancakeRouterAddr, "5000000000000000000000000");
-    await tusdt.approve(pancakeRouterAddr, "5000000000000000000000000");
-    await tsxp.approve(pancakeRouterAddr, "5000000000000000000000000");
-    await tcake.approve(pancakeRouterAddr, "5000000000000000000000000");
-    await twbnb.approve(pancakeRouterAddr, "5000000000000000000000000");
+    // await tbtc.approve(pancakeRouterAddr, "500000000000000");
+    // await tusdc.approve(pancakeRouterAddr, "5000000000000000000000000");
+    // await tusdt.approve(pancakeRouterAddr, "5000000000000000000000000");
+    // await tsxp.approve(pancakeRouterAddr, "5000000000000000000000000");
+    // await tcake.approve(pancakeRouterAddr, "5000000000000000000000000");
+    // await twbnb.approve(pancakeRouterAddr, "5000000000000000000000000");
 
-    await tbtc.approve(diamondAddress, "500000000000000");
-    await tusdc.approve(diamondAddress, "5000000000000000000000000");
-    await tusdt.approve(diamondAddress, "5000000000000000000000000");
-    await tsxp.approve(diamondAddress, "5000000000000000000000000");
-    await tcake.approve(diamondAddress, "5000000000000000000000000");
-    await twbnb.approve(diamondAddress, "5000000000000000000000000");
+    // await tbtc.approve(diamondAddress, "500000000000000");
+    // await tusdc.approve(diamondAddress, "5000000000000000000000000");
+    // await tusdt.approve(diamondAddress, "5000000000000000000000000");
+    // await tsxp.approve(diamondAddress, "5000000000000000000000000");
+    // await tcake.approve(diamondAddress, "5000000000000000000000000");
+    // await twbnb.approve(diamondAddress, "5000000000000000000000000");
 
 
     const pancakeRouter = await ethers.getContractAt('PancakeRouter', pancakeRouterAddr)
@@ -369,23 +370,63 @@ async function addLiquidityTest() {
     // if(pairUsdt_Cake != "0x0000000000000000000000000000000000000000"){
         // await tusdt.approve(pairUsdt_Cake, "5000000000000000000000000");
         // await tcake.approve(pairUsdt_Cake, "5000000000000000000000000");
-        
-        await pancakeRouter.addLiquidity(
-            tbtc.address, 
-            tsxp.address, 
-            "1000000000000000000000",
-            "100000000000000000000",
-            1,
-            1,
-            upgradeAdmin.address,
-            Date.now() + 60*30
-        )
     // }
+        
+    await tusdc.approve(pancakeRouterAddr, "10000000000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "1000000000000000000000000");
+    await pancakeRouter.connect(upgradeAdmin).addLiquidity(
+        tusdc.address, 
+        tcake.address, 
+        "10000000000000000000000000",
+        "1000000000000000000000000",
+        1,
+        1,
+        upgradeAdmin.address,
+        Date.now() + 60*30
+    )
 
+    await tusdt.approve(pancakeRouterAddr, "10000000000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "1000000000000000000000000");
+    await pancakeRouter.connect(upgradeAdmin).addLiquidity(
+        tusdt.address, 
+        tcake.address, 
+        "10000000000000000000000000",
+        "1000000000000000000000000",
+        1,
+        1,
+        upgradeAdmin.address,
+        Date.now() + 60*30
+    )
+
+    await tbtc.approve(pancakeRouterAddr, "12000000000");
+    await tcake.approve(pancakeRouterAddr, "5000000000000000000000000");
+    await pancakeRouter.connect(upgradeAdmin).addLiquidity(
+        tbtc.address, 
+        tcake.address, 
+        "12000000000",
+        "5000000000000000000000000",
+        1,
+        1,
+        upgradeAdmin.address,
+        Date.now() + 60*30
+    )
+
+    await twbnb.approve(pancakeRouterAddr, "5000000000000000000");
+    await tcake.approve(pancakeRouterAddr, "250000000000000000000");
+    await pancakeRouter.connect(upgradeAdmin).addLiquidity(
+        twbnb.address, 
+        tcake.address, 
+        "5000000000000000000",
+        "250000000000000000000",
+        1,
+        1,
+        upgradeAdmin.address,
+        Date.now() + 60*30
+    )
 }
 
 if (require.main === module) {
-    addLiquidityTest()
+    main()
       .then(() => process.exit(0))
       .catch(error => {
         console.error(error)
