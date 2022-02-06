@@ -323,8 +323,8 @@ contract LoanExt is Pausable, ILoanExt {
 			collateral.amount -= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
 		}
 
-		uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
-		uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
+		// uint256 cAmount = LibOpen._getLatestPrice(collateral.market)*collateral.amount;
+		// uint256 lAmountCurrent = LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount;
 		// convert collateral & loanCurrent into loanActual
 
 		uint256 _repaymentAmount = LibOpen._swap(_account, collateral.market, loan.market, LibOpen._getLatestPrice(collateral.market)*collateral.amount, 2);
