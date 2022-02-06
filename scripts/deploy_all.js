@@ -335,6 +335,9 @@ async function addMarkets(diamondAddress) {
 }
 
 async function addLiquidityTest() {
+    const accounts = await ethers.getSigners()
+    const upgradeAdmin = accounts[0]
+    const diamondAddress = "0xd2EC941aeb839b8fbeF98Fe24aBDf68A522bDCb1"
     const pancakeRouterAddr = "0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3"
     const tbtc = await ethers.getContractAt('BEP20Token', "0x91b9aF799827999e40437Ca266A1b3420e22ADBF")
     const tusdc = await ethers.getContractAt('BEP20Token', "0x6311690CC4029FeAa8BB1C5177c49bCCD76e7CcC")
