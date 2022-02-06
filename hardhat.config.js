@@ -124,6 +124,7 @@ module.exports = {
       chainId: 97,
       timeout: 200000,
       gas: 2100000, 
+      gasLimit: 5000000
     },
 //     harmony: {
 //       url: 'https://api.s0.b.hmny.io',
