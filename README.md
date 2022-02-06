@@ -1,4 +1,4 @@
-[![Slither tests](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)     [![Unit tests](https://github.com/0xHashstack/Open-contracts/actions/workflows/main.yml/badge.svg)](https://github.com/0xHashstack/Open-contracts/actions/workflows/main.yml)
+[![Slither tests](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)     [![Unit tests](https://github.com/0xHashstack/Open-contracts/actions/workflows/main.yml/badge.svg)](https://github.com/0xHashstack/Open-contracts/actions/workflows/main.yml)     [![Build Yaml](https://github.com/0xHashstack/Open-contracts/actions/workflows/build.yml/badge.svg?branch=development-v0.2.0)](https://github.com/0xHashstack/Open-contracts/actions/workflows/build.yml)
 
 <!-- [![Test](https://github.com/0xHashstack/Open-contracts/actions/workflows/test.yml/badge.svg)](https://github.com/0xHashstack/Open-contracts/actions/workflows/test.yml) -->
 
