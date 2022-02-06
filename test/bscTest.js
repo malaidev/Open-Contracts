@@ -53,7 +53,7 @@ describe(" Complex Test ", function () {
 		upgradeAdmin = accounts[0]
 		console.log("account1 is ", accounts[1].address)
 		
-		diamondAddress = "0x5fc9bDf31BaEe0708077bcD4BA8d1D2468615a8f"
+		diamondAddress = "0xd2EC941aeb839b8fbeF98Fe24aBDf68A522bDCb1"
 
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
 		diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -68,45 +68,41 @@ describe(" Complex Test ", function () {
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)
 
-		bepUsdc = await ethers.getContractAt('BEP20Token', "0xAeFAF5361cB4Ef012143A11609da3C8a9CC67367")
-        bepCake = await ethers.getContractAt('BEP20Token', "0x30fe514A19Ec5BB144f2f6C96C385ea3ff2EBEF3")
+		bepUsdc = await ethers.getContractAt('BEP20Token', "0x6311690CC4029FeAa8BB1C5177c49bCCD76e7CcC")
+        bepCake = await ethers.getContractAt('BEP20Token', "0xf1aFf646aeA826357A17E6cAb5F787dAcDeDB7b9")
 	})
 
-    it('should have three facets -- call to facetAddresses function', async () => {
-        for (const address of await diamondLoupeFacet.facetAddresses()) {
-            addresses.push(address)
-        }
-        assert.equal(addresses.length, 10)
-    })
+    // it('should have three facets -- call to facetAddresses function', async () => {
+    //     for (const address of await diamondLoupeFacet.facetAddresses()) {
+    //         addresses.push(address)
+    //     }
+    //     assert.equal(addresses.length, 10)
+    // })
 
-    it('facets should have the right function selectors -- call to facetFunctionSelectors function', async () => {
-        let selectors = getSelectors(diamondCutFacet)
-        result = await diamondLoupeFacet.facetFunctionSelectors(addresses[0])
-        assert.sameMembers(result, selectors)
-        selectors = getSelectors(diamondLoupeFacet)
-        result = await diamondLoupeFacet.facetFunctionSelectors(addresses[1])
-        assert.sameMembers(result, selectors)
-    })
+    // it('facets should have the right function selectors -- call to facetFunctionSelectors function', async () => {
+    //     let selectors = getSelectors(diamondCutFacet)
+    //     result = await diamondLoupeFacet.facetFunctionSelectors(addresses[0])
+    //     assert.sameMembers(result, selectors)
+    //     selectors = getSelectors(diamondLoupeFacet)
+    //     result = await diamondLoupeFacet.facetFunctionSelectors(addresses[1])
+    //     assert.sameMembers(result, selectors)
+    // })
 
-    it("getlatestprice", async () => {
-        console.log("cake price is ", await oracle.getLatestPrice(symbolCAKE), {gasLimit: 5000000})
-    })
+    // it("Check Deposit", async () => {
+    //     const depositAmount = "500000000000000000000";
 
-    it("Check Deposit", async () => {
-        const depositAmount = "500000000000000000000";
-
-        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
-        // USDC
-        await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
-        await deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000})
-        // expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
-        // expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
-        console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
-        console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
-        console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
-    })
+    //     console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
+    //     // USDC
+    //     await bepUsdc.connect(accounts[1]).approve(diamondAddress, depositAmount);
+    //     await deposit.connect(accounts[1]).depositRequest(symbolUsdc, comit_NONE, depositAmount, {gasLimit: 5000000})
+    //     // expect(await bepUsdc.balanceOf(accounts[1].address)).to.equal(0xfe00)
+    //     // expect(await reserve.avblMarketReserves(symbolUsdc)).to.equal(0x200)
+    //     console.log(diamondAddress, "USDC balance is ", await bepUsdc.balanceOf(diamondAddress))
+    //     console.log(accounts[1].address, "USDC balance is ", await bepUsdc.balanceOf(accounts[1].address))
+    //     console.log("Avbl Market reserve is ", await reserve.avblMarketReserves(symbolUsdc))
+    // })
 
     it("Check loan", async () => {
         const loanAmount = "300000000000000000000"
@@ -149,8 +145,8 @@ describe(" Complex Test ", function () {
     // })
    
     it("Check liquidation1", async () => {
-        const loanAmount = "300000000000000000000"
+        const loanAmount = "50000000000000000000000000"
         await bepUsdc.connect(accounts[1]).approve(diamondAddress, loanAmount);
-        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 1);
+        await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 2);
     })
 })

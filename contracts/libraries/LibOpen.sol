@@ -494,6 +494,7 @@ library LibOpen {
 		if (_num == 0)	{
 			ds.marketUtilisationLoan[_loanMarket] += _amount;
 		} else if (_num == 1)	{
+			require(ds.marketUtilisationLoan[_loanMarket] >= _amount, "marketUtilisation is smaller than _amount");
 			ds.marketUtilisationLoan[_loanMarket] -= _amount;
 		}
 	}
@@ -614,10 +615,11 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage();
-		require(ds.pairAddresses[_market] != address(0), "ERROR: Invalid pair address");
-		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-		return uint256(price);
+		// AppStorageOpen storage ds = diamondStorage();
+		// require(ds.pairAddresses[_market] != address(0), "ERROR: Invalid pair address");
+		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		// return uint256(price);
+		return 1;
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint) {
