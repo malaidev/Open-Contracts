@@ -4,6 +4,7 @@ pragma solidity 0.8.1;
 import "../util/AddLibs.sol";
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
+import {STATE} from "../interfaces/ILoan.sol";
 
 import "hardhat/console.sol";
 
@@ -329,7 +330,6 @@ contract LoanExt is Pausable, ILoanExt {
 
 		uint256 _repaymentAmount = LibOpen._swap(_account, collateral.market, loan.market, LibOpen._getLatestPrice(collateral.market)*collateral.amount, 2);
 		_repaymentAmount += LibOpen._swap(_account, loanState.currentMarket, loan.market, LibOpen._getLatestPrice(loanState.currentMarket)*loanState.currentAmount, 1);
-
 
 		delete ds.indAccruedAPY[_account][_loanMarket][_commitment];
 		delete ds.indAccruedAPR[_account][_loanMarket][_commitment];
