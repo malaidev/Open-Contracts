@@ -406,6 +406,7 @@ async function provideLiquidity(rets) {
         upgradeAdmin.address,
         Date.now() + 60*30, { gasLimit: 8000000 }
     )
+    console.log("BTC <-> CAKE LP done")
 
     await twbnb.approve(pancakeRouterAddr, "50000000000000000000");
     await tcake.approve(pancakeRouterAddr, "2500000000000000000000");
@@ -419,6 +420,7 @@ async function provideLiquidity(rets) {
         upgradeAdmin.address,
         Date.now() + 60*30, { gasLimit: 8000000 }
     )
+    console.log("WBNB <-> CAKE LP done")
 }
 
 if (require.main === module) {
