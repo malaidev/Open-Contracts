@@ -2,7 +2,7 @@
 pragma solidity 0.8.1;
 
 import "../util/Address.sol";
-import { STATE }"../interfaces/ILoan.sol";
+import "../interfaces/ILoan.sol";
 import "../util/IBEP20.sol";
 
 // =========== TokenList structs ===========

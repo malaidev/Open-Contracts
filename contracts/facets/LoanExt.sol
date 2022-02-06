@@ -4,7 +4,7 @@ pragma solidity 0.8.1;
 import "../util/AddLibs.sol";
 import "../util/Pausable.sol";
 import "../libraries/LibOpen.sol";
-import {STATE} from "../interfaces/ILoan.sol";
+import "../interfaces/ILoan.sol";
 
 import "hardhat/console.sol";
 
