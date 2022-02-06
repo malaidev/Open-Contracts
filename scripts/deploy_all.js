@@ -377,19 +377,19 @@ async function addMarkets(diamondAddress) {
     const tx4 = await liquidator.createPair(tWBNBAddress, tCakeAddress);
     console.log("Pair Address for USDC and Cake", tx4 )
     
+    
 
 
-
-    // await router.addLiquidity(
-    //     tusdc.address,
-    //     tcake.address,
-    //     10000000,
-    //     1000000,
-    //     10000000,
-    //     1000000,
-    //     upgradeAdmin,
-    //     Math.floor(Date.now() / 1000) + 60 * 10
-    //   );
+    await liquidator.addLiquidity(
+        tUsdcAddress,
+        tCakeAddress,
+        10000000,
+        1000000,
+        10000000,
+        1000000,
+        upgradeAdmin,
+        Math.floor(Date.now() / 1000) + 60 * 10
+      );
 
     //   await router.addLiquidity(
     //     tUsdcAddress,

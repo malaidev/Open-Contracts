@@ -58,6 +58,7 @@ library LibOpen {
 		ds.reserveAddress = _reserve;
 	}
 
+
 	function diamondStorage() internal pure returns (AppStorageOpen storage ds) {
 		assembly {
 				ds.slot := 0
@@ -371,8 +372,8 @@ library LibOpen {
 		// );
 
 		//PancakeSwap
-		// IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
-		// IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
+		IBEP20(addrFromMarket).approveFrom(msg.sender, address(this), _fromAmount);
+		IBEP20(addrFromMarket).transferFrom(sender, address(this), _fromAmount);
 		// IBEP20(addrFromMarket).approve(PANCAKESWAP_ROUTER_ADDRESS, _fromAmount);
 
 		//WBNB as other test tokens
