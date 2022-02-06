@@ -84,7 +84,7 @@ contract Loan is Pausable, ILoan {
 
 		// _hasLoanAccount(msg.sender);
 		// require(loan.id !=0, "ERROR: No Loan");
-		// require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
+		// require(loanState.state == STATE.REPAID, "ERROR: Active loan");
 		// if (_commitment != _getCommitment(0)) {
 		// 	require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
 		// }
@@ -282,7 +282,7 @@ contract Loan is Pausable, ILoan {
 		/// updating LoanState
 		loanState.actualLoanAmount = 0;
 		loanState.currentAmount = 0;
-		loanState.state = ILoan.STATE.REPAID;
+		loanState.state = uint(STATE.REPAID);
 
 		delete ds.indAccruedAPR[_account][loan.market][loan.commitment];
 		delete ds.indAccruedAPY[_account][loan.market][loan.commitment];
@@ -332,7 +332,7 @@ contract Loan is Pausable, ILoan {
 		loanState.currentMarket = _loanMarket;
 		loanState.currentAmount = 0;
 		loanState.actualLoanAmount = 0;
-		loanState.state = ILoan.STATE.REPAID;
+		loanState.state = uint(STATE.REPAID);
 
 		collateral.isCollateralisedDeposit = false;
 		collateral.isTimelockActivated = true;
@@ -351,7 +351,7 @@ contract Loan is Pausable, ILoan {
 		loanAccount.loanState[num].currentMarket = _loanMarket;
 		loanAccount.loanState[num].currentAmount = 0;
 		loanAccount.loanState[num].actualLoanAmount = 0;
-		loanAccount.loanState[num].state = ILoan.STATE.REPAID;
+		loanAccount.loanState[num].state = uint(STATE.REPAID);
 		
 		loanAccount.collaterals[num].isCollateralisedDeposit = false;
 		loanAccount.collaterals[num].isTimelockActivated = true;

@@ -138,7 +138,7 @@ contract LoanExt is Pausable, ILoanExt {
 		loanState.actualLoanAmount = _loanAmount;
 		loanState.currentMarket = _loanMarket;
 		loanState.currentAmount = _loanAmount;
-		loanState.state = ILoan.STATE.ACTIVE;
+		loanState.state = uint(STATE.ACTIVE);
 
 		collateral.id= loan.id;
 		collateral.market= _collateralMarket;
@@ -361,7 +361,7 @@ contract LoanExt is Pausable, ILoanExt {
 	) private view {
 		// require(loanAccount.accOpenTime != 0, "ERROR: No Loan account"); // redundant
 		require(loan.id != 0, "ERROR: No loan");
-		require(loanState.state == ILoan.STATE.ACTIVE, "ERROR: Inactive loan");
+		require(loanState.state == uint(STATE.ACTIVE), "ERROR: Inactive loan");
 		require(collateral.market == _collateralMarket, "ERROR: Mismatch collateral market");
 
 		LibOpen._isMarketSupported(_collateralMarket);

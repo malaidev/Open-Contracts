@@ -34,6 +34,7 @@ library LibOpen {
 	// address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 
+	enum STATE {ACTIVE,REPAID}
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
 // =========== Liquidator events ===============
@@ -509,7 +510,7 @@ library LibOpen {
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_loanMarket][_commitment];
 
 		//require(loan.id !=0, "ERROR: No Loan");
-		require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
+		require(loanState.state == uint(STATE.REPAID), "ERROR: Active loan");
 		//if (_commitment != _getCommitment(0)) {
 		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
 		//}		
@@ -542,7 +543,7 @@ library LibOpen {
 		// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
 		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_loanMarket][_commitment];
 
-		require(ds.indLoanState[_account][_loanMarket][_commitment].state == ILoan.STATE.ACTIVE, "ERROR: Inactive Loan");
+		require(ds.indLoanState[_account][_loanMarket][_commitment].state == uint(STATE.ACTIVE), "ERROR: Inactive Loan");
 		// require(ds.indAccruedAPR[_account][_loanMarket][_commitment].id != 0, "ERROR: APR does not exist");
 
 		uint256 aggregateYield;

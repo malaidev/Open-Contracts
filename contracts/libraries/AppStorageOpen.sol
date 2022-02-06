@@ -2,7 +2,6 @@
 pragma solidity 0.8.1;
 
 import "../util/Address.sol";
-import "../interfaces/ILoan.sol";
 import "../util/IBEP20.sol";
 
 // =========== TokenList structs ===========
@@ -85,7 +84,7 @@ struct LoanState {
     uint256 actualLoanAmount;
     bytes32 currentMarket;
     uint256 currentAmount;
-    ILoan.STATE state;
+    uint state;
 }
 struct CollateralRecords {
     uint256 id;
