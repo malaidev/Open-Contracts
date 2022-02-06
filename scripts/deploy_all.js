@@ -360,18 +360,28 @@ async function addLiquidityTest() {
     await tcake.approve(diamondAddress, "5000000000000000000000000");
     await twbnb.approve(diamondAddress, "5000000000000000000000000");
 
-    const pancakeRouter = await ethers.getContractAt('PancakeRouter', pancakeRouterAddr)
 
-    await pancakeRouter.addLiquidity(
-        tusdt.address, 
-        tcake.address, 
-        "1000000000000000000000",
-        "100000000000000000000",
-        1,
-        1,
-        upgradeAdmin.address,
-        Date.now() + 60*30
-    )
+    const pancakeRouter = await ethers.getContractAt('PancakeRouter', pancakeRouterAddr)
+    // const pancakeFactory = await ethers.getContractAt('PancakeFactory', await pancakeRouter.factory());
+
+    // const pairUsdt_Cake = await pancakeFactory.createPair(tusdt.address, tsxp.address)
+    // console.log("USDT_CAKE pair address is ", pairUsdt_Cake.address)
+    // if(pairUsdt_Cake != "0x0000000000000000000000000000000000000000"){
+        // await tusdt.approve(pairUsdt_Cake, "5000000000000000000000000");
+        // await tcake.approve(pairUsdt_Cake, "5000000000000000000000000");
+        
+        await pancakeRouter.addLiquidity(
+            tbtc.address, 
+            tsxp.address, 
+            "1000000000000000000000",
+            "100000000000000000000",
+            1,
+            1,
+            upgradeAdmin.address,
+            Date.now() + 60*30
+        )
+    // }
+
 }
 
 if (require.main === module) {
