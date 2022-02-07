@@ -60,7 +60,7 @@ contract Faucet {
         require(indFaucetMonitor[msg.sender][token] <= block.timestamp, "ERROR: Timelock in efect");
         token.transfer(msg.sender, tokenMapper[_index].amount);
 
-        indFaucetMonitor[msg.sender][token] += waitTime;
+        indFaucetMonitor[msg.sender][token] = block.timestamp + waitTime;
 
         emit TokensIssued(token, msg.sender, block.timestamp);
         return success = true;
