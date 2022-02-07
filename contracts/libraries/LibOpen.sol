@@ -406,14 +406,14 @@ library LibOpen {
 			path = new address[](2);
 			path[0] = _tokenIn;
 			path[1] = _tokenOut;
-	// } else {
-	//     path = new address[](3);
-	//     path[0] = _tokenIn;
-	//     path[1] = WBNB;
-	//     path[2] = _tokenOut;
-	// }
+		// } else {
+		//     path = new address[](3);
+		//     path[0] = _tokenIn;
+		//     path[1] = WBNB;
+		//     path[2] = _tokenOut;
+		// }
 
-	// same length as path
+		// same length as path
 		uint[] memory amountOutMins = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(
 				_amountIn,
 				path
@@ -614,10 +614,24 @@ library LibOpen {
 
 // =========== OracleOpen Functions =================
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
-		AppStorageOpen storage ds = diamondStorage();
+		// Chainlink price
+		// AppStorageOpen storage ds = diamondStorage();
+		// require(ds.pairAddresses[_market] != address(0), "ERROR: Invalid pair address");
+		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
+		// return uint256(price);
+
+
+		// Get price from pool with USDT
+		AppStorageOpen storage ds = diamondStorage(); 
+		address[] memory path;
+		path = new address[](2);
+		path[0] = ds.pairAddresses[_market];
+		path[1] = ds.pairAddresses[0x555344542e740000000000000000000000000000000000000000000000000000];
 		require(ds.pairAddresses[_market] != address(0), "ERROR: Invalid pair address");
-		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
-		return uint256(price);
+		require(path[1] != address(0), "ERROR: Invalid USDT address");
+
+		uint[] memory amountOut = IPancakeRouter01(PANCAKESWAP_ROUTER_ADDRESS).getAmountsOut(1, path);
+		return amountOut[1];
 	}
 
 	function _getFairPrice(uint _requestId) internal view returns (uint) {

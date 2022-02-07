@@ -143,17 +143,16 @@ async function addMarkets(diamondAddress) {
     const comit_THREEMONTHS = "0x636f6d69745f54485245454d4f4e544853000000000000000000000000000000";
 
     
-    /// CHAINLINK ORACLE ADDRESSES ADDED
-    console.log("Add fairPrice addresses");
-    await diamond.addFairPriceAddress(symbolWBNB, '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526');
-    await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
-    await diamond.addFairPriceAddress(symbolUsdc, '0x90c069C4538adAc136E051052E14c1cD799C41B7');
-    await diamond.addFairPriceAddress(symbolBtc, '0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf');
-    // await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
-    await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
-    await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
+    // /// CHAINLINK ORACLE ADDRESSES ADDED
+    // console.log("Add fairPrice addresses");
+    // await diamond.addFairPriceAddress(symbolWBNB, '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526');
+    // await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
+    // await diamond.addFairPriceAddress(symbolUsdc, '0x90c069C4538adAc136E051052E14c1cD799C41B7');
+    // await diamond.addFairPriceAddress(symbolBtc, '0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf');
+    // // await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
+    // await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
+    // await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
 
-    
     console.log("setCommitment begin");
     await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
     await comptroller.connect(upgradeAdmin).setCommitment(comit_TWOWEEKS);
@@ -239,6 +238,16 @@ async function addMarkets(diamondAddress) {
     // await diamond.addFairPriceAddress(symbolCAKE,tCakeAddress);
     
     console.log("addMarket & minAmount");
+
+    /// MARKET ADDRESSES ADDED
+    console.log("Add fairPrice addresses");
+    await diamond.addFairPriceAddress(symbolWBNB, twbnb.address);
+    await diamond.addFairPriceAddress(symbolUsdt, tusdt.address);
+    await diamond.addFairPriceAddress(symbolUsdc, tusdc.address);
+    await diamond.addFairPriceAddress(symbolBtc, tbtc.address);
+    // await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
+    await diamond.addFairPriceAddress(symbolSxp, tsxp.address);
+    await diamond.addFairPriceAddress(symbolCAKE, tcake.address);
     
     // 100 USDT [minAmount]
     // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,1e20, { gasLimit: 800000 })
