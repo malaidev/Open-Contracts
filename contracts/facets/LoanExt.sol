@@ -312,13 +312,11 @@ contract LoanExt is Pausable, ILoanExt {
 		LibOpen._accruedInterest(_account, _loanMarket, _commitment);
 		
 		if (loan.commitment == LibOpen._getCommitment(2)){
-			console.log("First %s Second %s", ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield,
-			ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest);
-			require(ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield >= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest, "Commit2 sub result minus");
-			collateral.amount += ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield - ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
+			collateral.amount += ds.indAccruedAPY[_account][_loanMarket][_commitment].accruedYield;
+			collateral.amount -= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
 		}
 		else if (loan.commitment != LibOpen._getCommitment(2)) {
-			require(collateral.amount >= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest, "Sub causes minus");
+			// require(collateral.amount >= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest, "Sub causes minus");
 			collateral.amount -= ds.indAccruedAPR[_account][_loanMarket][_commitment].accruedInterest;
 		}
 
