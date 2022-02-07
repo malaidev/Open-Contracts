@@ -14,7 +14,7 @@ const {deployDiamond}= require('../scripts/deploy_all.js')
 const {addMarkets}= require('../scripts/deploy_all.js')
 const { provideLiquidity } = require("../scripts/deploy_all.js");
 
-describe(" Complex Test ", function () {
+describe(" Test with deployed diamond ", function () {
     let diamondAddress
 	let diamondCutFacet
 	let diamondLoupeFacet
