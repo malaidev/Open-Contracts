@@ -621,12 +621,12 @@ library LibOpen {
 		// return uint256(price);
 
 
-		// Get price from pool with USDT
+		// Get price from pool with USDC
 		AppStorageOpen storage ds = diamondStorage(); 
 		address[] memory path;
 		path = new address[](2);
 		path[0] = ds.pairAddresses[_market];
-		path[1] = ds.pairAddresses[0x555344542e740000000000000000000000000000000000000000000000000000];
+		path[1] = ds.pairAddresses[0x555344432e740000000000000000000000000000000000000000000000000000];
 		require(ds.pairAddresses[_market] != address(0), "ERROR: Invalid pair address");
 		require(path[1] != address(0), "ERROR: Invalid USDT address");
 

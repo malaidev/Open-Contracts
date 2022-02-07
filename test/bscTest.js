@@ -47,7 +47,6 @@ describe(" Complex Test ", function () {
 	const comit_ONEMONTH = utils.formatBytes32String("comit_ONEMONTH");
 	const comit_THREEMONTHS = utils.formatBytes32String("comit_THREEMONTHS");
 
-
     before(async function () {
         accounts = await ethers.getSigners()
 		upgradeAdmin = accounts[0]
@@ -150,4 +149,8 @@ describe(" Complex Test ", function () {
     //     await loanExt.connect(upgradeAdmin).liquidation(accounts[1].address, 2);
     // })
 
+    it("Check getLatestPrice", async () => {
+        const priceBtc = await oracle.connect(upgradeAdmin).getLatestPrice(symbolBtc);
+        console.log("BTC price is ", priceBtc)
+    })
 })
