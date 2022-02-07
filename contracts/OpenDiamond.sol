@@ -2,13 +2,13 @@
 pragma solidity 0.8.1;
 
 import { LibDiamond } from "./libraries/LibDiamond.sol";
+import { LibOpen } from "./libraries/LibOpen.sol";
 import { IDiamondCut } from "./interfaces/IDiamondCut.sol";
-
 
 contract OpenDiamond {
 
-    constructor(address _contractOwner, address _diamondCutFacet) payable {        
-        LibDiamond.setContractOwner(_contractOwner);
+    constructor(address _upgradeAdmin, address _diamondCutFacet) payable {        
+        LibDiamond.setupgradeAdmin(_upgradeAdmin);
         // Add the diamondCut external function from the diamondCutFacet
         IDiamondCut.FacetCut[] memory cut = new IDiamondCut.FacetCut[](1);
         bytes4[] memory functionSelectors = new bytes4[](1);
@@ -52,11 +52,11 @@ contract OpenDiamond {
     }
 
     function addFairPriceAddress(bytes32 _market, address _address) external {
-        LibDiamond._addFairPriceAddress(_market, _address);
+        LibOpen._addFairPriceAddress(_market, _address);
     }
 
     function getFairPriceAddress(bytes32 _market) external view returns(address) {
-        return LibDiamond._getFairPriceAddress(_market);
+        return LibOpen._getFairPriceAddress(_market);
     }
     receive() external payable {}
 

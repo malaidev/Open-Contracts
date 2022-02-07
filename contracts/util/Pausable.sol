@@ -43,7 +43,7 @@ abstract contract Pausable is Context {
     }
 
     modifier nonReentrant() {
-		require(isReentrant == false, "Re-entrant alert!");
+		require(isReentrant == false, "ERROR: Re-entrant");
 		isReentrant = true;
 		_;
 		isReentrant = false;
