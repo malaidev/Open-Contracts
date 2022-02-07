@@ -23,7 +23,7 @@ contract Faucet {
         uint amount;
     }
 
-    mapping(address => mapping(BEP20 => uint)) indFaucetMonitor; // Airdrop timelock monitor.
+    mapping(address => mapping(BEP20 => uint)) indFaucetMonitor; // Airdrop timelock monitor.r
     mapping(uint => TokenData) tokenMapper; //maps a token's number identifier to its struct.
 
     event TokensIssued(BEP20 indexed token, address indexed account, uint indexed time);
@@ -51,9 +51,9 @@ contract Faucet {
 
     /// AIRDROP FAUCET FUNCTION
     // [0,1,2,3] => [usdt, udsc, btc, bnb]
-    function getTokens(uint _index) public nonReentrant() returns(bool success){
+    function getTokens(uint _index) external nonReentrant() returns(bool success){
 
-        require(msg.sender != address[0], "ERROR: Zero address");
+        require(msg.sender != address(0), "ERROR: Zero address");
 
         BEP20 token = tokenMapper[_index].token;
 
