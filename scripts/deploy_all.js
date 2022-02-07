@@ -215,6 +215,14 @@ async function addMarkets(diamondAddress) {
         CAKE: ${tCakeAddress}`
     );
 
+    console.log("Approval diamond")
+    await tbtc.approve(diamondAddress, "500000000000000");
+    await tusdc.approve(diamondAddress, "5000000000000000000000000");
+    await tusdt.approve(diamondAddress, "5000000000000000000000000");
+    await tsxp.approve(diamondAddress, "5000000000000000000000000");
+    await tcake.approve(diamondAddress, "5000000000000000000000000");
+    await twbnb.approve(diamondAddress, "5000000000000000000000000");
+
     
     /// MARKET ADDRESSES ADDED
     // console.log("Add fairPrice addresses");
@@ -224,9 +232,6 @@ async function addMarkets(diamondAddress) {
     // await diamond.addFairPriceAddress(symbolBtc, tBtcAddress);
     // await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
     // await diamond.addFairPriceAddress(symbolCAKE, tCakeAddress);
-    
-    // 100 USDT [minAmount]
-    // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,1e20, { gasLimit: 800000 })
     
     console.log("addMarket & minAmount");
     const minUSDT = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
@@ -251,11 +256,9 @@ async function addMarkets(diamondAddress) {
     
     console.log("primary markets added");
 
-
     console.log("adding secondary markets");
     await tokenList.connect(upgradeAdmin).addMarket2Support(symbolSxp,8,tSxpAddress,{ gasLimit: 800000 })
     await tokenList.connect(upgradeAdmin).addMarket2Support(symbolCAKE,18,tCakeAddress,{ gasLimit: 800000 })
-
 
     console.log(`Secondary markets
         SXP: ${symbolSxp}: ${tSxpAddress}
@@ -297,15 +300,6 @@ async function provideLiquidity(rets) {
     const twbnb = await ethers.getContractAt('BEP20Token', rets['tUsdcAddress'])
     const tcake = await ethers.getContractAt('BEP20Token', rets['tCakeAddress'])
     const tsxp = await ethers.getContractAt('BEP20Token', rets['tSxpAddress'])
-
-    console.log("Approval diamond")
-    await tbtc.approve(diamondAddress, "500000000000000");
-    await tusdc.approve(diamondAddress, "5000000000000000000000000");
-    await tusdt.approve(diamondAddress, "5000000000000000000000000");
-    await tsxp.approve(diamondAddress, "5000000000000000000000000");
-    await tcake.approve(diamondAddress, "5000000000000000000000000");
-    await twbnb.approve(diamondAddress, "5000000000000000000000000");
-
 
     const pancakeRouter = await ethers.getContractAt('PancakeRouter', pancakeRouterAddr)
     // const pancakeFactory = await ethers.getContractAt('PancakeFactory', await pancakeRouter.factory());
@@ -379,3 +373,4 @@ if (require.main === module) {
 exports.deployDiamond = deployDiamond
 // exports.deployOpenFacets = deployOpenFacets
 exports.addMarkets = addMarkets
+exports.provideLiquidity = provideLiquidity
