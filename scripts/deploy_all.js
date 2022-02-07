@@ -64,6 +64,7 @@ async function deployDiamond() {
         })
         facetId ++;
     }
+    opencut[6]['facetId'] = 15;
 
     console.log("Begin diamondcut facets");
 
