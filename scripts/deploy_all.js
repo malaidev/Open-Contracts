@@ -143,15 +143,14 @@ async function addMarkets(diamondAddress) {
     const comit_THREEMONTHS = "0x636f6d69745f54485245454d4f4e544853000000000000000000000000000000";
 
     
-    // /// CHAINLINK ORACLE ADDRESSES ADDED
-    // console.log("Add fairPrice addresses");
-    // await diamond.addFairPriceAddress(symbolWBNB, '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526');
-    // await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
-    // await diamond.addFairPriceAddress(symbolUsdc, '0x90c069C4538adAc136E051052E14c1cD799C41B7');
-    // await diamond.addFairPriceAddress(symbolBtc, '0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf');
-    // // await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
-    // await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
-    // await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
+    /// CHAINLINK ORACLE ADDRESSES ADDED
+    console.log("Add fairPrice addresses");
+    await diamond.addFairPriceAddress(symbolWBNB, '0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526');
+    await diamond.addFairPriceAddress(symbolUsdt, '0xEca2605f0BCF2BA5966372C99837b1F182d3D620');
+    await diamond.addFairPriceAddress(symbolUsdc, '0x90c069C4538adAc136E051052E14c1cD799C41B7');
+    await diamond.addFairPriceAddress(symbolBtc, '0x264990fbd0A4796A3E3d8E37C4d5F87a3aCa5Ebf');
+    await diamond.addFairPriceAddress(symbolSxp, '0xE188A9875af525d25334d75F3327863B2b8cd0F1');
+    await diamond.addFairPriceAddress(symbolCAKE, '0xB6064eD41d4f67e353768aA239cA86f4F73665a1');
 
     console.log("setCommitment begin");
     await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
@@ -176,46 +175,36 @@ async function addMarkets(diamondAddress) {
 
     console.log("Deploy test tokens");
     const admin_ = upgradeAdmin.address;
-    // const Mockup = await ethers.getContractFactory('BEP20Token')
-    // const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, 21000000)
-    // await tbtc.deployed()
-    const tBtcAddress = "0x48d80Dcae70B55fB959A20844cc37831ECE99405"
-    // console.log("tBTC deployed: ", tbtc.address)
+    const Mockup = await ethers.getContractFactory('BEP20Token')
+    const tbtc = await Mockup.deploy("Bitcoin", "BTC.t", 8, 21000000)
+    await tbtc.deployed()
+    const tBtcAddress = tbtc.address
+    console.log("tBTC deployed: ", tbtc.address)
 
-    // const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, 10000000000)
-    // await tusdc.deployed()
-    const tUsdcAddress = "0xfaCdE6aA1f9c6E3b59BDB67ec27047Bd952b3C4f"
-    // console.log("tUSDC deployed: ", tusdc.address)
+    const tusdc = await Mockup.deploy("USD-Coin", "USDC.t", 18, 10000000000)
+    await tusdc.deployed()
+    const tUsdcAddress = tusdc.address
+    console.log("tUSDC deployed: ", tusdc.address)
 
-    // const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 18, 10000000000)
-    // await tusdt.deployed()
-    const tUsdtAddress = "0x60F87124dB2b763F850c70AF18FbBEDa1d2D839F"
-    // console.log("tUSDT deployed: ", tusdt.address)
+    const tusdt = await Mockup.deploy("USD-Tether", "USDT.t", 18, 10000000000)
+    await tusdt.deployed()
+    const tUsdtAddress = tusdt.address
+    console.log("tUSDT deployed: ", tusdt.address)
 
-    // const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, 1000000000)
-    // await tsxp.deployed()
-    const tSxpAddress = "0x8A76c0670DBA1ffF9aAa8Cf8745e0ceB4EcC180d"
-    // console.log("tSxp deployed: ", tsxp.address)
+    const tsxp = await Mockup.deploy("SXP", "SXP.t", 18, 1000000000)
+    await tsxp.deployed()
+    const tSxpAddress = tsxp.address
+    console.log("tSxp deployed: ", tsxp.address)
 
-    // const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, 2700000000)
-    // await tcake.deployed()
-    const tCakeAddress = "0x81D4bA5ac6c55797d596E841CC2eaD0aff77D700"
-    // console.log("tCake deployed: ", tcake.address)
+    const tcake = await Mockup.deploy("CAKE", "CAKE.t", 18, 2700000000)
+    await tcake.deployed()
+    const tCakeAddress = tcake.address
+    console.log("tCake deployed: ", tcake.address)
 
-    // const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, 90000000)
-    // await twbnb.deployed()
-    const tWBNBAddress = "0x355297d05965c409226C8f0091B5CCaeB914784b"
-    // console.log("tWBNB deployed: ", twbnb.address)
-
-    /// TILL HERE
-    
-    /// console.log(`Deploying test tokens...`);
-    // const tBtcAddress = "0xe97C64CD9Ab8e8BcB077C59f6121381d129D3F27";
-    // const tUsdcAddress = "0xC3F0414C9a849C52Eb508a7eeFEaDB4D65A3d944";
-    // const tUsdtAddress = "0x3d2b1f363c79BaB4320DD0522239617aF31DaFde";
-    // const tWBNBAddress = "0x426699E9B9ad3a1d37554965618d5f3cFC872eE4";
-    // const tSxpAddress = "0xC60904295Bac181be6E9aFB3d6C36aa691516ec8";
-    // const tCakeAddress = "0x6857EfAa30Bc52C75F76fE47EADd6C79C8B80AC4";
+    const twbnb = await Mockup.deploy("WBNB", "WBNB.t", 18, 90000000)
+    await twbnb.deployed()
+    const tWBNBAddress = twbnb.address
+    console.log("tWBNB deployed: ", twbnb.address)
 
     console.log(`Test tokens deployed at
         BTC: ${tBtcAddress}
@@ -226,29 +215,20 @@ async function addMarkets(diamondAddress) {
         CAKE: ${tCakeAddress}`
     );
 
-    // console.log("Add fairPrice addresses");
-    // await diamond.addFairPriceAddress(symbolWBNB,tWBNBAddress );
-    // await diamond.addFairPriceAddress(symbolUsdt, tUsdtAddress );
-    // await diamond.addFairPriceAddress(symbolUsdc, tUsdcAddress);
-    // await diamond.addFairPriceAddress(symbolBtc,tBtcAddress );
-    // await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
-    // await diamond.addFairPriceAddress(symbolCAKE,tCakeAddress);
     
-    console.log("addMarket & minAmount");
-
     /// MARKET ADDRESSES ADDED
-    console.log("Add fairPrice addresses");
-    await diamond.addFairPriceAddress(symbolWBNB, tWBNBAddress);
-    await diamond.addFairPriceAddress(symbolUsdt, tUsdtAddress);
-    await diamond.addFairPriceAddress(symbolUsdc, tUsdcAddress);
-    await diamond.addFairPriceAddress(symbolBtc, tBtcAddress);
-    // await diamond.addFairPriceAddress(symbolEth, '0x143db3CEEfbdfe5631aDD3E50f7614B6ba708BA7');
-    await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
-    await diamond.addFairPriceAddress(symbolCAKE, tCakeAddress);
+    // console.log("Add fairPrice addresses");
+    // await diamond.addFairPriceAddress(symbolWBNB, tWBNBAddress);
+    // await diamond.addFairPriceAddress(symbolUsdt, tUsdtAddress);
+    // await diamond.addFairPriceAddress(symbolUsdc, tUsdcAddress);
+    // await diamond.addFairPriceAddress(symbolBtc, tBtcAddress);
+    // await diamond.addFairPriceAddress(symbolSxp, tSxpAddress);
+    // await diamond.addFairPriceAddress(symbolCAKE, tCakeAddress);
     
     // 100 USDT [minAmount]
     // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress,1e20, { gasLimit: 800000 })
     
+    console.log("addMarket & minAmount");
     const minUSDT = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
     const minUSDC = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
     const minBTC = BigNumber.from('1000000'); // 0.1 BTC
@@ -262,12 +242,10 @@ async function addMarkets(diamondAddress) {
     console.log(`tUSDC added ${minUSDC}`);
 
     // 0.1 BTC [minAmount]
-    // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc,8,tBtcAddress, 10000000, { gasLimit: 800000 })
     await tokenList.connect(upgradeAdmin).addMarketSupport(symbolBtc,8,tBtcAddress, minBTC, { gasLimit: 800000 })
     console.log(`tBTC added ${minBTC}`);
 
     // 0.25 BNB
-    // await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB,18,tWBNBAddress,25e16,{ gasLimit: 800000 })
     await tokenList.connect(upgradeAdmin).addMarketSupport(symbolWBNB,18,tWBNBAddress, minBNB,{ gasLimit: 800000 })
     console.log(`twBNB added ${minBNB}`);
     
@@ -275,10 +253,6 @@ async function addMarkets(diamondAddress) {
 
 
     console.log("adding secondary markets");
-    // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolUsdt,18,tUsdtAddress, // USDT.t{ gasLimit: 800000 })
-    // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolUsdc,18,tUsdcAddress, // USDC.t{ gasLimit: 800000 }) 
-    // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolBtc,8,tBtcAddress, // BTC.t{ gasLimit: 800000 })
-    // await tokenList.connect(upgradeAdmin).addMarket2Support(symbolWBNB,18,tWBNBAddress,{ gasLimit: 800000 })
     await tokenList.connect(upgradeAdmin).addMarket2Support(symbolSxp,8,tSxpAddress,{ gasLimit: 800000 })
     await tokenList.connect(upgradeAdmin).addMarket2Support(symbolCAKE,18,tCakeAddress,{ gasLimit: 800000 })
 
