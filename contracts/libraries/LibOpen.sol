@@ -107,7 +107,7 @@ library LibOpen {
 	function _minAmountCheck(bytes32 _loanMarket, uint _amount) internal view {
 		AppStorageOpen storage ds = diamondStorage(); 
 		MarketData memory marketData = ds.indMarketData[_loanMarket];
-		require(marketData.minAmount <= _amount, "ERROR: Less than minimum deposit");
+		require(marketData.minAmount <= _amount, "ERROR: Less than minimum amount");
 	}
 
 	// function _quantifyAmount(bytes32 _loanMarket, uint _amount) internal view returns (uint amount) {
