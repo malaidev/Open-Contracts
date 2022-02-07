@@ -116,7 +116,7 @@ describe(" Complex Test ", function () {
     // // })
 
     it("Check Deposit", async () => {
-        const depositAmount = "500000000000000000000";
+        const depositAmount = "5000000000000000000000";
 
         // USDT
 
@@ -194,29 +194,30 @@ describe(" Complex Test ", function () {
 
     })
 
-    // it("Check addCollateral", async () => {
-    //     await expect(loanExt.connect(accounts[1]).addCollateral(symbolUsdt, comit_ONEMONTH, symbolUsdt, 0x100, {gasLimit: 5000000}))
-    //         .to.emit(loanExt, "AddCollateral")
-    //     expect(await bepUsdt.balanceOf(accounts[1].address)).to.equal(0xfb00)
-    //     expect(await reserve.avblMarketReserves(symbolUsdt)).to.equal(0x300)
-    //     console.log("after addCollateral isReentrant is ", await loanExt.GetisReentrant());
-    // })
+    it("Check addCollateral", async () => {
+        
+        const collateralAmount = "700000000000000000000"
+        await bepUsdc.connect(accounts[1]).approve(diamondAddress, collateralAmount);
+        await expect(loan.connect(accounts[1]).addCollateral(symbolUsdc, comit_ONEMONTH, symbolUsdc, collateralAmount, {gasLimit: 5000000}))
+            .to.emit(loan, "AddCollateral")
+    })
 
-    // it("Check repayLoan", async () => {
-    //     console.log(await reserve.avblMarketReserves(symbolUsdt))
-	//     await (loan.connect(accounts[1]).repayLoan(symbolUsdt, comit_ONEMONTH, 0x100, {gasLimit: 5000000}));
-    //     console.log(await reserve.avblMarketReserves(symbolUsdt))
-    //     console.log("after repayLoan isReentrant is ", await loanExt.GetisReentrant());
-	// })
+   
 
     // it("Check withdrawCollateral", async () => {
     //     console.log(await bepUsdt.balanceOf(accounts[1].address))
-    //     console.log("before withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
-    //     await expect(loan.connect(accounts[1]).withdrawCollateral(symbolUsdt, comit_ONEMONTH, {gasLimit: 5000000}))
+    //     await expect(loan.connect(accounts[1]).withdrawCollateral(symbolUsdc, comit_ONEMONTH, {gasLimit: 5000000}))
     //         .emit(loan, "CollateralReleased")
     //     console.log(await bepUsdt.balanceOf(accounts[1].address))
-    //     console.log("after withdrawCollateral isReentrant is ", await loanExt.GetisReentrant());
     // })
+
+    // it("Check repayLoan", async () => {
+    //     const repayAmount = "300000000000000000000"
+
+    //     console.log(await reserve.avblMarketReserves(symbolUsdc))
+	//     await (loan.connect(accounts[1]).repayLoan(symbolUsdc, comit_ONEMONTH, repayAmount, {gasLimit: 5000000}));
+    //     console.log(await reserve.avblMarketReserves(symbolUsdc))
+	// })
 
     it("Check liquidation", async () => {
         await bepUsdt.connect(accounts[1]).approve(diamondAddress, "50000000000000000000000000");
