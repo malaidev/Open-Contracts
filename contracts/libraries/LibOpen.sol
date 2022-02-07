@@ -620,7 +620,6 @@ library LibOpen {
 		// ( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
 		// return uint256(price);
 
-
 		// Get price from pool with USDC
 		AppStorageOpen storage ds = diamondStorage(); 
 		address[] memory path;
