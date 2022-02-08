@@ -135,6 +135,7 @@ contract Deposit is Pausable, IDeposit{
 
 		uint _savingsBalance = savingsBalance(_market, _commitment, _request);
 		require(_amount <= _savingsBalance, "Insufficient balance"); // Dinh modified
+		
 		if (_commitment == LibOpen._getCommitment(0))	{
 			updateSavingsBalance(msg.sender, _market, _commitment, _amount, _request);
 		}
