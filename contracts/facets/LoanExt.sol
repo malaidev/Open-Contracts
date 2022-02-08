@@ -265,7 +265,7 @@ function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount)
 		_pause();
 	}
 	
-	function unpauseLoanExt() external override authLoanExt() nonReentrant() {
+function unpauseLoanExt() external override authLoanExt() nonReentrant() {
 		_unpause();   
 	}
 
