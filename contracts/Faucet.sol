@@ -8,10 +8,10 @@ interface BEP20 {
 
 contract Faucet {
     
-    BEP20 public usdtInstance;
-    BEP20 public usdcInstance;
-    BEP20 public btcInstance;
-    BEP20 public wBnbInstance;
+    // BEP20 public usdtInstance;
+    // BEP20 public usdcInstance;
+    // BEP20 public btcInstance;
+    // BEP20 public wBnbInstance;
 
     uint num = 0;
 
@@ -30,21 +30,20 @@ contract Faucet {
     event TokensIssued(BEP20 indexed token, address indexed account, uint indexed amount, uint  time);
 
     constructor(address tUSDT, address tUSDC, address tBTC, address tBNB) {
-        _updateTokens(usdtInstance, tUSDT, 10000000000000000000000); // 10000 USDT
-        _updateTokens(usdcInstance, tUSDC, 10000000000000000000000); // 10000 USDC
-        _updateTokens(btcInstance, tBTC, 500000000); // 5 BTC
-        _updateTokens(wBnbInstance, tBNB, 100000000000000000000);   // 100 BNB
+        _updateTokens(tUSDT, 10000000000000000000000); // 10000 USDT
+        _updateTokens(tUSDC, 10000000000000000000000); // 10000 USDC
+        _updateTokens(tBTC, 500000000); // 5 BTC
+        _updateTokens(tBNB, 100000000000000000000);   // 100 BNB
     }
 
     /// UPDATE TOKENS
-    function _updateTokens(BEP20 _tokenInstance, address _token,uint _amount) private {
+    function _updateTokens(address _token,uint _amount) private {
         require(_token != address(0), "ERROR: Zero address");
-        _tokenInstance = BEP20(_token);
 
         TokenLedger storage td = tokens[num];
-        td.token = _tokenInstance; // token pointer
+        td.token = BEP20(_token); // token pointer
         td.amount = _amount; // drip amount
-        td.balance = _tokenInstance.balanceOf(address(this)); // Faucet balance
+        td.balance = BEP20(_token).balanceOf(address(this)); // Faucet balance
 
         num++;
     }
@@ -54,17 +53,16 @@ contract Faucet {
         require(_account != address(0), "ERROR: Zero address");
         
         TokenLedger storage td = tokens[_index];
-        BEP20 tokenInstance = td.token;
 
-        require(tokenInstance.balanceOf(address(this)) >= td.amount, "ERROR: Insufficient balance");
-        require(airdropRecords[_account][tokenInstance] <= block.timestamp, "ERROR: Active timelock");
+        require(td.token.balanceOf(address(this)) >= td.amount, "ERROR: Insufficient balance");
+        require(airdropRecords[_account][td.token] <= block.timestamp, "ERROR: Active timelock");
 
-        tokenInstance.transfer(msg.sender, td.amount);
+        td.token.transfer(msg.sender, td.amount);
         td.balance -= td.amount;
 
-        airdropRecords[_account][tokenInstance] = block.timestamp + waitTime;
+        airdropRecords[_account][td.token] = block.timestamp + waitTime;
 
-        emit TokensIssued(tokenInstance, _account, td.amount, block.timestamp);
+        emit TokensIssued(td.token, _account, td.amount, block.timestamp);
         return success = true;
     }
 
