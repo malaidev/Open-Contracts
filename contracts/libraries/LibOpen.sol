@@ -677,8 +677,8 @@ library LibOpen {
 		// CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];		
 		
 		require(diamondStorage().indLoanRecords[_sender][_market][_commitment].id != 0,"ERROR: No Loan");
-		_isMarketSupported(_market);
 		
+		_isMarketSupported(_market);
 		_accruedInterest(_sender, _market, _commitment);
 		_accruedYield(diamondStorage().loanPassbook[_sender], diamondStorage().indCollateralRecords[_sender][_market][_commitment], diamondStorage().indAccruedAPY[_sender][_market][_commitment]);
 
