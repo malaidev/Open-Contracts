@@ -27,7 +27,7 @@ contract Faucet {
     mapping(uint => TokenLedger) tokens; // token id => token ledger.
     
     mapping(address => mapping(BEP20 => uint)) airdropRecords; // Address to token to amount of tokens to drip.
-    event TokensIssued(BEP20 token, address indexed account);
+    event TokensIssued(BEP20 indexed token, address indexed account, uint indexed amount, uint  time);
 
     constructor(address tUSDT, address tUSDC, address tBTC, address tBNB) {
         _updateTokens(usdtInstance, tUSDT, 10000000000000000000000); // 10000 USDT
@@ -61,9 +61,10 @@ contract Faucet {
 
         tokenInstance.transfer(msg.sender, td.amount);
         td.balance -= td.amount;
-        
+
         airdropRecords[_account][tokenInstance] = block.timestamp + waitTime;
 
+        emit TokensIssued(tokenInstance, _account, td.amount, block.timestamp);
         return success = true;
     }
 
