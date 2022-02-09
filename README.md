@@ -17,7 +17,7 @@ the [faucet](https://testnet.binance.org/faucet-smart).
 Open your terminal and follow the steps
 
 ```
-$ git clone -b review https://github.com/0xHashstack/Open-protocol
+$ git clone -b development https://github.com/0xHashstack/Open-protocol
 ```
 After the repository is cloned
 
@@ -84,3 +84,4 @@ node scripts/sample-script.js
 npx hardhat help
 ```
 
+Open protocol's source code is secured under Business Source License [Read more](https://github.com/0xHashstack/Open-contracts/blob/release-v0.1.2/LICENSE.md)

@@ -21,7 +21,6 @@ contract OracleOpen is Pausable, IOracleOpen {
 		payable(LibOpen.upgradeAdmin()).transfer(msg.value);
 	}
 
-
 	function getLatestPrice(bytes32 _market) external view override returns (uint) {    
 		return LibOpen._getLatestPrice(_market);
 	}

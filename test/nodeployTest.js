@@ -14,7 +14,7 @@ const {deployDiamond}= require('../scripts/deploy_all.js')
 const {addMarkets}= require('../scripts/deploy_all.js')
 const { provideLiquidity } = require("../scripts/deploy_all.js");
 
-describe(" Complex Test ", function () {
+describe(" Test with deployed diamond ", function () {
     let diamondAddress
 	let diamondCutFacet
 	let diamondLoupeFacet
@@ -55,9 +55,7 @@ describe(" Complex Test ", function () {
 		upgradeAdmin = accounts[0]
 		console.log("account1 is ", accounts[1].address)
 		
-		diamondAddress = await deployDiamond()
-		rets = await addMarkets(diamondAddress)
-        await provideLiquidity(rets)
+		diamondAddress = "0x130aE5bAaD51baAcfa9DBEa9D5ee318667d05921"
 
 		diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
 		diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
@@ -72,11 +70,11 @@ describe(" Complex Test ", function () {
 		liquidator = await ethers.getContractAt('Liquidator', diamondAddress)
 		reserve = await ethers.getContractAt('Reserve', diamondAddress)
 
-		bepUsdt = await ethers.getContractAt('BEP20Token', rets['tUsdtAddress'])
-		bepBtc = await ethers.getContractAt('BEP20Token', rets['tBtcAddress'])
-		bepUsdc = await ethers.getContractAt('BEP20Token', rets['tUsdcAddress'])
-        bepWbnb = await ethers.getContractAt('BEP20Token', rets['tUsdcAddress'])
-        bepCake = await ethers.getContractAt('BEP20Token', rets['tCakeAddress'])
+		bepUsdt = await ethers.getContractAt('BEP20Token', "0xed75B7352ED8593409f24C98B11625156d5fd29d")
+		bepBtc = await ethers.getContractAt('BEP20Token', "0x7E8f71849997ccd4dAF18c88988d05c3C26B7316")
+		bepUsdc = await ethers.getContractAt('BEP20Token', "0x4c567834cFc2f2873c130760A0883d6c88087733")
+        bepWbnb = await ethers.getContractAt('BEP20Token', "0x6c33ae96A928E342C906E5a12027ea5B1104Ef8D")
+        bepCake = await ethers.getContractAt('BEP20Token', "0x43F06A3D225506201a4067c4fD6d2bB2D07fBC8D")
 	})
 
     it('should have three facets -- call to facetAddresses function', async () => {

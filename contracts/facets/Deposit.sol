@@ -9,8 +9,8 @@ import "hardhat/console.sol";
 
 contract Deposit is Pausable, IDeposit{
 		
-	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
-	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId);
+	event NewDeposit(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
+	event DepositAdded(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount, uint256 depositId, uint time);
 	event YieldDeposited(address indexed account,bytes32 indexed market,bytes32 commitment,uint256 indexed amount);
 	event Withdrawal(address indexed account, bytes32 indexed market, uint indexed amount, bytes32 commitment, uint timestamp);
 	
@@ -135,6 +135,7 @@ contract Deposit is Pausable, IDeposit{
 
 		uint _savingsBalance = savingsBalance(_market, _commitment, _request);
 		require(_amount <= _savingsBalance, "Insufficient balance"); // Dinh modified
+		
 		if (_commitment == LibOpen._getCommitment(0))	{
 			updateSavingsBalance(msg.sender, _market, _commitment, _amount, _request);
 		}
@@ -164,7 +165,7 @@ contract Deposit is Pausable, IDeposit{
 
         processDeposit(msg.sender, _market, _commitment, _amount);
         LibOpen._updateReservesDeposit(_market, _amount, 0);
-        emit DepositAdded(msg.sender, _market, _commitment, _amount, ds.indDepositRecord[msg.sender][_market][_commitment].id);
+        emit DepositAdded(msg.sender, _market, _commitment, _amount, ds.indDepositRecord[msg.sender][_market][_commitment].id, block.timestamp);
 
         return true;
     }
@@ -184,7 +185,7 @@ contract Deposit is Pausable, IDeposit{
 
         processNewDeposit(_market, _commitment, _amount, savingsAccount, deposit, yield);
         LibOpen._updateReservesDeposit(_market, _amount, 0);
-        emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id);
+        emit NewDeposit(_sender, _market, _commitment, _amount, deposit.id, block.timestamp);
     }
 	
 	function processDeposit(
