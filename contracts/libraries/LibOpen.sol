@@ -925,8 +925,8 @@ library LibOpen {
 		cToken = IBEP20(_connectMarket(collateral.market));
 		cToken.transfer(_sender, collateral.amount);
 
-		_updateUtilisationLoan(loan.market, loan.amount, 1);
 		emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
+		_updateUtilisationLoan(loan.market, loan.amount, 1);
     }
 
 	function _swapToLoan(
