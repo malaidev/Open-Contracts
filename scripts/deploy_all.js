@@ -292,7 +292,7 @@ async function addMarkets(diamondAddress) {
 
   addrAccount1 = await accounts[1].getAddress();
   console.log("Addr acc 1", addrAccount1);
-  await faucet.connect(accounts[1]).getTokens(addrAccount1, 0);
+  await faucet.connect(accounts[1]).getTokens(0);
   console.log(
     "Transfer funds to account1",
     await tusdt.balanceOf(addrAccount1)
