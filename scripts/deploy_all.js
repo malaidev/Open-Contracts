@@ -289,6 +289,15 @@ async function addMarkets(diamondAddress) {
     console.log("1200000 twbnb transfered to faucet. Token being :", tWBNBAddress)
     console.log(await twbnb.balanceOf(faucet.address));
 
+
+  addrAccount1 = await accounts[1].getAddress();
+  console.log("Addr acc 1", addrAccount1);
+  await faucet.connect(accounts[1]).getTokens(addrAccount1, 0);
+  console.log(
+    "Transfer funds to account1",
+    await tusdt.balanceOf(addrAccount1)
+  );
+
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
 
 }
