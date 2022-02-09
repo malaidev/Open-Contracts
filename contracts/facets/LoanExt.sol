@@ -243,19 +243,68 @@ contract LoanExt is Pausable, ILoanExt {
 		require (usdLoan/usdCollateral <= loanByCollateral, "ERROR: Exceeds permissible CDR");
 	}
 
-	function liquidation(address account, uint256 id) external override authLoanExt() nonReentrant() returns (bool) {
+	function liquidation(address account, bytes32 _market, bytes32 _commitment) external override authLoanExt() nonReentrant() returns (bool success) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-        
-		bytes32 commitment = ds.loanPassbook[account].loans[id-1].commitment;
-		bytes32 loanMarket = ds.loanPassbook[account].loans[id-1].market;
 
-		LoanRecords storage loan = ds.indLoanRecords[account][loanMarket][commitment];
-		
-		LibOpen._repayLoan(account, loanMarket, commitment, 0);
+		LoanAccount storage loanAccount = ds.loanPassbook[account];
+		LoanState storage loanState = ds.indLoanState[account][_market][_commitment];
+		LoanRecords storage loan = ds.indLoanRecords[account][_market][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[account][_market][_commitment];
+		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[account][_market][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[account][_market][_commitment];
 
-		emit Liquidation(account,loanMarket, commitment, loan.amount, block.timestamp);
-		return true;
+		uint num = loan.id;
+
+		uint256 remnantAmount= LibOpen._repaymentProcess(
+			loan.id - 1,
+			0, 
+			loanAccount,
+			loan,
+			loanState,
+			collateral,
+			deductibleInterest,
+			cYield
+		);
+
+		/// UPDATING THE RESERVES
+		LibOpen._updateReservesLoan(loan.market, remnantAmount,0);
+		LibOpen._updateReservesDeposit(collateral.market, collateral.amount,1);
+		emit Liquidation(account,_market, _commitment, loan.amount, block.timestamp);
+
+		/// DELETING THE LOAN ENTRIES
+		/// COLLATERAL RECORDS
+		delete collateral.id;
+		delete collateral.market;
+		delete collateral.commitment;
+		delete collateral.amount;
+		delete collateral.isCollateralisedDeposit;
+		delete collateral.timelockValidity;
+		delete collateral.isTimelockActivated;
+		delete collateral.activationTime;
+
+		/// LOAN RECORDS
+		delete loan.id;
+		delete loan.market;
+		delete loan.commitment;
+		delete loan.amount;
+		delete loan.isSwapped;
+		delete loan.lastUpdate;
+
+		/// LOAN STATE
+		delete loanState.id;
+		delete loanState.loanMarket;
+		delete loanState.actualLoanAmount;
+		delete loanState.currentMarket;
+		delete loanState.currentAmount;
+		delete loanState.state;
+
+		/// LOAN ACCOUNT
+		delete loanAccount.loans[num];
+		delete loanAccount.collaterals[num];
+		delete loanAccount.loanState[num];
+
+		return success=true;
 	}
 
 

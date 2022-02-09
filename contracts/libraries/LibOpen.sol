@@ -607,7 +607,7 @@ library LibOpen {
 		CollateralRecords storage collateral,
 		DeductibleInterest storage deductibleInterest,
 		CollateralYield storage cYield
-	) private returns(uint256) {
+	) internal returns(uint256) {
         // AppStorageOpen storage ds = diamondStorage(); 
 		
 		bytes32 _commitment = loan.commitment;
@@ -651,19 +651,19 @@ library LibOpen {
 		delete cYield.accruedYield;
 
 
-		/// UPDATING CollateralRecords
-		collateral.isCollateralisedDeposit = false;
-		collateral.isTimelockActivated = true;
-		collateral.activationTime = block.timestamp;
+		// /// UPDATING CollateralRecords
+		// collateral.isCollateralisedDeposit = false;
+		// collateral.isTimelockActivated = true;
+		// collateral.activationTime = block.timestamp;
 
 		
 		/// UPDATING RECORDS IN LOANACCOUNT
 		delete loanAccount.accruedAPR[num];
 		delete loanAccount.accruedAPY[num];
 
-		loanAccount.collaterals[num].isCollateralisedDeposit = false;
-		loanAccount.collaterals[num].activationTime = block.timestamp;
-		loanAccount.collaterals[num].isTimelockActivated = true;
+		// loanAccount.collaterals[num].isCollateralisedDeposit = false;
+		// loanAccount.collaterals[num].activationTime = block.timestamp;
+		// loanAccount.collaterals[num].isTimelockActivated = true;
 		
 		return _remnantAmount;
 	}
@@ -883,6 +883,10 @@ library LibOpen {
 			
 			/// UPDATING COLLATERAL AMOUNT IN STORAGE
 			loanAccount.collaterals[loan.id-1].amount = collateral.amount;
+
+			collateral.isCollateralisedDeposit = false;
+			collateral.isTimelockActivated = true;
+			collateral.activationTime = block.timestamp;
 			
 			/// UPDATING LoanRecords
 			delete loan.market;
@@ -910,6 +914,10 @@ library LibOpen {
 			delete loanAccount.loanState[loan.id-1].currentMarket;
 			delete loanAccount.loanState[loan.id-1].currentAmount;
 			loanAccount.loanState[loan.id-1].state = STATE.REPAID;
+
+			loanAccount.collaterals[loan.id-1].isCollateralisedDeposit = false;
+			loanAccount.collaterals[loan.id-1].activationTime = block.timestamp;
+			loanAccount.collaterals[loan.id-1].isTimelockActivated = true;
 			
 		}
 
@@ -1133,7 +1141,6 @@ library LibOpen {
 		uint balance = token.balanceOf(address(this));
 
 		require(balance >= (_marketReserves(_market) - _marketUtilisation(_market)), "ERROR: Reserve imbalance");
-
 		require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "ERROR: Mathematical error");
 
 		if (balance > (_marketReserves(_market) - _marketUtilisation(_market))) {
