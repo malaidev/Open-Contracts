@@ -33,7 +33,6 @@ contract LoanExt is Pausable, ILoanExt {
 		uint256 time
 	);
 
-
 	constructor() {
 		
 	}
@@ -103,6 +102,7 @@ contract LoanExt is Pausable, ILoanExt {
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[msg.sender][_loanMarket][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
+		// STATE storage state = ds.STATE;
 
 		// Updating loanRecords
 		loan.id = loanAccount.loans.length + 1;
@@ -124,7 +124,8 @@ contract LoanExt is Pausable, ILoanExt {
 		loanState.actualLoanAmount = _loanAmount;
 		loanState.currentMarket = _loanMarket;
 		loanState.currentAmount = _loanAmount;
-		loanState.state = uint(STATE.ACTIVE);
+		loanState.state = STATE.ACTIVE;
+		// loanState.state = ds.state.ACTIVE);
 
 		collateral.id= loan.id;
 		collateral.market= _collateralMarket;
@@ -242,30 +243,47 @@ contract LoanExt is Pausable, ILoanExt {
 		require (usdLoan/usdCollateral <= loanByCollateral, "ERROR: Exceeds permissible CDR");
 	}
 
-	function liquidation(address _account, uint256 _id) external override authLoanExt() nonReentrant() returns (bool) {
+	function liquidation(address account, uint256 id) external override authLoanExt() nonReentrant() returns (bool) {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
         
-		bytes32 _commitment = ds.loanPassbook[_account].loans[_id-1].commitment;
-		bytes32 _loanMarket = ds.loanPassbook[_account].loans[_id-1].market;
+		bytes32 commitment = ds.loanPassbook[account].loans[id-1].commitment;
+		bytes32 loanMarket = ds.loanPassbook[account].loans[id-1].market;
 
-		LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
+		LoanRecords storage loan = ds.indLoanRecords[account][loanMarket][commitment];
 		
-		LibOpen._repayLoan(_account, _loanMarket, _commitment, 0);
-		emit Liquidation(_account,_loanMarket, _commitment, loan.amount, block.timestamp);
+		LibOpen._repayLoan(account, loanMarket, commitment, 0);
+
+		emit Liquidation(account,loanMarket, commitment, loan.amount, block.timestamp);
 		return true;
 	}
 
 
-function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool) {
+	// function liquidation(address account, uint256 id) external override authLoanExt() nonReentrant() returns (bool) {
+		
+	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+        
+	// 	bytes32 commitment = ds.loanPassbook[account].loans[id-1].commitment;
+	// 	bytes32 loanMarket = ds.loanPassbook[account].loans[id-1].market;
+
+	// 	LoanRecords storage loan = ds.indLoanRecords[account][loanMarket][commitment];
+		
+	// 	LibOpen._repayLoan(account, loanMarket, commitment, 0);
+
+	// 	emit Liquidation(account,loanMarket, commitment, loan.amount, block.timestamp);
+	// 	return true;
+	// }
+
+
+	function repayLoan(bytes32 _loanMarket,bytes32 _commitment,uint256 _repayAmount) external override nonReentrant() returns (bool) {
 		LibOpen._repayLoan(msg.sender, _loanMarket, _commitment, _repayAmount);
 		return true;
 	}
 	function pauseLoanExt() external override authLoanExt() nonReentrant() {
 		_pause();
 	}
-	
-function unpauseLoanExt() external override authLoanExt() nonReentrant() {
+		
+	function unpauseLoanExt() external override authLoanExt() nonReentrant() {
 		_unpause();   
 	}
 
@@ -273,8 +291,8 @@ function unpauseLoanExt() external override authLoanExt() nonReentrant() {
 		return _paused();
 	}
 
-    modifier authLoanExt() {
-    	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+	modifier authLoanExt() {
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		require(IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.superAdmin, msg.sender) || IAccessRegistry(ds.superAdminAddress).hasAdminRole(ds.adminLoanExt, msg.sender), "ERROR: Not an admin");
 
 		_;
