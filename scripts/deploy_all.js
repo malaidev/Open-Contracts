@@ -269,22 +269,25 @@ async function addMarkets(diamondAddress) {
     // console.log(`admin balance is , ${await tbtc.balanceOf(admin_)}`);
     
 
-    /*const Faucet = await ethers.getContractFactory("Faucet");
+    const Faucet = await ethers.getContractFactory("Faucet");
     const faucet = await Faucet.deploy(tUsdtAddress,tUsdcAddress,tBtcAddress,tWBNBAddress)
     console.log("Faucet deployed at ", faucet.address)
 
     await tusdt.transfer(faucet.address,"3000000000000000000000000000")
-    console.log("3000000000 Usdt transfered to faucet. Token being :", tUsdtAddress)
+    console.log("3000000000 tusdt transfered to faucet. Token being :", tUsdtAddress)
+    console.log(await tusdt.balanceOf(faucet.address));
 
     await tusdc.transfer(faucet.address,"3000000000000000000000000000")
     console.log("3000000000 tusdc transfered to faucet. Token being :", tUsdcAddress)
+    console.log(await tusdc.balanceOf(faucet.address));
 
-    await tbtc.transfer(faucet.address,630000000000000)
+    await tbtc.transfer(faucet.address,"630000000000000")
     console.log("6300000 tbtc transfered to faucet. Token being :", tBtcAddress)
+    console.log(await tbtc.balanceOf(faucet.address));
 
     await twbnb.transfer(faucet.address,"1200000000000000000000000")
     console.log("1200000 twbnb transfered to faucet. Token being :", tWBNBAddress)
-    console.log(await twbnb.balanceOf(faucet.address));*/
+    console.log(await twbnb.balanceOf(faucet.address));
 
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
 
