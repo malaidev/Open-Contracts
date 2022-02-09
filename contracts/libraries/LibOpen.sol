@@ -34,7 +34,7 @@ library LibOpen {
 	// address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 
-	enum STATE {ACTIVE,REPAID}
+	// enum STATE {ACTIVE,REPAID}
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
 // =========== Liquidator events ===============
@@ -506,6 +506,8 @@ library LibOpen {
 		ds.token = IBEP20(_connectMarket(collateralMarket));
         ds.token.transfer(_account, collateralAmount);
 	}
+
+	/// WITHDRAW COLLATERAL
 	function _withdrawCollateral(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
         AppStorageOpen storage ds = diamondStorage(); 
         LoanAccount storage loanAccount = ds.loanPassbook[_account];
@@ -546,9 +548,9 @@ library LibOpen {
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
 		//require(loan.id !=0, "ERROR: No Loan");
-		require(loanState.state == uint(STATE.REPAID), "ERROR: Active loan");
+		require(loanState.state == STATE.REPAID, "ERROR: Active loan");
 		//if (_commitment != _getCommitment(0)) {
-			require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
+		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
 		//}		
 		collateralMarket = collateral.market;
 		collateralAmount = collateral.amount;
@@ -566,7 +568,7 @@ library LibOpen {
 		loanState.currentMarket = _market;
 		loanState.currentAmount = 0;
 		loanState.actualLoanAmount = 0;
-		loanState.state = uint(STATE.REPAID);
+		loanState.state = STATE.REPAID;
 
 		collateral.isCollateralisedDeposit = false;
 		collateral.isTimelockActivated = true;
@@ -585,7 +587,7 @@ library LibOpen {
 		loanAccount.loanState[num].currentMarket = _market;
 		loanAccount.loanState[num].currentAmount = 0;
 		loanAccount.loanState[num].actualLoanAmount = 0;
-		loanAccount.loanState[num].state = uint(STATE.REPAID);
+		loanAccount.loanState[num].state = STATE.REPAID;
 		
 		loanAccount.collaterals[num].isCollateralisedDeposit = false;
 		loanAccount.collaterals[num].isTimelockActivated = true;
@@ -597,7 +599,7 @@ library LibOpen {
 	}
 
 	function _repaymentProcess(
-		address _account,
+		uint256 num,
 		uint256 _repayAmount,
 		LoanAccount storage loanAccount,
 		LoanRecords storage loan,
@@ -605,200 +607,326 @@ library LibOpen {
 		CollateralRecords storage collateral,
 		DeductibleInterest storage deductibleInterest,
 		CollateralYield storage cYield
-	) private {
-        AppStorageOpen storage ds = diamondStorage(); 
+	) internal returns(uint256) {
+        // AppStorageOpen storage ds = diamondStorage(); 
 		
 		bytes32 _commitment = loan.commitment;
-		uint256 num = loan.id - 1;
+		uint256 _remnantAmount = 0;
+		uint256 _collateralAmount = 0;
 		
-		// convert collateral into loan market to add to the repayAmount
-		uint256 collateralAmount = collateral.amount - (deductibleInterest.accruedInterest + cYield.accruedYield);
-		_repayAmount += _swap(_account, collateral.market,loan.market,collateralAmount,2);
+		/// convert collateral into loan market to add to the repayAmount
+		_collateralAmount = collateral.amount - deductibleInterest.accruedInterest;
+		if (_commitment == _getCommitment(2)) _collateralAmount += cYield.accruedYield;
 
+		_repayAmount += _swap(address(this), collateral.market, loan.market, _collateralAmount, 2);
 		console.log("repay amount is %s, loanAmount is %s", _repayAmount, loan.amount);
+		
+		if(_repayAmount >= loan.amount) _remnantAmount += (_repayAmount - loan.amount);
+		else {
+			if (loanState.currentMarket == loanState.loanMarket)	_repayAmount += loanState.currentAmount;
+			else if (loanState.currentMarket != loanState.loanMarket)	_repayAmount += _swap(address(this), loanState.currentMarket, loanState.loanMarket, loanState.currentAmount, 2);
+			
+			_remnantAmount += (_repayAmount - loan.amount);
+		}
 
-		require(_repayAmount >= loan.amount, "Repay Amount is smaller than loan Amount");
 
-		// Excess amount is tranferred back to the collateral record
-		uint256 _remnantAmount = _repayAmount - loan.amount;
-		collateral.amount = _swap(_account, loan.market,collateral.market,_remnantAmount,2);
+		// delete diamondStorage().indAccruedAPR[_account][loan.market][loan.commitment];
+		// delete diamondStorage().indAccruedAPY[_account][loan.market][loan.commitment];
+		/// STACK DEEP ERRRO [Above 2 lines]
+		
+		/// DELETING DeductibleInterest
+		delete deductibleInterest.id;
+		delete deductibleInterest.market;
+		delete deductibleInterest.oldLengthAccruedInterest;
+		delete deductibleInterest.oldTime;
+		delete deductibleInterest.accruedInterest;
 
-		/// updating LoanRecords
-		loan.amount = 0;
-		loan.isSwapped = false;
-		loan.lastUpdate = block.timestamp;
-		/// updating LoanState
-		loanState.actualLoanAmount = 0;
-		loanState.currentAmount = 0;
-		loanState.state = uint(STATE.REPAID);
 
-		delete ds.indAccruedAPR[_account][loan.market][loan.commitment];
-		delete ds.indAccruedAPY[_account][loan.market][loan.commitment];
+		/// DELETING CollateralYield
+		delete cYield.id;
+		delete cYield.market;
+		delete cYield.commitment;
+		delete cYield.oldLengthAccruedYield;
+		delete cYield.oldTime;
+		delete cYield.accruedYield;
 
+
+		// /// UPDATING CollateralRecords
+		// collateral.isCollateralisedDeposit = false;
+		// collateral.isTimelockActivated = true;
+		// collateral.activationTime = block.timestamp;
+
+		
+		/// UPDATING RECORDS IN LOANACCOUNT
 		delete loanAccount.accruedAPR[num];
 		delete loanAccount.accruedAPY[num];
+
+		// loanAccount.collaterals[num].isCollateralisedDeposit = false;
+		// loanAccount.collaterals[num].activationTime = block.timestamp;
+		// loanAccount.collaterals[num].isTimelockActivated = true;
 		
-		emit LoanRepaid(_account, loan.id, loan.market, block.timestamp);
+		return _remnantAmount;
+	}
+
+	// function _repaymentProcess(
+	// 	address _account,
+	// 	uint256 _repayAmount,
+	// 	LoanAccount storage loanAccount,
+	// 	LoanRecords storage loan,
+	// 	LoanState storage loanState,
+	// 	CollateralRecords storage collateral,
+	// 	DeductibleInterest storage deductibleInterest,
+	// 	CollateralYield storage cYield
+	// ) private {
+    //     AppStorageOpen storage ds = diamondStorage(); 
+		
+	// 	bytes32 _commitment = loan.commitment;
+	// 	uint256 num = loan.id - 1;
+		
+	// 	// convert collateral into loan market to add to the repayAmount
+	// 	uint256 collateralAmount = collateral.amount - (deductibleInterest.accruedInterest + cYield.accruedYield);
+	// 	_repayAmount += _swap(_account, collateral.market,loan.market,collateralAmount,2);
+	// 	console.log("repay amount is %s, loanAmount is %s", _repayAmount, loan.amount);
+
+	// 	require(_repayAmount >= loan.amount, "Repay Amount is smaller than loan Amount");
+
+	// 	// Excess amount is tranferred back to the collateral record
+	// 	uint256 _remnantAmount = _repayAmount - loan.amount;
+	// 	collateral.amount = _swap(_account, loan.market,collateral.market,_remnantAmount,2);
+
+	// 	/// updating LoanRecords
+	// 	loan.amount = 0;
+	// 	loan.isSwapped = false;
+	// 	loan.lastUpdate = block.timestamp;
+		
+	// 	/// updating LoanState
+	// 	loanState.actualLoanAmount = 0;
+	// 	loanState.currentAmount = 0;
+	// 	loanState.state = uint(STATE.REPAID);
+
+	// 	delete ds.indAccruedAPR[_account][loan.market][loan.commitment];
+	// 	delete ds.indAccruedAPY[_account][loan.market][loan.commitment];
+
+	// 	delete loanAccount.accruedAPR[num];
+	// 	delete loanAccount.accruedAPY[num];
+		
+	// 	emit LoanRepaid(_account, loan.id, loan.market, block.timestamp);
+
+	// 	if (_commitment == _getCommitment(2)) {
+	// 		/// updating CollateralRecords
+	// 		collateral.isCollateralisedDeposit = false;
+	// 		collateral.isTimelockActivated = true;
+	// 		collateral.activationTime = block.timestamp;
+
+	// 	} else if (_commitment == _getCommitment(0)) {
+	// 		/// transfer collateral.amount from the Diamond contract to the _sender
+	// 		ds.collateralToken = IBEP20(_connectMarket(collateral.market));
+	// 		ds.collateralToken.transfer(loanAccount.account, collateral.amount);
+			
+	// 		delete ds.indCollateralRecords[_account][loan.market][loan.commitment];
+	// 		delete ds.indLoanState[_account][loan.market][loan.commitment];
+	// 		delete ds.indLoanRecords[_account][loan.market][loan.commitment];
+
+	// 		delete loanAccount.collaterals[num];
+	// 		delete loanAccount.loanState[num];
+	// 		delete loanAccount.loans[num];
+
+	// 		_updateReservesLoan(collateral.market, collateral.amount, 1);
+	// 		emit CollateralReleased(_account,collateral.amount,collateral.market,block.timestamp);
+	// 	}
+	// }
+
+	// function _repayLoan(address _sender, bytes32 _market,bytes32 _commitment,uint256 _repayAmount) internal authContract(LOAN_ID) {
+    //     _hasLoanAccount(_sender);
+		
+	// 	// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
+	// 	// LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
+	// 	// CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
+	// 	// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
+	// 	// CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];		
+		
+	// 	require(diamondStorage().indLoanRecords[_sender][_market][_commitment].id != 0,"ERROR: No Loan");
+		
+	// 	_isMarketSupported(_market);
+	// 	_accruedInterest(_sender, _market, _commitment);
+	// 	_accruedYield(diamondStorage().loanPassbook[_sender], diamondStorage().indCollateralRecords[_sender][_market][_commitment], diamondStorage().indAccruedAPY[_sender][_market][_commitment]);
+
+	// 	if (_repayAmount == 0) {
+			
+	// 		/// converting the current market into loanMarket for repayment.
+	// 		if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market)	_repayAmount = diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
+	// 		else if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket != _market)	_repayAmount = _swap(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _market,diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount, 1);
+			
+	// 		_repaymentProcess(
+	// 			_sender,
+	// 			_repayAmount, 
+	// 			diamondStorage().loanPassbook[_sender],
+	// 			diamondStorage().indLoanRecords[_sender][_market][_commitment],
+	// 			diamondStorage().indLoanState[_sender][_market][_commitment],
+	// 			diamondStorage().indCollateralRecords[_sender][_market][_commitment],
+	// 			diamondStorage().indAccruedAPR[_sender][_market][_commitment], 
+	// 			diamondStorage().indAccruedAPY[_sender][_market][_commitment]);
+	// 	}
+	// 	else if (_repayAmount > 0) {
+	// 		/// transfering the repayAmount to the reserve contract.
+	// 		diamondStorage().loanToken = IBEP20(_connectMarket(_market));
+	// 		diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount += (diamondStorage().indAccruedAPY[_sender][_market][_commitment].accruedYield - diamondStorage().indAccruedAPR[_sender][_market][_commitment].accruedInterest);
+			
+	// 		uint256 _swappedAmount;
+	// 		uint256 _remnantAmount;
+
+	// 		if (_repayAmount >= diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
+	// 			_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
+
+	// 			if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market){
+	// 				_remnantAmount += diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
+	// 			}
+	// 			else {
+	// 				_swapToLoanProcess(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _commitment, _market, _swappedAmount);
+	// 				_repayAmount += _swappedAmount;
+	// 			}
+
+	// 			_updateDebtRecords(diamondStorage().loanPassbook[_sender],diamondStorage().indLoanRecords[_sender][_market][_commitment],diamondStorage().indLoanState[_sender][_market][_commitment],diamondStorage().indCollateralRecords[_sender][_market][_commitment]/*, deductibleInterest, cYield*/);
+	// 			diamondStorage().loanToken.transfer(diamondStorage().loanPassbook[_sender].account, _remnantAmount);
+
+	// 			emit LoanRepaid(_sender, diamondStorage().indLoanRecords[_sender][_market][_commitment].id, diamondStorage().indLoanRecords[_sender][_market][_commitment].market, block.timestamp);
+				
+	// 			if (_commitment == _getCommitment(0)) {
+	// 				/// transfer collateral.amount from reserve contract to the _sender
+	// 				// collateralToken = IBEP20(markets.connectMarket(collateral.market));
+	// 				_transferAnyBEP20(_connectMarket(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market), _sender, diamondStorage().loanPassbook[_sender].account,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount);
+
+	// 				delete diamondStorage().indLoanRecords[_sender][_market][_commitment];
+	// 				delete diamondStorage().indLoanState[_sender][_market][_commitment];
+	// 				delete diamondStorage().indCollateralRecords[_sender][_market][_commitment];
+
+
+	// 				delete diamondStorage().loanPassbook[_sender].loanState[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
+	// 				delete diamondStorage().loanPassbook[_sender].loans[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
+	// 				delete diamondStorage().loanPassbook[_sender].collaterals[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
+					
+	// 				_updateReservesLoan(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market, diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount, 1);
+	// 				emit CollateralReleased(_sender,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount,diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,block.timestamp);
+	// 			}
+	// 		} else if (_repayAmount < diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
+
+	// 			if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market)	_repayAmount += diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
+	// 			else if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket != _market) {
+	// 				_swapToLoanProcess(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _commitment, _market, _swappedAmount);
+	// 				_repayAmount += _swappedAmount;
+	// 			}
+				
+	// 			if (_repayAmount > diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
+	// 				_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
+	// 				diamondStorage().loanToken.transfer(diamondStorage().loanPassbook[_sender].account, _remnantAmount);
+	// 			} else if (_repayAmount <= diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
+					
+	// 				_repayAmount += _swap(_sender, diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,_market,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount, 1);
+	// 				// _repayAmount += _swapToLoanProcess(loanState.currentMarket, _commitment, _market);
+	// 				_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
+	// 				diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount += _swap(_sender, diamondStorage().indLoanRecords[_sender][_market][_commitment].market,diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,_remnantAmount, 2);
+	// 			}
+	// 			_updateDebtRecords(diamondStorage().loanPassbook[_sender],diamondStorage().indLoanRecords[_sender][_market][_commitment],diamondStorage().indLoanState[_sender][_market][_commitment],diamondStorage().indCollateralRecords[_sender][_market][_commitment]/*, deductibleInterest, cYield*/);
+				
+	// 			if (_commitment == _getCommitment(0)) {
+					
+	// 				// collateralToken = IBEP20(markets.connectMarket(collateral.market));
+	// 				_transferAnyBEP20(_connectMarket(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market), _sender, diamondStorage().loanPassbook[_sender].account, diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount);
+
+	// 				delete diamondStorage().indLoanRecords[_sender][_market][_commitment];
+	// 				delete diamondStorage().indLoanState[_sender][_market][_commitment];
+	// 				delete diamondStorage().indCollateralRecords[_sender][_market][_commitment];
+
+	// 				delete diamondStorage().loanPassbook[_sender].loanState[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
+	// 				delete diamondStorage().loanPassbook[_sender].loans[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
+	// 				delete diamondStorage().loanPassbook[_sender].collaterals[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
+					
+	// 				_updateReservesLoan(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market, diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount, 1);
+	// 				emit CollateralReleased(_sender,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount,diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,block.timestamp);
+	// 			}
+	// 		}
+	// 	}
+		
+	// 	_updateUtilisationLoan(diamondStorage().indLoanRecords[_sender][_market][_commitment].market, diamondStorage().indLoanRecords[_sender][_market][_commitment].amount, 1);
+    // }
+	function _repayLoan(address _sender, bytes32 _market, bytes32 _commitment,uint256 _repayAmount) internal authContract(LOAN_ID) {
+		
+		require(diamondStorage().indLoanRecords[_sender][_market][_commitment].id != 0,"ERROR: No Loan");
+		_accruedInterest(_sender, _market, _commitment);
+
+		AppStorageOpen storage ds = diamondStorage();
+		
+		LoanAccount storage loanAccount = ds.loanPassbook[_sender];
+		LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
+		LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
+		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];
+
+		IBEP20 cToken;
+
+		uint256 remnantAmount= _repaymentProcess(
+			loan.id - 1,
+			_repayAmount, 
+			loanAccount,
+			loan,
+			loanState,
+			collateral,
+			deductibleInterest,
+			cYield
+		);
+		
+		/// CONVERT remnantAmount into collateralAmount
+		collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
 
 		if (_commitment == _getCommitment(2)) {
-			/// updating CollateralRecords
+			
+			/// UPDATING COLLATERAL AMOUNT IN STORAGE
+			loanAccount.collaterals[loan.id-1].amount = collateral.amount;
+
 			collateral.isCollateralisedDeposit = false;
 			collateral.isTimelockActivated = true;
 			collateral.activationTime = block.timestamp;
-
-		} else if (_commitment == _getCommitment(0)) {
-			/// transfer collateral.amount from reserve contract to the _sender
-			ds.collateralToken = IBEP20(_connectMarket(collateral.market));
-			// reserveAddress.transferAnyBEP20(collateralToken, loanAccount.account, collateral.amount);
-
-			/// delete loan Entries, loanRecord, loanstate, collateralrecords
-			// delete loanState;
-			// delete loan;
-			// delete collateral;
-			delete ds.indCollateralRecords[_account][loan.market][loan.commitment];
-			delete ds.indLoanState[_account][loan.market][loan.commitment];
-			delete ds.indLoanRecords[_account][loan.market][loan.commitment];
-
-			delete loanAccount.collaterals[num];
-			delete loanAccount.loanState[num];
-			delete loanAccount.loans[num];
-
-			_updateReservesLoan(collateral.market, collateral.amount, 1);
-			emit CollateralReleased(_account,collateral.amount,collateral.market,block.timestamp);
-		}
-	}
-
-	function _repayLoan(address _sender, bytes32 _market,bytes32 _commitment,uint256 _repayAmount) internal authContract(LOAN_ID) {
-        _hasLoanAccount(_sender);
-		// LoanRecords storage loan = ds.indLoanRecords[_sender][_market][_commitment];
-		// LoanState storage loanState = ds.indLoanState[_sender][_market][_commitment];
-		// CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_market][_commitment];
-		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
-		// CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];		
-		
-		require(diamondStorage().indLoanRecords[_sender][_market][_commitment].id != 0,"ERROR: No Loan");
-		_isMarketSupported(_market);
-		
-		_accruedInterest(_sender, _market, _commitment);
-		_accruedYield(diamondStorage().loanPassbook[_sender], diamondStorage().indCollateralRecords[_sender][_market][_commitment], diamondStorage().indAccruedAPY[_sender][_market][_commitment]);
-
-		if (_repayAmount == 0) {
-			// converting the current market into loanMarket for repayment.
-			if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market)	_repayAmount = diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
-			else if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket != _market)	_repayAmount = _swap(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _market,diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount, 1);
 			
-			_repaymentProcess(
-				_sender,
-				_repayAmount, 
-				diamondStorage().loanPassbook[_sender],
-				diamondStorage().indLoanRecords[_sender][_market][_commitment],
-				diamondStorage().indLoanState[_sender][_market][_commitment],
-				diamondStorage().indCollateralRecords[_sender][_market][_commitment],
-				diamondStorage().indAccruedAPR[_sender][_market][_commitment], 
-				diamondStorage().indAccruedAPY[_sender][_market][_commitment]);
+			/// UPDATING LoanRecords
+			delete loan.market;
+			delete loan.commitment;
+			delete loan.amount;
+			loan.isSwapped = false;
+			loan.lastUpdate = block.timestamp;
 			
-			// if (loanState.currentMarket == _market) {
-			// 	_repayAmount = loanState.currentAmount;
-			// 	_repaymentProcess(_sender,_repayAmount,loanPassbook[_sender],loan,loanState,collateral,deductibleInterest,cYield);
-				
-			// } else if (loanState.currentMarket != _market) {
-			// 	_repayAmount = liquidator.swap(loanState.currentMarket,_market,loanState.currentAmount, 1);
-			// 	_repaymentProcess(_sender,_repayAmount,loanPassbook[_sender],loan,loanState,collateral,deductibleInterest,cYield);
-			// }
-		}
-		else if (_repayAmount > 0) {
-			/// transfering the repayAmount to the reserve contract.
-			diamondStorage().loanToken = IBEP20(_connectMarket(_market));
-			// _quantifyAmount(_market, _repayAmount);
+			/// UPDATING LoanState
+			delete loanState.loanMarket;
+			delete loanState.actualLoanAmount;
+			delete loanState.currentMarket;
+			delete loanState.currentAmount;
+			loanState.state = STATE.REPAID;
 
-			diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount += (diamondStorage().indAccruedAPY[_sender][_market][_commitment].accruedYield - diamondStorage().indAccruedAPR[_sender][_market][_commitment].accruedInterest);
+			/// UPDATING RECORDS IN LOANACCOUNT
+			delete loanAccount.loans[loan.id-1].market;
+			delete loanAccount.loans[loan.id-1].commitment;
+			delete loanAccount.loans[loan.id-1].amount;
+			loanAccount.loans[loan.id-1].isSwapped = false;
+			loanAccount.loans[loan.id-1].lastUpdate = block.timestamp;
+
+			delete loanAccount.loanState[loan.id-1].loanMarket;
+			delete loanAccount.loanState[loan.id-1].actualLoanAmount;
+			delete loanAccount.loanState[loan.id-1].currentMarket;
+			delete loanAccount.loanState[loan.id-1].currentAmount;
+			loanAccount.loanState[loan.id-1].state = STATE.REPAID;
+
+			loanAccount.collaterals[loan.id-1].isCollateralisedDeposit = false;
+			loanAccount.collaterals[loan.id-1].activationTime = block.timestamp;
+			loanAccount.collaterals[loan.id-1].isTimelockActivated = true;
 			
-			uint256 _swappedAmount;
-			uint256 _remnantAmount;
-
-			if (_repayAmount >= diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
-				_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
-
-				if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market){
-					_remnantAmount += diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
-				}
-				else {
-					_swapToLoanProcess(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _commitment, _market, _swappedAmount);
-					_repayAmount += _swappedAmount;
-				}
-
-				_updateDebtRecords(diamondStorage().loanPassbook[_sender],diamondStorage().indLoanRecords[_sender][_market][_commitment],diamondStorage().indLoanState[_sender][_market][_commitment],diamondStorage().indCollateralRecords[_sender][_market][_commitment]/*, deductibleInterest, cYield*/);
-				diamondStorage().loanToken.transfer(diamondStorage().loanPassbook[_sender].account, _remnantAmount);
-
-				emit LoanRepaid(_sender, diamondStorage().indLoanRecords[_sender][_market][_commitment].id, diamondStorage().indLoanRecords[_sender][_market][_commitment].market, block.timestamp);
-				
-				if (_commitment == _getCommitment(0)) {
-					/// transfer collateral.amount from reserve contract to the _sender
-					// collateralToken = IBEP20(markets.connectMarket(collateral.market));
-					_transferAnyBEP20(_connectMarket(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market), _sender, diamondStorage().loanPassbook[_sender].account,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount);
-
-			/// delete loan Entries, loanRecord, loanstate, collateralrecords
-					// delete loanState;
-					// delete loan;
-					// delete collateral;
-
-					delete diamondStorage().indLoanRecords[_sender][_market][_commitment];
-					delete diamondStorage().indLoanState[_sender][_market][_commitment];
-					delete diamondStorage().indCollateralRecords[_sender][_market][_commitment];
-
-
-					delete diamondStorage().loanPassbook[_sender].loanState[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
-					delete diamondStorage().loanPassbook[_sender].loans[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
-					delete diamondStorage().loanPassbook[_sender].collaterals[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
-					
-					_updateReservesLoan(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market, diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount, 1);
-					emit CollateralReleased(_sender,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount,diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,block.timestamp);
-				}
-			} else if (_repayAmount < diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
-
-				if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket == _market)	_repayAmount += diamondStorage().indLoanState[_sender][_market][_commitment].currentAmount;
-				else if (diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket != _market) {
-					_swapToLoanProcess(_sender, diamondStorage().indLoanState[_sender][_market][_commitment].currentMarket, _commitment, _market, _swappedAmount);
-					_repayAmount += _swappedAmount;
-				}
-				
-				if (_repayAmount > diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
-					_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
-					diamondStorage().loanToken.transfer(diamondStorage().loanPassbook[_sender].account, _remnantAmount);
-				} else if (_repayAmount <= diamondStorage().indLoanRecords[_sender][_market][_commitment].amount) {
-					
-					_repayAmount += _swap(_sender, diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,_market,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount, 1);
-					// _repayAmount += _swapToLoanProcess(loanState.currentMarket, _commitment, _market);
-					_remnantAmount = _repayAmount - diamondStorage().indLoanRecords[_sender][_market][_commitment].amount;
-					diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount += _swap(_sender, diamondStorage().indLoanRecords[_sender][_market][_commitment].market,diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,_remnantAmount, 2);
-				}
-				_updateDebtRecords(diamondStorage().loanPassbook[_sender],diamondStorage().indLoanRecords[_sender][_market][_commitment],diamondStorage().indLoanState[_sender][_market][_commitment],diamondStorage().indCollateralRecords[_sender][_market][_commitment]/*, deductibleInterest, cYield*/);
-				
-				if (_commitment == _getCommitment(0)) {
-					
-					// collateralToken = IBEP20(markets.connectMarket(collateral.market));
-					_transferAnyBEP20(_connectMarket(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market), _sender, diamondStorage().loanPassbook[_sender].account, diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount);
-
-
-				/// delete loan Entries, loanRecord, loanstate, collateralrecords
-					// delete loanState;
-					// delete loan;
-					// delete collateral;
-					delete diamondStorage().indLoanRecords[_sender][_market][_commitment];
-					delete diamondStorage().indLoanState[_sender][_market][_commitment];
-					delete diamondStorage().indCollateralRecords[_sender][_market][_commitment];
-
-					delete diamondStorage().loanPassbook[_sender].loanState[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
-					delete diamondStorage().loanPassbook[_sender].loans[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
-					delete diamondStorage().loanPassbook[_sender].collaterals[diamondStorage().indLoanRecords[_sender][_market][_commitment].id - 1];
-					
-					_updateReservesLoan(diamondStorage().indCollateralRecords[_sender][_market][_commitment].market, diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount, 1);
-					emit CollateralReleased(_sender,diamondStorage().indCollateralRecords[_sender][_market][_commitment].amount,diamondStorage().indCollateralRecords[_sender][_market][_commitment].market,block.timestamp);
-				}
-			}
 		}
-		
-		_updateUtilisationLoan(diamondStorage().indLoanRecords[_sender][_market][_commitment].market, diamondStorage().indLoanRecords[_sender][_market][_commitment].amount, 1);
+
+		/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
+		cToken = IBEP20(_connectMarket(collateral.market));
+		cToken.transfer(_sender, collateral.amount);
+
+		_updateUtilisationLoan(loan.market, loan.amount, 1);
+		emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
     }
 
 	function _swapToLoan(
@@ -934,7 +1062,7 @@ library LibOpen {
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_loanMarket][_commitment];
 
 		//require(loan.id !=0, "ERROR: No Loan");
-		require(loanState.state == uint(STATE.REPAID), "ERROR: Active loan");
+		require(loanState.state == STATE.REPAID, "ERROR: Active loan");
 		//if (_commitment != _getCommitment(0)) {
 		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
 		//}		
@@ -967,7 +1095,7 @@ library LibOpen {
 		// LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
 		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_account][_loanMarket][_commitment];
 
-		require(ds.indLoanState[_account][_loanMarket][_commitment].state == uint(STATE.ACTIVE), "ERROR: Inactive Loan");
+		require(ds.indLoanState[_account][_loanMarket][_commitment].state == STATE.ACTIVE, "ERROR: Inactive Loan");
 		// require(ds.indAccruedAPR[_account][_loanMarket][_commitment].id != 0, "ERROR: APR does not exist");
 
 		uint256 aggregateYield;
@@ -1013,7 +1141,6 @@ library LibOpen {
 		uint balance = token.balanceOf(address(this));
 
 		require(balance >= (_marketReserves(_market) - _marketUtilisation(_market)), "ERROR: Reserve imbalance");
-
 		require((_marketReserves(_market) - _marketUtilisation(_market)) >=0, "ERROR: Mathematical error");
 
 		if (balance > (_marketReserves(_market) - _marketUtilisation(_market))) {

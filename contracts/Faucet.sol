@@ -7,11 +7,6 @@ interface BEP20 {
 }
 
 contract Faucet {
-    
-    // BEP20 public usdtInstance;
-    // BEP20 public usdcInstance;
-    // BEP20 public btcInstance;
-    // BEP20 public wBnbInstance;
 
     uint num = 0;
 
@@ -49,24 +44,25 @@ contract Faucet {
     }
 
     /// GET TOKENS
-    function getTokens(address _account, uint _index) public nonReentrant() returns(bool success)   {
-        require(_account != address(0), "ERROR: Zero address");
+    function getTokens(uint _index) public payable nonReentrant() returns(bool success)   {
         
-        TokenLedger storage td = tokens[_index];
+        require(msg.sender != address(0), "ERROR: Zero address");
 
-        require(td.token.balanceOf(address(this)) >= td.amount, "ERROR: Insufficient balance");
-        require(airdropRecords[_account][td.token] <= block.timestamp, "ERROR: Active timelock");
+        TokenLedger storage td = tokens[_index];
+        td.balance = td.token.balanceOf(address(this)); // Faucet balance
+
+        require(td.balance >= td.amount, "ERROR: Insufficient balance");
+        require(airdropRecords[msg.sender][td.token] <= block.timestamp, "ERROR: Active timelock");
 
         td.token.transfer(msg.sender, td.amount);
 
         td.balance -= td.amount;
 
-        airdropRecords[_account][td.token] = block.timestamp + waitTime;
+        airdropRecords[msg.sender][td.token] = block.timestamp + waitTime;
 
-        emit TokensIssued(td.token, _account, td.amount, block.timestamp);
+        emit TokensIssued(td.token, msg.sender, td.amount, block.timestamp);
         return success = true;
     }
-
 
     modifier nonReentrant() {
         require(isReentrant == false, "ERROR: Re-entrant");

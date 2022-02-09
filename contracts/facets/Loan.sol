@@ -80,7 +80,7 @@ contract Loan is Pausable, ILoan {
 	) private view {
 		// require(loanAccount.accOpenTime != 0, "ERROR: No Loan account"); // redundant
 		require(loan.id != 0, "ERROR: No loan");
-		require(loanState.state == uint(STATE.ACTIVE), "ERROR: Inactive loan");
+		require(loanState.state == STATE.ACTIVE, "ERROR: Inactive loan");
 		require(collateral.market == _collateralMarket, "ERROR: Mismatch collateral market");
 
 		LibOpen._isMarketSupported(_collateralMarket);

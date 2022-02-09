@@ -2,7 +2,7 @@
 pragma solidity 0.8.1;
 
 interface ILoan {
-	enum STATE {ACTIVE,REPAID}
+	// enum STATE {ACTIVE,REPAID}
 
     function swapLoan(bytes32 _market, bytes32 _commitment, bytes32 _swapMarket) external returns (bool success);
     function swapToLoan(bytes32 _swapMarket, bytes32 _commitment, bytes32 _market) external returns (bool success);

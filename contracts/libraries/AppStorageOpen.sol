@@ -16,17 +16,17 @@ struct MarketData {
 // =========== Comptroller structs ===========
 /// @notice each APY or APR struct holds the recorded changes in interest data & the
 /// corresponding time for a particular commitment type.
-    struct APY  {
-        bytes32 commitment; 
-        uint[] time; // ledger of time when the APY changes were made.
-        uint[] apyChanges; // ledger of APY changes.
-    }
+struct APY  {
+    bytes32 commitment; 
+    uint[] time; // ledger of time when the APY changes were made.
+    uint[] apyChanges; // ledger of APY changes.
+}
 
-    struct APR  {
-        bytes32 commitment; // validity
-        uint[] time; // ledger of time when the APR changes were made.
-        uint[] aprChanges; // Per block.timestamp APR is tabulated in here.
-    }
+struct APR  {
+    bytes32 commitment; // validity
+    uint[] time; // ledger of time when the APR changes were made.
+    uint[] aprChanges; // Per block.timestamp APR is tabulated in here.
+}
 
 // =========== Deposit structs ===========
 struct SavingsAccount {
@@ -60,6 +60,9 @@ struct YieldLedger    {
     uint activationTime; // block.timestamp(isTimelockActivated) + timelockValidity.
 }
 // =========== Loan structs ===========
+
+enum STATE {ACTIVE,REPAID}
+
 struct LoanAccount {
     uint256 accOpenTime;
     address account;
@@ -84,7 +87,7 @@ struct LoanState {
     uint256 actualLoanAmount;
     bytes32 currentMarket;
     uint256 currentAmount;
-    uint state;
+    STATE state;
 }
 struct CollateralRecords {
     uint256 id;
