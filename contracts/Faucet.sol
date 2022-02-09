@@ -55,7 +55,6 @@ contract Faucet {
         require(airdropRecords[msg.sender][td.token] <= block.timestamp, "ERROR: Active timelock");
 
         td.token.transfer(msg.sender, td.amount);
-
         td.balance -= td.amount;
 
         airdropRecords[msg.sender][td.token] = block.timestamp + waitTime;
