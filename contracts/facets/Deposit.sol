@@ -146,6 +146,7 @@ contract Deposit is Pausable, IDeposit{
 		ds.token.transfer(msg.sender, _amount);
 
 		LibOpen._updateReservesDeposit(_market, _amount, 1);
+		
 		emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
 		return true;	
 	}

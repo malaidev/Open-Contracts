@@ -54,11 +54,10 @@ contract Loan is Pausable, ILoan {
 		return true;
 	}
 
-	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override returns (bool) {
+	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override nonReentrant() returns (bool) {
 		LibOpen._withdrawCollateral(msg.sender, _market, _commitment);
 		return true;
 	}
-
 	
 
 	// function getFairPriceLoan(uint _requestId) external view override returns (uint){

@@ -29,7 +29,7 @@ library LibOpen {
 	uint8 constant RESERVE_ID = 13;
 	// uint8 constant ORACLEOPEN_ID = 14;
 	uint8 constant LOAN_ID = 15;
-	// uint8 constant LOANEXT_ID = 16;
+	uint8 constant LOANEXT_ID = 16;
 	uint8 constant DEPOSIT_ID = 17; 
 	// address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
@@ -89,9 +89,9 @@ library LibOpen {
 		}
 	}
 
-	function _isMarketSupported(bytes32  _loanMarket) internal view {
+	function _isMarketSupported(bytes32  _market) internal view {
 		AppStorageOpen storage ds = diamondStorage(); 
-		require(ds.tokenSupportCheck[_loanMarket] == true, "ERROR: Unsupported market");
+		require(ds.tokenSupportCheck[_market] == true, "ERROR: Unsupported market");
 	}
 
 	function _getMarketAddress(bytes32 _loanMarket) internal view returns (address) {
@@ -134,7 +134,6 @@ library LibOpen {
 		
 		AppStorageOpen storage ds = diamondStorage(); 
 		MarketData memory marketData = ds.indMarketData[_market];
-
 		return marketData.tokenAddress;
 	}
 	
@@ -509,7 +508,9 @@ library LibOpen {
 
 	/// WITHDRAW COLLATERAL
 	function _withdrawCollateral(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
+        
+		AppStorageOpen storage ds = diamondStorage(); 
+
         LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
 		// LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
@@ -607,7 +608,7 @@ library LibOpen {
 		CollateralRecords storage collateral,
 		DeductibleInterest storage deductibleInterest,
 		CollateralYield storage cYield
-	) internal returns(uint256) {
+	) internal authContract(LOANEXT_ID) returns(uint256) {
         // AppStorageOpen storage ds = diamondStorage(); 
 		
 		bytes32 _commitment = loan.commitment;
@@ -1167,6 +1168,7 @@ library LibOpen {
 	function _getLatestPrice(bytes32 _market) internal view returns (uint) {
 		// Chainlink price
 		AppStorageOpen storage ds = diamondStorage();
+
 		require(ds.pairAddresses[_market] != address(0), "ERROR: Invalid pair address");
 		( , int price, , , ) = AggregatorV3Interface(ds.pairAddresses[_market]).latestRoundData();
 		return uint256(price);
@@ -1201,7 +1203,7 @@ library LibOpen {
 
 	modifier authContract(uint _facetId) {
 		require(_facetId == diamondStorage().facetIndex[msg.sig] || 
-			diamondStorage().facetIndex[msg.sig] == 0, "Not permitted function call");
+			diamondStorage().facetIndex[msg.sig] == 0, "ERROR: Unauthorised access");
 		_;
 	}
 }
