@@ -575,6 +575,40 @@ library LibOpen {
 	// 	collateralAmount = collateral.amount;
 	// }
 
+/// CHECKING PERMISSIBLE WITHDRAWAL
+	function _checkPermissibleWithdrawal(address account, uint256 amount, LoanAccount storage loanAccount, LoanRecords storage loan, LoanState storage loanState,CollateralRecords storage collateral, CollateralYield storage cYield) internal authContract(LOAN_ID) {
+		AppStorageOpen storage ds = diamondStorage();
+
+		require(amount <= loanState.currentAmount, "ERROR: Amount > Loan value");
+		require(loanState.currentMarket == loan.market, "ERROR: Can not withdraw secondary markets");
+
+		_accruedInterest(account, loan.market, loan.commitment);
+
+		uint256 collateralAvbl;
+		uint256 usdCollateral;
+		uint256 usdLoan;
+		uint256 usdLoanCurrent;
+
+
+		/// UPDATE collateralAvbl
+		collateralAvbl = collateral.amount - ds.indAccruedAPR[account][loan.market][loan.commitment].accruedInterest;
+		if (loan.commitment == _getCommitment(2)) {
+			_accruedYield(loanAccount, collateral, cYield);
+			collateralAvbl += cYield.accruedYield;
+		}
+
+		/// FETCH USDT PRICES
+		usdCollateral = LibOpen._getLatestPrice(collateral.market);
+		usdLoan = LibOpen._getLatestPrice(loan.market);
+		usdLoanCurrent = LibOpen._getLatestPrice(loanState.currentMarket);
+
+		/// Permissible withdrawal amount calculation in the loanMarket.
+		// permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);
+		require(((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent) >= (amount), "ERROR: Request exceeds funds");
+		require(((usdCollateral*collateralAvbl) + (usdLoanCurrent*loanState.currentAmount) - (amount*usdLoanCurrent)) >= (15*(usdLoan*ds.indLoanRecords[account][loan.market][loan.commitment].amount)/10), "ERROR: Liquidation risk");
+	}
+
+
 	function _updateDebtRecords(LoanAccount storage loanAccount,LoanRecords storage loan, LoanState storage loanState, CollateralRecords storage collateral/*, DeductibleInterest storage deductibleInterest, CollateralYield storage cYield*/) private {
         AppStorageOpen storage ds = diamondStorage(); 
 		uint256 num = loan.id - 1;

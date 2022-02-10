@@ -117,58 +117,25 @@ contract Loan is Pausable, ILoan {
 		return true;
 	}
 		
-	function withdrawPartialLoan(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) external returns (bool) {
-    
+	function withdrawPartialLoan(bytes32 _loanMarket,bytes32 _commitment, uint256 _amount) external nonReentrant()	returns (bool) {
+		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		LibOpen._hasLoanAccount(msg.sender);
 
+		LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
 		LoanState storage loanState = ds.indLoanState[msg.sender][_loanMarket][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
+		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
 		
-		checkPermissibleWithdrawal(msg.sender, _loanMarket, _commitment, _collateralMarket, _amount);
+		LibOpen._checkPermissibleWithdrawal(msg.sender, _amount, loanAccount, loan, loanState, collateral, cYield);
 		
-		ds.withdrawToken = IBEP20(LibOpen._connectMarket(loanState.currentMarket));
-		ds.withdrawToken.transfer(msg.sender,_amount);
+		ds.loanToken = IBEP20(LibOpen._connectMarket(loan.market));
+		ds.loanToken.transfer(msg.sender,_amount);
 
-		emit WithdrawPartialLoan(msg.sender, loan.id, _amount, loanState.currentMarket, block.timestamp);
+		emit WithdrawPartialLoan(msg.sender, loan.id, _amount, loan.market, block.timestamp);
 		return true;
-  }
-  
-	function checkPermissibleWithdrawal(address _sender,bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) private {
-		
-		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
-		// LoanRecords storage loan = ds.indLoanRecords[_sender][_loanMarket][_commitment];
-		LoanState storage loanState = ds.indLoanState[_sender][_loanMarket][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[_sender][_loanMarket][_commitment];
-		// DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_loanMarket][_commitment];
-		// emit FairPriceCall(ds.requestEventId++, _collateralMarket, _amount);
-		// emit FairPriceCall(ds.requestEventId++, _loanMarket, _amount);
-		// emit FairPriceCall(ds.requestEventId++, loanState.currentMarket, loanState.currentAmount);		
-		// _quantifyAmount(loanState.currentMarket, _amount);
-		require(_amount <= loanState.currentAmount, "ERROR: Exceeds available loan");
-		
-		LibOpen._accruedInterest(_sender, _loanMarket, _commitment);
-		uint256 collateralAvbl = collateral.amount - ds.indAccruedAPR[_sender][_loanMarket][_commitment].accruedInterest;
-
-		// fetch usdPrices
-		uint256 usdCollateral = LibOpen._getLatestPrice(_collateralMarket);
-		uint256 usdLoan = LibOpen._getLatestPrice(_loanMarket);
-		uint256 usdLoanCurrent = LibOpen._getLatestPrice(loanState.currentMarket);
-
-		// Quantification of the assets
-		// uint256 cAmount = usdCollateral*collateral.amount;
-		// uint256 cAmountAvbl = usdCollateral*collateralAvbl;
-
-		// uint256 lAmountCurrent = usdLoanCurrent*loanState.currentAmount;
-		uint256 permissibleAmount = ((usdCollateral*collateralAvbl - (30*usdCollateral*collateral.amount/100))/usdLoanCurrent);
-
-		require(permissibleAmount > 0, "ERROR: Can not withdraw zero funds");
-		require(permissibleAmount > (_amount), "ERROR:Request exceeds funds");
-		
-		// calcualted in usdterms
-		require(((usdCollateral*collateralAvbl) + (usdLoanCurrent*loanState.currentAmount) - (_amount*usdLoanCurrent)) >= (11*(usdLoan*ds.indLoanRecords[_sender][_loanMarket][_commitment].amount)/10), "ERROR: Liquidation risk");
 	}
-	
 
 	function pauseLoan() external override authLoan() nonReentrant() {
 		_pause();
