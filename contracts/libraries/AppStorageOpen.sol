@@ -197,6 +197,7 @@ struct AppStorageOpen {
     address adminLoanAddress;
     bytes32 adminLoanExt;
     address adminLoanExtAddress;
+    
     IBEP20 loanToken;
     IBEP20 withdrawToken;
     IBEP20 collateralToken;

@@ -863,8 +863,6 @@ library LibOpen {
 		DeductibleInterest storage deductibleInterest = ds.indAccruedAPR[_sender][_market][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[_sender][_market][_commitment];
 
-		IBEP20 cToken;
-
 		uint256 remnantAmount= _repaymentProcess(
 			loan.id - 1,
 			_repayAmount, 
@@ -922,8 +920,8 @@ library LibOpen {
 		}
 
 		/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
-		cToken = IBEP20(_connectMarket(collateral.market));
-		cToken.transfer(_sender, collateral.amount);
+		ds.collateralToken = IBEP20(_connectMarket(collateral.market));
+		ds.collateralToken.transfer(_sender, collateral.amount);
 
 		emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
 		_updateUtilisationLoan(loan.market, loan.amount, 1);
@@ -1047,7 +1045,7 @@ library LibOpen {
 		if (_num == 0)	{
 			ds.marketUtilisationLoan[_loanMarket] += _amount;
 		} else if (_num == 1)	{
-			require(ds.marketUtilisationLoan[_loanMarket] >= _amount, "marketUtilisation is smaller than _amount");
+			// require(ds.marketUtilisationLoan[_loanMarket] >= _amount, "ERROR: Utilisation is less than amount");
 			ds.marketUtilisationLoan[_loanMarket] -= _amount;
 		}
 	}
