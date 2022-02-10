@@ -78,10 +78,10 @@ library LibOpen {
 		return ds.pairAddresses[_loanMarket];
 	}
 
-	function setReserveAddress(address _reserve) internal {
-		AppStorageOpen storage ds = diamondStorage();
-		ds.reserveAddress = _reserve;
-	}
+	// function setReserveAddress(address _reserve) internal {
+	// 	AppStorageOpen storage ds = diamondStorage();
+	// 	ds.reserveAddress = _reserve;
+	// }
 
 	function diamondStorage() internal pure returns (AppStorageOpen storage ds) {
 		assembly {
@@ -543,9 +543,8 @@ library LibOpen {
 		delete loanAccount.loanState[loan.id - 1];
 
 
-        _updateReservesLoan(collateral.market, collateral.amount, 1);
-
 		emit CollateralReleased(_account, collateral.amount, collateral.market, block.timestamp);
+        _updateReservesLoan(collateral.market, collateral.amount, 1);
 	}
 
 	// function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
