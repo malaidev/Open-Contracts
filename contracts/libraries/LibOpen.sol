@@ -33,7 +33,11 @@ library LibOpen {
 	uint8 constant DEPOSIT_ID = 17; 
 	// address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
 	address internal constant PANCAKESWAP_ROUTER_ADDRESS = 0x9Ac64Cc6e4415144C455BD8E4837Fea55603e5c3 ; // pancakeswap bsc testnet router address
-
+	// Chainlink price feeds for bsctestnet
+	// address internal constant BTC_USD = 0x5741306c21795FdCBb9b265Ea0255F499DFe515C0x5741306c21795FdCBb9b265Ea0255F499DFe515C ;
+	// address internal constant
+	// address internal constant
+	// address internal constant
 	// enum STATE {ACTIVE,REPAID}
 	event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
