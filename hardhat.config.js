@@ -55,7 +55,7 @@ module.exports = {
       },
       url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
       chainId: 97,
-      timeout: 2000000,
+      timeout: 20000000,
       gas: 2100000, 
       gasLimit: 5000000
     },
