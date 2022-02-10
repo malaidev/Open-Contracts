@@ -154,8 +154,8 @@ async function addMarkets(diamondAddress) {
     await diamond.addFairPriceAddress(symbolCAKE, '0x81faeDDfeBc2F8Ac524327d70Cf913001732224C');
 
     // Test get latest price
-    // const Price_BNB = diamond.getLatestPrice(symbolWBNB);
-    // console.log("Price of BNB is",Price_BNB);
+    const Price_BNB = diamond.getLatestPrice(symbolWBNB);
+    console.log("Price of BNB is",Price_BNB);
 
 
     console.log("setCommitment begin");
