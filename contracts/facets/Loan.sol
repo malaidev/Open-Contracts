@@ -143,7 +143,7 @@ contract Loan is Pausable, ILoan {
 		return true;
   }
   
-	function checkPermissibleWithdrawal(address _sender,bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) private /*authContract(LOAN_ID)*/ {
+	function checkPermissibleWithdrawal(address _sender,bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) private {
 		
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 		// LoanRecords storage loan = ds.indLoanRecords[_sender][_loanMarket][_commitment];
