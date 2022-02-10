@@ -58,6 +58,11 @@ contract OpenDiamond {
     function getFairPriceAddress(bytes32 _market) external view returns(address) {
         return LibOpen._getFairPriceAddress(_market);
     }
+
+    function getLatestPrice(bytes32 _market) external view returns (uint) {
+        return LibOpen._getLatestPrice(_market);
+    }
+
     receive() external payable {}
 
 }

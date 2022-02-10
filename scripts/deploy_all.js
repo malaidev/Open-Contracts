@@ -153,6 +153,11 @@ async function addMarkets(diamondAddress) {
     await diamond.addFairPriceAddress(symbolSxp, '0x678AC35ACbcE272651874E782DB5343F9B8a7D66');
     await diamond.addFairPriceAddress(symbolCAKE, '0x81faeDDfeBc2F8Ac524327d70Cf913001732224C');
 
+    // Test get latest price
+    // const Price_BNB = diamond.getLatestPrice(symbolWBNB);
+    // console.log("Price of BNB is",Price_BNB);
+
+
     console.log("setCommitment begin");
     await comptroller.connect(upgradeAdmin).setCommitment(comit_NONE);
     await comptroller.connect(upgradeAdmin).setCommitment(comit_TWOWEEKS);
@@ -288,6 +293,10 @@ async function addMarkets(diamondAddress) {
     await twbnb.transfer(faucet.address,"1200000000000000000000000")
     console.log("1200000 twbnb transfered to faucet. Token being :", tWBNBAddress)
     console.log(await twbnb.balanceOf(faucet.address));
+
+    // Latest Price test
+
+
 
     return {tBtcAddress, tUsdtAddress, tUsdcAddress, tSxpAddress, tCakeAddress, tWBNBAddress}
 
