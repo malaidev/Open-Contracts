@@ -525,6 +525,28 @@ library LibOpen {
 		// }
 		// _collateralTransfer(_account, loan.market, loan.commitment);
 
+		/// COLLATERAL RECORDS
+		delete collateral.id;
+		delete collateral.market;
+		delete collateral.commitment;
+		delete collateral.amount;
+		delete collateral.isCollateralisedDeposit;
+		delete collateral.timelockValidity;
+		delete collateral.isTimelockActivated;
+		delete collateral.activationTime;
+
+
+		/// UPDATING LoanRecords
+		delete loan.id;
+		delete loan.isSwapped;
+		delete loan.lastUpdate;
+
+		/// UPDATING LoanState
+		delete loanState.id;
+		delete loanState.state;
+
+
+
 		delete ds.indCollateralRecords[_account][loan.market][loan.commitment];
 		delete ds.indLoanState[_account][loan.market][loan.commitment];
 		delete ds.indLoanRecords[_account][loan.market][loan.commitment];
@@ -884,6 +906,27 @@ library LibOpen {
 		
 		/// CONVERT remnantAmount into collateralAmount
 		collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
+		
+		/// UPDATING LoanRecords
+			delete loan.market;
+			delete loan.commitment;
+			delete loan.amount;
+
+		/// UPDATING LoanState
+			delete loanState.loanMarket;
+			delete loanState.actualLoanAmount;
+			delete loanState.currentMarket;
+			delete loanState.currentAmount;
+
+		/// UPDATING RECORDS IN LOANACCOUNT
+			delete loanAccount.loans[loan.id-1].market;
+			delete loanAccount.loans[loan.id-1].commitment;
+			delete loanAccount.loans[loan.id-1].amount;
+
+			delete loanAccount.loanState[loan.id-1].loanMarket;
+			delete loanAccount.loanState[loan.id-1].actualLoanAmount;
+			delete loanAccount.loanState[loan.id-1].currentMarket;
+			delete loanAccount.loanState[loan.id-1].currentAmount;
 
 		if (_commitment == _getCommitment(2)) {
 			
@@ -895,37 +938,46 @@ library LibOpen {
 			collateral.activationTime = block.timestamp;
 			
 			/// UPDATING LoanRecords
-			delete loan.market;
-			delete loan.commitment;
-			delete loan.amount;
 			loan.isSwapped = false;
 			loan.lastUpdate = block.timestamp;
 			
 			/// UPDATING LoanState
-			delete loanState.loanMarket;
-			delete loanState.actualLoanAmount;
-			delete loanState.currentMarket;
-			delete loanState.currentAmount;
 			loanState.state = STATE.REPAID;
 
 			/// UPDATING RECORDS IN LOANACCOUNT
-			delete loanAccount.loans[loan.id-1].market;
-			delete loanAccount.loans[loan.id-1].commitment;
-			delete loanAccount.loans[loan.id-1].amount;
 			loanAccount.loans[loan.id-1].isSwapped = false;
 			loanAccount.loans[loan.id-1].lastUpdate = block.timestamp;
 
-			delete loanAccount.loanState[loan.id-1].loanMarket;
-			delete loanAccount.loanState[loan.id-1].actualLoanAmount;
-			delete loanAccount.loanState[loan.id-1].currentMarket;
-			delete loanAccount.loanState[loan.id-1].currentAmount;
 			loanAccount.loanState[loan.id-1].state = STATE.REPAID;
 
 			loanAccount.collaterals[loan.id-1].isCollateralisedDeposit = false;
 			loanAccount.collaterals[loan.id-1].activationTime = block.timestamp;
 			loanAccount.collaterals[loan.id-1].isTimelockActivated = true;
-			
 		}
+		
+		/// COLLATERAL RECORDS
+		delete collateral.id;
+		delete collateral.market;
+		delete collateral.commitment;
+		delete collateral.amount;
+		delete collateral.isCollateralisedDeposit;
+		delete collateral.timelockValidity;
+		delete collateral.isTimelockActivated;
+		delete collateral.activationTime;
+
+		/// LOAN RECORDS
+		delete loan.id;
+		delete loan.isSwapped;
+		delete loan.lastUpdate;
+		
+		/// LOAN STATE
+		delete loanState.id;
+		delete loanState.state;
+
+		/// LOAN ACCOUNT
+		delete loanAccount.loans[loan.id - 1];
+		delete loanAccount.collaterals[loan.id - 1];
+		delete loanAccount.loanState[loan.id - 1];
 
 		/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
 		ds.collateralToken = IBEP20(_connectMarket(collateral.market));
