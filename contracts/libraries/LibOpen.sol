@@ -943,33 +943,35 @@ library LibOpen {
 			loanAccount.collaterals[loan.id-1].isTimelockActivated = true;
 		}
 
-		/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
-		ds.collateralToken = IBEP20(_connectMarket(collateral.market));
-		ds.collateralToken.transfer(_sender, collateral.amount);
-		
-		/// COLLATERAL RECORDS
-		delete collateral.id;
-		delete collateral.market;
-		delete collateral.commitment;
-		delete collateral.amount;
-		delete collateral.isCollateralisedDeposit;
-		delete collateral.timelockValidity;
-		delete collateral.isTimelockActivated;
-		delete collateral.activationTime;
+		else {
+			/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
+			ds.collateralToken = IBEP20(_connectMarket(collateral.market));
+			ds.collateralToken.transfer(_sender, collateral.amount);
+			
+			/// COLLATERAL RECORDS
+			delete collateral.id;
+			delete collateral.market;
+			delete collateral.commitment;
+			delete collateral.amount;
+			delete collateral.isCollateralisedDeposit;
+			delete collateral.timelockValidity;
+			delete collateral.isTimelockActivated;
+			delete collateral.activationTime;
 
-		/// LOAN RECORDS
-		delete loan.id;
-		delete loan.isSwapped;
-		delete loan.lastUpdate;
-		
-		/// LOAN STATE
-		delete loanState.id;
-		delete loanState.state;
+			/// LOAN RECORDS
+			delete loan.id;
+			delete loan.isSwapped;
+			delete loan.lastUpdate;
+			
+			/// LOAN STATE
+			delete loanState.id;
+			delete loanState.state;
 
-		/// LOAN ACCOUNT
-		delete loanAccount.loans[loan.id - 1];
-		delete loanAccount.collaterals[loan.id - 1];
-		delete loanAccount.loanState[loan.id - 1];
+			/// LOAN ACCOUNT
+			delete loanAccount.loans[loan.id - 1];
+			delete loanAccount.collaterals[loan.id - 1];
+			delete loanAccount.loanState[loan.id - 1];
+		}
 
 		emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
 		_updateUtilisationLoan(loan.market, loan.amount, 1);
