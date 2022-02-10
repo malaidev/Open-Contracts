@@ -516,6 +516,9 @@ library LibOpen {
 
 		ds.collateralToken = IBEP20(_connectMarket(collateral.market));
         ds.collateralToken.transfer(_account, collateral.amount);
+
+		bytes32 collateralMarket = collateral.market;
+		uint256 collateralAmount = collateral.amount;
 		
 		/// UPDATING STORAGE RECORDS FOR LOAN
 		/// COLLATERAL RECORDS
@@ -543,8 +546,8 @@ library LibOpen {
 		delete loanAccount.loanState[loan.id - 1];
 
 
-		emit CollateralReleased(_account, collateral.amount, collateral.market, block.timestamp);
-        _updateReservesLoan(collateral.market, collateral.amount, 1);
+		emit CollateralReleased(_account, collateralAmount, collateralMarket, block.timestamp);
+        _updateReservesLoan(collateralMarket, collateralAmount, 1);
 	}
 
 	// function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
@@ -889,11 +892,6 @@ library LibOpen {
 			deductibleInterest,
 			cYield
 		);
-
-		uint loanID = loan.id;
-		bytes32 loanMarket = loan.market;
-		uint256 loanAmount = loan.amount;
-
 		/// CONVERT remnantAmount into collateralAmount
 		collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
 		
@@ -945,12 +943,18 @@ library LibOpen {
 			loanAccount.collaterals[loan.id-1].isCollateralisedDeposit = false;
 			loanAccount.collaterals[loan.id-1].activationTime = block.timestamp;
 			loanAccount.collaterals[loan.id-1].isTimelockActivated = true;
+
+			emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
+			_updateUtilisationLoan(loan.market, loan.amount, 1);
 		}
 
 		else {
 			/// Transfer remnant collateral to the user if _commitment != _getCommitment(2)
 			ds.collateralToken = IBEP20(_connectMarket(collateral.market));
 			ds.collateralToken.transfer(_sender, collateral.amount);
+			
+			emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
+			_updateUtilisationLoan(loan.market, loan.amount, 1);
 			
 			/// COLLATERAL RECORDS
 			delete collateral.id;
@@ -976,9 +980,6 @@ library LibOpen {
 			delete loanAccount.collaterals[loan.id - 1];
 			delete loanAccount.loanState[loan.id - 1];
 		}
-
-		emit LoanRepaid(_sender, loanID, loanMarket, block.timestamp);
-		_updateUtilisationLoan(loanMarket, loanAmount, 1);
     }
 
 	function _swapToLoan(
