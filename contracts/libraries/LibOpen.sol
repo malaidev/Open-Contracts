@@ -495,37 +495,35 @@ library LibOpen {
 	}
 
 // =========== Loan Functions ===========
-	function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
-        AppStorageOpen storage ds = diamondStorage(); 
-
-		bytes32 collateralMarket;
-        uint collateralAmount;
-
-		_collateralPointer(_account,_market,_commitment, collateralMarket, collateralAmount);
-		ds.token = IBEP20(_connectMarket(collateralMarket));
-        ds.token.transfer(_account, collateralAmount);
-	}
 
 	/// WITHDRAW COLLATERAL
 	function _withdrawCollateral(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
         
+		_hasLoanAccount(_account);
+		_isMarketSupported(_market);
+
 		AppStorageOpen storage ds = diamondStorage(); 
 
         LoanAccount storage loanAccount = ds.loanPassbook[_account];
 		LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
-		// LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
+		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
 		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
+		
+		require(loan.id != 0, "ERROR: Loan does not exist");
+		require(loanState.state == STATE.REPAID, "ERROR: Active loan");
+		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Active Timelock");
 
-		_isMarketSupported(_market);
+		ds.collateralToken = IBEP20(_connectMarket(collateral.market));
+        ds.collateralToken.transfer(_account, collateral.amount);
+
 		//Below are checked in _collateralPointer
-
 		// _hasLoanAccount(_account);
 		// require(loan.id !=0, "ERROR: No Loan");
 		// require(loanState.state == ILoan.STATE.REPAID, "ERROR: Active loan");
 		// if (_commitment != _getCommitment(0)) {
 		// 	require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
 		// }
-		_collateralTransfer(_account, loan.market, loan.commitment);
+		// _collateralTransfer(_account, loan.market, loan.commitment);
 
 		delete ds.indCollateralRecords[_account][loan.market][loan.commitment];
 		delete ds.indLoanState[_account][loan.market][loan.commitment];
@@ -534,28 +532,37 @@ library LibOpen {
 		delete loanAccount.loanState[loan.id-1];
 		delete loanAccount.loans[loan.id-1];		
 		delete loanAccount.collaterals[loan.id-1];
+
+
         _updateReservesLoan(collateral.market, collateral.amount, 1);
 
 		emit CollateralReleased(_account, collateral.amount, collateral.market, block.timestamp);
 	}
 
-	function _collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) internal view {
-		AppStorageOpen storage ds = diamondStorage(); 
+	// function _collateralTransfer(address _account, bytes32 _market, bytes32 _commitment) internal authContract(LOAN_ID) {
+    //     AppStorageOpen storage ds = diamondStorage(); 
+
+	// 	bytes32 collateralMarket;
+    //     uint collateralAmount;
+
+	// 	_collateralPointer(_account,_market,_commitment, collateralMarket, collateralAmount);
+	// 	ds.token = IBEP20(_connectMarket(collateralMarket));
+    //     ds.token.transfer(_account, collateralAmount);
+	// }
+
+	// function _collateralPointer(address _account, bytes32 _market, bytes32 _commitment, bytes32 collateralMarket, uint collateralAmount) internal view {
+	// 	AppStorageOpen storage ds = diamondStorage(); 
 		
-		_hasLoanAccount(_account);
+	// 	_hasLoanAccount(_account);
 
-		// LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
-		LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
-		CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
+	// 	// LoanRecords storage loan = ds.indLoanRecords[_account][_market][_commitment];
+	// 	LoanState storage loanState = ds.indLoanState[_account][_market][_commitment];
+	// 	CollateralRecords storage collateral = ds.indCollateralRecords[_account][_market][_commitment];
 
-		//require(loan.id !=0, "ERROR: No Loan");
-		require(loanState.state == STATE.REPAID, "ERROR: Active loan");
-		//if (_commitment != _getCommitment(0)) {
-		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Timelock in progress");
-		//}		
-		collateralMarket = collateral.market;
-		collateralAmount = collateral.amount;
-	}
+	// 	//}		
+	// 	collateralMarket = collateral.market;
+	// 	collateralAmount = collateral.amount;
+	// }
 
 	function _updateDebtRecords(LoanAccount storage loanAccount,LoanRecords storage loan, LoanState storage loanState, CollateralRecords storage collateral/*, DeductibleInterest storage deductibleInterest, CollateralYield storage cYield*/) private {
         AppStorageOpen storage ds = diamondStorage(); 
