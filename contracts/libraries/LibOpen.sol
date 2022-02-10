@@ -889,7 +889,11 @@ library LibOpen {
 			deductibleInterest,
 			cYield
 		);
-		
+
+		uint loanID = loan.id;
+		bytes32 loanMarket = loan.market;
+		uint256 loanAmount = loan.amount;
+
 		/// CONVERT remnantAmount into collateralAmount
 		collateral.amount = _swap(address(this), loan.market, collateral.market, remnantAmount, 2);
 		
@@ -973,8 +977,8 @@ library LibOpen {
 			delete loanAccount.loanState[loan.id - 1];
 		}
 
-		emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
-		_updateUtilisationLoan(loan.market, loan.amount, 1);
+		emit LoanRepaid(_sender, loanID, loanMarket, block.timestamp);
+		_updateUtilisationLoan(loanMarket, loanAmount, 1);
     }
 
 	function _swapToLoan(
