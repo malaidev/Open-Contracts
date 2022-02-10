@@ -69,15 +69,14 @@ contract Loan is Pausable, ILoan {
 	// 	return true;
 	// }
 
-	function preAddCollateralProcess(
+	function _preAddCollateralProcess(
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount,
-		// LoanAccount storage loanAccount,
 		LoanRecords storage loan,
 		LoanState storage loanState,
 		CollateralRecords storage collateral
 	) private view {
-		// require(loanAccount.accOpenTime != 0, "ERROR: No Loan account"); // redundant
+
 		require(loan.id != 0, "ERROR: No loan");
 		require(loanState.state == STATE.ACTIVE, "ERROR: Inactive loan");
 		require(collateral.market == _collateralMarket, "ERROR: Mismatch collateral market");
@@ -89,9 +88,9 @@ contract Loan is Pausable, ILoan {
 	function addCollateral(      
 		bytes32 _loanMarket,
 		bytes32 _commitment,
-		bytes32 _collateralMarket,
 		uint256 _collateralAmount
 	) external override returns (bool) {
+
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
     	LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
 		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_loanMarket][_commitment];
@@ -99,32 +98,24 @@ contract Loan is Pausable, ILoan {
 		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_loanMarket][_commitment];
 		CollateralYield storage cYield = ds.indAccruedAPY[msg.sender][_loanMarket][_commitment];
 
-		preAddCollateralProcess(_collateralMarket, _collateralAmount /* loanAccount */, loan,loanState, collateral);
+		_preAddCollateralProcess(collateral.market, _collateralAmount, loan,loanState, collateral);
 
-		ds.collateralToken = IBEP20(LibOpen._connectMarket(_collateralMarket));
-		// _quantifyAmount(_collateralMarket, _collateralAmount);
-		ds.collateralToken.transferFrom(msg.sender, address(this), _collateralAmount);
-		LibOpen._updateReservesLoan(_collateralMarket, _collateralAmount, 0);
+		ds.collateralToken = IBEP20(LibOpen._connectMarket(collateral.market));
 		
-		updateCollateral(loanAccount, collateral, _collateralAmount, loan.id-1);
-		LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
+		/// TRIGGER: ds.collateralToken.approve() on the client.
+		ds.collateralToken.transferFrom(msg.sender, address(this), _collateralAmount);
+		LibOpen._updateReservesLoan(collateral.market, _collateralAmount, 0);
 
+		/// UPDATE COLLATERAL IN STORAGE
+		collateral.amount += _collateralAmount;
+		loanAccount.collaterals[loan.id-1].amount += _collateralAmount;
+
+		LibOpen._accruedInterest(msg.sender, _loanMarket, _commitment);
 		if (collateral.isCollateralisedDeposit) LibOpen._accruedYield(loanAccount, collateral, cYield);
 
 		emit AddCollateral(msg.sender, loan.id, _collateralAmount, block.timestamp);
 		return true;
 	}
-
-	function updateCollateral(
-		LoanAccount storage loanAccount,
-		CollateralRecords storage collateral,
-		uint256 _collateralAmount,
-		uint256 num
-	) private {
-		collateral.amount += _collateralAmount;
-		loanAccount.collaterals[num].amount = _collateralAmount;
-	}
-
 		
 	function withdrawPartialLoan(bytes32 _loanMarket,bytes32 _commitment, bytes32 _collateralMarket, uint256 _amount) external returns (bool) {
     
