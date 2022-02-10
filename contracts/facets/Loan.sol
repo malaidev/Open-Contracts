@@ -46,12 +46,11 @@ contract Loan is Pausable, ILoan {
 
 /// SwapToLoan
 	function swapToLoan(
-		bytes32 _swapMarket,
 		bytes32 _commitment,
 		bytes32 _loanMarket
-	) external override nonReentrant() returns (bool) {
-		LibOpen._swapToLoan(msg.sender, _swapMarket, _commitment, _loanMarket);
-		return true;
+	) external override nonReentrant() returns (bool success) {
+		LibOpen._swapToLoan(msg.sender, _commitment, _loanMarket);
+		return success = true;
 	}
 
 	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override nonReentrant() returns (bool) {

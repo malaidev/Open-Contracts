@@ -329,25 +329,27 @@ library LibOpen {
 
 	function _swapToLoan(
 		address _account,
-		bytes32 _swapMarket,
 		bytes32 _commitment,
 		bytes32 _loanMarket
 	) internal authContract(LOAN_ID) returns (uint) {
 		AppStorageOpen storage ds = diamondStorage(); 
+		
 		_hasLoanAccount(_account);
-		_isMarketSupported(_loanMarket);
-		_isMarket2Supported(_swapMarket);
-
+		
 		LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
 		LoanState storage loanState = ds.indLoanState[_account][_loanMarket][_commitment];
+
+		_isMarketSupported(_loanMarket);
+		_isMarket2Supported(loanState.currentMarket);
+
 		// CollateralRecords storage collateral = ds.indCollateralRecords[_account][_loanMarket][_commitment];
 		// CollateralYield storage cYield = ds.indAccruedAPY[_account][_loanMarket][_commitment];
 
 		require(loan.id != 0, "ERROR: No loan");
-		require(loan.isSwapped == true && loanState.currentMarket == _swapMarket, "ERROR: Swapped market does not exist");
+		require(loan.isSwapped == true && loanState.currentMarket != _loanMarket, "ERROR: Swapped market does not exist");
 		// require(loan.isSwapped == true, "Swapped market does not exist");
 
-		uint swappedAmount = _swap(_account, _swapMarket,_loanMarket,loanState.currentAmount, 1);
+		uint swappedAmount = _swap(_account, loanState.currentMarket,_loanMarket,loanState.currentAmount, 1);
 
 		/// Updating LoanRecord
 		loan.isSwapped = false;
@@ -367,6 +369,46 @@ library LibOpen {
 		_accruedYield(ds.loanPassbook[_account], ds.indCollateralRecords[_account][_loanMarket][_commitment], ds.indAccruedAPY[_account][_loanMarket][_commitment]);
 		return swappedAmount;
 	}
+	// function _swapToLoan(
+	// 	address _account,
+	// 	bytes32 _swapMarket,
+	// 	bytes32 _commitment,
+	// 	bytes32 _loanMarket
+	// ) internal authContract(LOAN_ID) returns (uint) {
+	// 	AppStorageOpen storage ds = diamondStorage(); 
+	// 	_hasLoanAccount(_account);
+	// 	_isMarketSupported(_loanMarket);
+	// 	_isMarket2Supported(_swapMarket);
+
+	// 	LoanRecords storage loan = ds.indLoanRecords[_account][_loanMarket][_commitment];
+	// 	LoanState storage loanState = ds.indLoanState[_account][_loanMarket][_commitment];
+	// 	// CollateralRecords storage collateral = ds.indCollateralRecords[_account][_loanMarket][_commitment];
+	// 	// CollateralYield storage cYield = ds.indAccruedAPY[_account][_loanMarket][_commitment];
+
+	// 	require(loan.id != 0, "ERROR: No loan");
+	// 	require(loan.isSwapped == true && loanState.currentMarket == _swapMarket, "ERROR: Swapped market does not exist");
+	// 	// require(loan.isSwapped == true, "Swapped market does not exist");
+
+	// 	uint swappedAmount = _swap(_account, _swapMarket,_loanMarket,loanState.currentAmount, 1);
+
+	// 	/// Updating LoanRecord
+	// 	loan.isSwapped = false;
+	// 	loan.lastUpdate = block.timestamp;
+
+	// 	/// updating the LoanState
+	// 	loanState.currentMarket = _loanMarket;
+	// 	loanState.currentAmount = swappedAmount;
+
+	// 	/// Updating LoanAccount
+	// 	ds.loanPassbook[_account].loans[loan.id - 1].isSwapped = false;
+	// 	ds.loanPassbook[_account].loans[loan.id - 1].lastUpdate = block.timestamp;
+	// 	ds.loanPassbook[_account].loanState[loan.id - 1].currentMarket = _loanMarket;
+	// 	ds.loanPassbook[_account].loanState[loan.id - 1].currentAmount = swappedAmount;
+
+	// 	_accruedInterest(_account, _loanMarket, _commitment);
+	// 	_accruedYield(ds.loanPassbook[_account], ds.indCollateralRecords[_account][_loanMarket][_commitment], ds.indAccruedAPY[_account][_loanMarket][_commitment]);
+	// 	return swappedAmount;
+	// }
 // =========== Liquidator Functions ===========
 	function _swap(address sender, bytes32 _fromMarket, bytes32 _toMarket, uint256 _fromAmount, uint8 _mode) internal returns (uint256) {
 
