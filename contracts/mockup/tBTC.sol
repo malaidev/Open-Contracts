@@ -3,6 +3,7 @@ pragma solidity 0.8.1;
 import "../util/IBEP20.sol";
 import "../util/Context.sol";
 
+
 library SafeMath {
   /**
    * @dev Returns the addition of two unsigned integers, reverting on
@@ -140,14 +141,14 @@ library SafeMath {
 }
 
 
-contract MockBep20  is Context, IBEP20 {
+contract tBTC  is Context, IBEP20 {
   using SafeMath for uint256;
 
   mapping (address => uint256) private _balances;
 
   mapping (address => mapping (address => uint256)) private _allowances;
 
-  address adminBepToken;
+  address admintBTC;
   uint256 private _totalSupply;
   uint8 private _decimals;
   string private _symbol;
@@ -156,22 +157,23 @@ contract MockBep20  is Context, IBEP20 {
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
 
-  constructor() {
-    adminBepToken = msg.sender;
-    _name = "MockupBep20";
-    _symbol = "MKBEP200000000000000000000000000";
-    _decimals = 18;
-    _totalSupply = 10000000 * 10 ** 18;   //10 million Total Supply
-    _balances[msg.sender] = _totalSupply;
+  constructor(address admin_) {
+    admintBTC = admin_;
+    _name = "Bitcoin";
+    _symbol = "BTC.t";
+    _decimals = 8;
+    _totalSupply = 2100000000000000;
+    // _balances[msg.sender] = _totalSupply;
+    _mint(admintBTC, 500000000000000);
 
     emit Transfer(address(0), msg.sender, _totalSupply);
   }
 
   /**
-   * @dev Returns the bep token owner.
+   * @dev Returns the Bitcoin token owner.
    */
   function getOwner() external view returns (address) {
-    return adminBepToken;
+    return admintBTC;
   }
 
   /**
@@ -196,21 +198,21 @@ contract MockBep20  is Context, IBEP20 {
   }
 
   /**
-   * @dev See {BEP20-totalSupply}.
+   * @dev See {Bitcoin-totalSupply}.
    */
   function totalSupply() external view returns (uint256) {
     return _totalSupply;
   }
 
   /**
-   * @dev See {BEP20-balanceOf}.
+   * @dev See {Bitcoin-balanceOf}.
    */
   function balanceOf(address account) external view returns (uint256) {
     return _balances[account];
   }
 
   /**
-   * @dev See {BEP20-transfer}.
+   * @dev See {Bitcoin-transfer}.
    *
    * Requirements:
    *
@@ -223,14 +225,14 @@ contract MockBep20  is Context, IBEP20 {
   }
 
   /**
-   * @dev See {BEP20-allowance}.
+   * @dev See {Bitcoin-allowance}.
    */
   function allowance(address owner, address spender) external view override returns (uint256) {
     return _allowances[owner][spender];
   }
 
   /**
-   * @dev See {BEP20-approve}.
+   * @dev See {Bitcoin-approve}.
    *
    * Requirements:
    *
@@ -241,16 +243,17 @@ contract MockBep20  is Context, IBEP20 {
     return true;
   }
 
+  
   function approveFrom(address sender, address spender, uint256 amount) external override returns (bool) {
     _approve(sender, spender, amount);
     return true;
   }
 
   /**
-   * @dev See {BEP20-transferFrom}.
+   * @dev See {Bitcoin-transferFrom}.
    *
    * Emits an {Approval} event indicating the updated allowance. This is not
-   * required by the EIP. See the note at the beginning of {BEP20};
+   * required by the EIP. See the note at the beginning of {Bitcoin};
    *
    * Requirements:
    * - `sender` and `recipient` cannot be the zero address.
@@ -260,7 +263,7 @@ contract MockBep20  is Context, IBEP20 {
    */
   function transferFrom(address sender, address recipient, uint256 amount) external override returns (bool) {
     _transfer(sender, recipient, amount);
-    _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "BEP20: transfer amount exceeds allowance"));
+    _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "Bitcoin: transfer amount exceeds allowance"));
     return true;
   }
 
@@ -268,7 +271,7 @@ contract MockBep20  is Context, IBEP20 {
    * @dev Atomically increases the allowance granted to `spender` by the caller.
    *
    * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {BEP20-approve}.
+   * problems described in {Bitcoin-approve}.
    *
    * Emits an {Approval} event indicating the updated allowance.
    *
@@ -285,7 +288,7 @@ contract MockBep20  is Context, IBEP20 {
    * @dev Atomically decreases the allowance granted to `spender` by the caller.
    *
    * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {BEP20-approve}.
+   * problems described in {Bitcoin-approve}.
    *
    * Emits an {Approval} event indicating the updated allowance.
    *
@@ -296,7 +299,7 @@ contract MockBep20  is Context, IBEP20 {
    * `subtractedValue`.
    */
   function decreaseAllowance(address spender, uint256 subtractedValue) public override returns (bool) {
-    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "BEP20: decreased allowance below zero"));
+    _approve(_msgSender(), spender, _allowances[_msgSender()][spender].sub(subtractedValue, "Bitcoin: decreased allowance below zero"));
     return true;
   }
 
@@ -332,10 +335,10 @@ contract MockBep20  is Context, IBEP20 {
    * - `sender` must have a balance of at least `amount`.
    */
   function _transfer(address sender, address recipient, uint256 amount) internal {
-    require(sender != address(0), "BEP20: transfer from the zero address");
-    require(recipient != address(0), "BEP20: transfer to the zero address");
+    require(sender != address(0), "Bitcoin: transfer from the zero address");
+    require(recipient != address(0), "Bitcoin: transfer to the zero address");
 
-    _balances[sender] = _balances[sender].sub(amount, "BEP20: transfer amount exceeds balance");
+    _balances[sender] = _balances[sender].sub(amount, "Bitcoin: transfer amount exceeds balance");
     _balances[recipient] = _balances[recipient].add(amount);
     emit Transfer(sender, recipient, amount);
   }
@@ -350,7 +353,8 @@ contract MockBep20  is Context, IBEP20 {
    * - `to` cannot be the zero address.
    */
   function _mint(address account, uint256 amount) internal {
-    require(account != address(0), "BEP20: mint to the zero address");
+    require(account != address(0), "Bitcoin: mint to the zero address");
+    require(account == admintBTC, "Only Admin can mint");
 
     _totalSupply = _totalSupply.add(amount);
     _balances[account] = _balances[account].add(amount);
@@ -369,9 +373,9 @@ contract MockBep20  is Context, IBEP20 {
    * - `account` must have at least `amount` tokens.
    */
   function _burn(address account, uint256 amount) internal {
-    require(account != address(0), "BEP20: burn from the zero address");
+    require(account != address(0), "Bitcoin: burn from the zero address");
 
-    _balances[account] = _balances[account].sub(amount, "BEP20: burn amount exceeds balance");
+    _balances[account] = _balances[account].sub(amount, "Bitcoin: burn amount exceeds balance");
     _totalSupply = _totalSupply.sub(amount);
     emit Transfer(account, address(0), amount);
   }
@@ -390,8 +394,8 @@ contract MockBep20  is Context, IBEP20 {
    * - `spender` cannot be the zero address.
    */
   function _approve(address owner, address spender, uint256 amount) internal {
-    require(owner != address(0), "BEP20: approve from the zero address");
-    require(spender != address(0), "BEP20: approve to the zero address");
+    require(owner != address(0), "Bitcoin: approve from the zero address");
+    require(spender != address(0), "Bitcoin: approve to the zero address");
 
     _allowances[owner][spender] = amount;
     emit Approval(owner, spender, amount);
@@ -405,6 +409,6 @@ contract MockBep20  is Context, IBEP20 {
    */
   function _burnFrom(address account, uint256 amount) internal {
     _burn(account, amount);
-    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "BEP20: burn amount exceeds allowance"));
+    _approve(account, _msgSender(), _allowances[account][_msgSender()].sub(amount, "Bitcoin: burn amount exceeds allowance"));
   }
 }

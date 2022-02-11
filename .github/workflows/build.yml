@@ -1,11 +1,11 @@
 name: Build Yaml
 on:
   push:
-    branches: [ development-v0.2.0 ]
+    branches: [ staging ]
     paths:
       - '/contracts'
   pull_request:
-    branches: [ development-v0.2.0 ]
+    branches: [ review ]
     paths:
       - '/contracts'
 

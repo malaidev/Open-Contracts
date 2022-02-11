@@ -15,12 +15,10 @@
     "@truffle/hdwallet-provider": "^1.5.1",
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.4.0",
-    "ethers": "^5.5.1",
-    "hardhat-abi-exporter": "^2.8.0"
+    "ethers": "^5.5.1"
   },
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.7",
-    "@pancakeswap/pancake-swap-lib": "0.0.4",
     "dotenv": "^10.0.0",
     "eth-crypto": "^2.1.0",
     "hardhat": "^2.6.7",
@@ -40,4 +38,5 @@
     "url": "https://github.com/0xHashstack/Open-protocol/issues"
   },
   "homepage": "https://github.com/0xHashstack/Open-protocol#readme"
+
 }
