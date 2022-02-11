@@ -36,7 +36,8 @@ contract MockBep20 is Context{
 
         admin = _admin;
         cappedSupply = _cappedSupply*10**decimals;
-        mint(admin, 50000000000*10**decimals);
+        
+        mint(admin, 5000000*10**decimals);
     }
 
     receive() external payable {
