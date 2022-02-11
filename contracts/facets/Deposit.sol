@@ -127,7 +127,6 @@ contract Deposit is Pausable, IDeposit{
 		
 		SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
 		DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
 
 		_convertYield(msg.sender, _market, _commitment, _amount);
 
@@ -137,23 +136,13 @@ contract Deposit is Pausable, IDeposit{
 			if (!deposit.isTimelockActivated)	{
 				deposit.isTimelockActivated = true;
 				savingsAccount.deposits[deposit.id -1].isTimelockActivated = true;
+				
+				return false;
 			}
 			else if (deposit.isTimelockActivated)	{
 				require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Timelock Applicable");
-
-				ds.token = IBEP20(LibOpen._connectMarket(_market));
-				ds.token.transfer(msg.sender, _amount);
-
-				deposit.amount -= _amount;
-				savingsAccount.deposits[deposit.id -1].amount -= _amount;
-
-				LibOpen._updateReservesDeposit(_market, _amount, 1);
-			
-				emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
-				return true;
 			}
-		} else if  (_commitment == LibOpen._getCommitment(0))	{
-			
+		} 
 			ds.token = IBEP20(LibOpen._connectMarket(_market));
 			ds.token.transfer(msg.sender, _amount);
 
@@ -161,11 +150,67 @@ contract Deposit is Pausable, IDeposit{
 			savingsAccount.deposits[deposit.id -1].amount -= _amount;
 
 			LibOpen._updateReservesDeposit(_market, _amount, 1);
-
+		
 			emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
 			return true;
-		}
 	}
+
+/// FIXED v0.1 withdrawDeposi()
+	// function withdrawDeposit (
+	// 	bytes32 _market, 
+	// 	bytes32 _commitment,
+	// 	uint _amount
+	// ) external override nonReentrant() returns (bool) 
+	// {
+	// 	AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+		
+	// 	LibOpen._hasAccount(msg.sender);// checks if user has savings account 
+	// 	LibOpen._isMarketSupported(_market);
+		
+	// 	SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
+	// 	DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
+
+	// 	_convertYield(msg.sender, _market, _commitment, _amount);
+
+	// 	require(deposit.amount >= _amount, "ERROR: Insufficient balance");
+
+	// 	if (_commitment != LibOpen._getCommitment(0))	{
+	// 		if (!deposit.isTimelockActivated)	{
+	// 			deposit.isTimelockActivated = true;
+	// 			savingsAccount.deposits[deposit.id -1].isTimelockActivated = true;
+	// 		}
+	// 		else if (deposit.isTimelockActivated)	{
+	// 			require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Timelock Applicable");
+
+	// 			ds.token = IBEP20(LibOpen._connectMarket(_market));
+	// 			ds.token.transfer(msg.sender, _amount);
+
+	// 			deposit.amount -= _amount;
+	// 			savingsAccount.deposits[deposit.id -1].amount -= _amount;
+
+	// 			LibOpen._updateReservesDeposit(_market, _amount, 1);
+			
+	// 			emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
+	// 			return true;
+	// 		}
+	// 	} else if  (_commitment == LibOpen._getCommitment(0))	{
+			
+	// 		ds.token = IBEP20(LibOpen._connectMarket(_market));
+	// 		ds.token.transfer(msg.sender, _amount);
+
+	// 		deposit.amount -= _amount;
+	// 		savingsAccount.deposits[deposit.id -1].amount -= _amount;
+
+	// 		LibOpen._updateReservesDeposit(_market, _amount, 1);
+
+	// 		emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
+	// 		return true;
+	// 	}
+	// }
+
+	
+	/// OLD withdrawDeposit()
+
 	// function withdrawDeposit (
 	// 	bytes32 _market, 
 	// 	bytes32 _commitment,
