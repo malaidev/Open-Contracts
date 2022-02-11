@@ -13,11 +13,6 @@ abstract contract Pausable is Context {
     constructor() {
         isPaused = false;
     }
-
-    modifier whenNotPaused() {
-        require(!_paused(), "Paused status");
-        _;
-    }
                                                                                                                                                                                                                                               
     modifier whenPaused() {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
         require(_paused(), "Not paused status");
@@ -43,9 +38,15 @@ abstract contract Pausable is Context {
     }
 
     modifier nonReentrant() {
-		require(isReentrant == false, "Re-entrant alert!");
+		require(isReentrant == false, "ERROR: Re-entrant");
 		isReentrant = true;
 		_;
 		isReentrant = false;
 	}
+
+    modifier whenNotPaused() {
+        require(!_paused(), "Paused status");
+        _;
+    }
+
 }
