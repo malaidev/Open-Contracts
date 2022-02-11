@@ -394,11 +394,12 @@ async function addMarkets(diamondAddress) {
     "54000000000000000000000000", // 54 million BNB
     "100000000000000000000", // 100 BNB
   );
-  user = accounts[1];
-  console.log("Initial Bal: ", await tusdt.balanceOf(user.address));
-  await faucet.connect(user).getTokens(0);
+  // Get tokens function call
+  // user = accounts[1];
+  // console.log("Initial Bal: ", await tusdt.balanceOf(user.address));
+  // await faucet.connect(user).getTokens(0);
 
-  console.log("Final bal: ", await tusdt.balanceOf(user.address));
+  // console.log("Final bal: ", await tusdt.balanceOf(user.address));
 
   return {
     tBtcAddress,

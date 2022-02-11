@@ -1,0 +1,110 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "fromToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "toToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "fromAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "toAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "expectedAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "callees",
+        "type": "address[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "exchangeData",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "startIndexes",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "values",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "address payable",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "referrer",
+        "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "useReduxToken",
+        "type": "bool"
+      }
+    ],
+    "name": "simpleSwap",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "receivedAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "amountIn",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amountOutMin",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "path",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint8",
+        "name": "referrer",
+        "type": "uint8"
+      }
+    ],
+    "name": "swapOnUniswap",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "receivedAmount",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+]
