@@ -70,7 +70,7 @@ contract Deposit is Pausable, IDeposit{
 
 		_amount = yield.accruedYield;
 
-		// updating yield
+		/// RESETTING THE YIELD.
 		yield.accruedYield = 0;
 
 		deposit.amount += _amount;
@@ -129,11 +129,8 @@ contract Deposit is Pausable, IDeposit{
 		DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
 		YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
 
-		// accruedYield(msg.sender,_market,_commitment);
-
-		// deposit.amount += yield.accruedYield;
-		// yield.accruedYield = 0;
 		_convertYield(msg.sender, _market, _commitment, _amount);
+
 		require(deposit.amount >= _amount, "ERROR: Insufficient balance");
 
 		if (_commitment != LibOpen._getCommitment(0))	{
@@ -215,14 +212,12 @@ contract Deposit is Pausable, IDeposit{
             createNewDeposit(msg.sender, _market, _commitment, _amount);
             return true;
         }
-
         // ds.token.approveFrom(msg.sender, address(this), _amount);
         ds.token.transferFrom(msg.sender, address(this), _amount); // change the address(this) to the diamond address.
-
         processDeposit(msg.sender, _market, _commitment, _amount);
-        LibOpen._updateReservesDeposit(_market, _amount, 0);
-        emit DepositAdded(msg.sender, _market, _commitment, _amount, ds.indDepositRecord[msg.sender][_market][_commitment].id, block.timestamp);
 
+		LibOpen._updateReservesDeposit(_market, _amount, 0);
+		emit DepositAdded(msg.sender, _market, _commitment, _amount, ds.indDepositRecord[msg.sender][_market][_commitment].id, block.timestamp);
         return true;
     }
 
