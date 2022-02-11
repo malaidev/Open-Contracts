@@ -48,13 +48,6 @@ library LibOpen {
 		uint256 timestamp
 	);
 
-	event CollateralReleased(
-		address indexed account,
-		uint256 indexed amount,
-		bytes32 indexed market,
-		uint256 timestamp
-	);
-
 	event MarketSwapped(
 		address indexed account,
 		uint256 indexed loanid,

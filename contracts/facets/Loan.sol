@@ -20,6 +20,13 @@ contract Loan is Pausable, ILoan {
 		bytes32 market,
 		uint256 timestamp
 	);
+
+	event CollateralReleased(
+		address indexed account,
+		uint256 indexed amount,
+		bytes32 indexed market,
+		uint256 timestamp
+	);
 	constructor() {
     	// AppStorage storage ds = LibOpen.diamondStorage(); 
 		// ds.adminLoanAddress = msg.sender;
@@ -103,7 +110,7 @@ contract Loan is Pausable, ILoan {
 		delete loanAccount.loanState[loan.id - 1];
 
 
-		emit LibOpen.CollateralReleased(msg.sender, collateralAmount, collateralMarket, block.timestamp);
+		emit CollateralReleased(msg.sender, collateralAmount, collateralMarket, block.timestamp);
         LibOpen._updateReservesLoan(collateralMarket, collateralAmount, 1);
 
 		return true;
