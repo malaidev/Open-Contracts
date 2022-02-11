@@ -376,24 +376,29 @@ async function addMarkets(diamondAddress) {
   // Updating Token Balance in faucet
   await faucet.connect(upgradeAdmin)._updateTokens(
     tUsdtAddress,
-    "10000000000000000000000", // 10000 USDT
-    "3000000000000000000000000000" // 3000000000 USDT
+    "6000000000000000000000000000", // 6 billion USDT
+    "10000000000000000000000" // 10000 USDT
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tUsdcAddress,
-    "10000000000000000000000", // 10000 USDC
-    "3000000000000000000000000000" // 3000000000 USDC
+    "6000000000000000000000000000", // 6 billion USDC
+    "10000000000000000000000" // 10000 USDC
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
-    tBtcAddress,
-    "500000000", // 5 BTC
-    "630000000000000" // 6300000 BTC
+    tBtcAddress,    
+    "1260000000000000", // 12.6 million BTC
+    "500000000" // 5 BTC
   );
   await faucet.connect(upgradeAdmin)._updateTokens(
     tWBNBAddress,
+    "54000000000000000000000000", // 54 million BNB
     "100000000000000000000", // 100 BNB
-    "1200000000000000000000000" // 1200000 BNB
   );
+  user = accounts[1];
+  console.log("Initial Bal: ", await tusdt.balanceOf(user.address));
+  await faucet.connect(user).getTokens(0);
+
+  console.log("Final bal: ", await tusdt.balanceOf(user.address));
 
   return {
     tBtcAddress,
