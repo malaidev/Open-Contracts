@@ -238,7 +238,7 @@ async function addMarkets(diamondAddress) {
     const minUSDT = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
     const minUSDC = BigNumber.from('100000000000000000000'); // 100 USDT, or 100 USDC
     const minBTC = BigNumber.from('1000000'); // 0.1 BTC
-    const minBNB = BigNumber.from('250000000000000000'); // 0.25
+    const minBNB = BigNumber.from('250000000000000000'); // 0.25BNB
 
     await tokenList.connect(upgradeAdmin).addMarketSupport(symbolUsdt,18,tUsdtAddress, minUSDT, { gasLimit: 800000 })
     console.log(`tUSDT added ${minUSDT}`);

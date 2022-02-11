@@ -34,7 +34,6 @@ contract Faucet {
 
     /// UPDATE TOKENS
     function _updateTokens(address _token,uint _amount, uint _value) public auth() returns (bool)   {
-    // function _updateTokens(address _token,uint _value) private {
         require(_token != address(0), "ERROR: Zero address");
 
         TokenLedger storage td = tokens[num];
