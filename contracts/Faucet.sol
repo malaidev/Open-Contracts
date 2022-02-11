@@ -9,6 +9,7 @@ interface BEP20 {
 contract Faucet {
 
     uint public num = 0;
+    address admin;
 
     bool isReentrant = false;
     uint public waitTime = 4320 minutes;
@@ -26,10 +27,7 @@ contract Faucet {
     event TokenSupportAdded(BEP20 indexed token, uint indexed amount, uint indexed value, uint  time);
 
     constructor(address tUSDT, address tUSDC, address tBTC, address tBNB) {
-        // _updateTokens(tUSDT, 10000000000000000000000); // 10000 USDT
-        // _updateTokens(tUSDC, 10000000000000000000000); // 10000 USDC
-        // _updateTokens(tBTC, 500000000); // 5 BTC
-        // _updateTokens(tBNB, 100000000000000000000);   // 100 BNB
+        admin = msg.sender;
     }
 
     /// UPDATE TOKENS
@@ -75,7 +73,7 @@ contract Faucet {
     }
 
     modifier auth() {
-        require(msg.sender == 0x717c50dF0FC049F1F30AB2c10f71713a90ADb86A, "ERROR: Not authorized");
+        require(msg.sender == admin, "ERROR: Not authorized");
         _;
     }
 }

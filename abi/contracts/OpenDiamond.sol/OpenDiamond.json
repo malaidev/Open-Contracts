@@ -1,0 +1,63 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_upgradeAdmin",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_diamondCutFacet",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "constructor"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "fallback"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_market",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "addFairPriceAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "_market",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getFairPriceAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  }
+]
