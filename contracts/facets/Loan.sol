@@ -54,7 +54,58 @@ contract Loan is Pausable, ILoan {
 	}
 
 	function withdrawCollateral(bytes32 _market, bytes32 _commitment) external override nonReentrant() returns (bool) {
-		LibOpen._withdrawCollateral(msg.sender, _market, _commitment);
+		// LibOpen._withdrawCollateral(msg.sender, _market, _commitment);
+
+		LibOpen._hasLoanAccount(msg.sender);
+		LibOpen._isMarketSupported(_market);
+
+		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
+
+        LoanAccount storage loanAccount = ds.loanPassbook[msg.sender];
+		LoanRecords storage loan = ds.indLoanRecords[msg.sender][_market][_commitment];
+		LoanState storage loanState = ds.indLoanState[msg.sender][_market][_commitment];
+		CollateralRecords storage collateral = ds.indCollateralRecords[msg.sender][_market][_commitment];
+		
+		/// REQUIRE STATEMENTS - CHECKING FOR LOAN, REPAYMENT & COLLATERAL TIMELOCK.
+		require(loan.id != 0, "ERROR: Loan does not exist");
+		require(loanState.state == STATE.REPAID, "ERROR: Active loan");
+		require((collateral.timelockValidity + collateral.activationTime) >= block.timestamp, "ERROR: Active Timelock");
+
+		ds.collateralToken = IBEP20(LibOpen._connectMarket(collateral.market));
+        ds.collateralToken.transfer(msg.sender, collateral.amount);
+
+		bytes32 collateralMarket = collateral.market;
+		uint256 collateralAmount = collateral.amount;
+		
+		/// UPDATING STORAGE RECORDS FOR LOAN
+		/// COLLATERAL RECORDS
+		delete collateral.id;
+		delete collateral.market;
+		delete collateral.commitment;
+		delete collateral.amount;
+		delete collateral.isCollateralisedDeposit;
+		delete collateral.timelockValidity;
+		delete collateral.isTimelockActivated;
+		delete collateral.activationTime;
+
+		/// LOAN RECORDS
+		delete loan.id;
+		delete loan.isSwapped;
+		delete loan.lastUpdate;
+		
+		/// LOAN STATE
+		delete loanState.id;
+		delete loanState.state;
+
+		/// LOAN ACCOUNT
+		delete loanAccount.loans[loan.id - 1];
+		delete loanAccount.collaterals[loan.id - 1];
+		delete loanAccount.loanState[loan.id - 1];
+
+
+		emit LibOpen.CollateralReleased(msg.sender, collateralAmount, collateralMarket, block.timestamp);
+        LibOpen._updateReservesLoan(collateralMarket, collateralAmount, 1);
+
 		return true;
 	}
 	
