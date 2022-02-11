@@ -15,7 +15,8 @@
     "@truffle/hdwallet-provider": "^1.5.1",
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.4.0",
-    "ethers": "^5.5.1"
+    "ethers": "^5.5.1",
+    "hardhat-abi-exporter": "^2.8.0"
   },
   "dependencies": {
     "@nomiclabs/hardhat-etherscan": "^2.1.7",
