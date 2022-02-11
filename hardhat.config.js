@@ -118,6 +118,6 @@ module.exports = {
   },
   tenderly: {
     project: "Open-Protocol Testnet",
-    username: "dinh",
+    username: "v9hstk",
   }
 };
