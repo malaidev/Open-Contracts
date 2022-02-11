@@ -9,7 +9,7 @@ interface IDeposit {
 	enum SAVINGSTYPE{DEPOSIT, YIELD, BOTH}
 	function hasAccount(address account_) external view returns (bool);
     // function savingsBalance(bytes32 _market, bytes32 _commitment, SAVINGSTYPE req) external returns (uint);
-	function convertYield(bytes32 _market, bytes32 _commitment) external returns (bool success);
+	// function _convertYield(address _account, bytes32 _market, bytes32 _commitment, uint256 _amount) internal override returns (bool);
 	function hasYield(bytes32 _market, bytes32 _commitment) external view returns (bool);
 	function avblReservesDeposit(bytes32 _market) external view returns (uint);
 	function utilisedReservesDeposit(bytes32 _market) external view returns(uint);
