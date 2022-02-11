@@ -56,7 +56,7 @@ contract Deposit is Pausable, IDeposit{
 		return _savingsBalance;
 	}
 
-	function _convertYield(address _account, bytes32 _market, bytes32 _commitment, uint256 _amount) private override returns (bool) {
+	function _convertYield(address _account, bytes32 _market, bytes32 _commitment, uint256 _amount) private returns (bool) {
 		AppStorageOpen storage ds = LibOpen.diamondStorage(); 
 
 		LibOpen._hasAccount(_account);
@@ -125,8 +125,9 @@ contract Deposit is Pausable, IDeposit{
 		LibOpen._hasAccount(msg.sender);// checks if user has savings account 
 		LibOpen._isMarketSupported(_market);
 		
-		DepositRecords storage deposit = ds.indDepositRecord[_account][_market][_commitment];
-		YieldLedger storage yield = ds.indYieldRecord[_account][_market][_commitment];
+		SavingsAccount storage savingsAccount = ds.savingsPassbook[msg.sender];
+		DepositRecords storage deposit = ds.indDepositRecord[msg.sender][_market][_commitment];
+		YieldLedger storage yield = ds.indYieldRecord[msg.sender][_market][_commitment];
 
 		// accruedYield(msg.sender,_market,_commitment);
 
@@ -135,9 +136,10 @@ contract Deposit is Pausable, IDeposit{
 		_convertYield(msg.sender, _market, _commitment, _amount);
 		require(deposit.amount >= _amount, "ERROR: Insufficient balance");
 
-		if (_commitment != _getCommitment(0))	{
+		if (_commitment != LibOpen._getCommitment(0))	{
 			if (!deposit.isTimelockActivated)	{
-				deposit.isTimeLockActivated == true;
+				deposit.isTimelockActivated = true;
+				savingsAccount.deposits[deposit.id -1].isTimelockActivated = true;
 			}
 			else if (deposit.isTimelockActivated)	{
 				require(deposit.activationTime + deposit.timelockValidity <= block.timestamp, "ERROR: Timelock Applicable");
@@ -145,15 +147,21 @@ contract Deposit is Pausable, IDeposit{
 				ds.token = IBEP20(LibOpen._connectMarket(_market));
 				ds.token.transfer(msg.sender, _amount);
 
+				deposit.amount -= _amount;
+				savingsAccount.deposits[deposit.id -1].amount -= _amount;
+
 				LibOpen._updateReservesDeposit(_market, _amount, 1);
 			
 				emit Withdrawal(msg.sender,_market, _amount, _commitment, block.timestamp);
 				return true;
 			}
-		} else if  (_commitment == _getCommitment(0))	{
+		} else if  (_commitment == LibOpen._getCommitment(0))	{
 			
 			ds.token = IBEP20(LibOpen._connectMarket(_market));
 			ds.token.transfer(msg.sender, _amount);
+
+			deposit.amount -= _amount;
+			savingsAccount.deposits[deposit.id -1].amount -= _amount;
 
 			LibOpen._updateReservesDeposit(_market, _amount, 1);
 
