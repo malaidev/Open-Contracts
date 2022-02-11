@@ -118,7 +118,6 @@ contract Loan is Pausable, ILoan {
     // 	LibOpen._collateralPointer(_account, _loanMarket, _commitment);
 	// 	return true;
 	// }
-
 	function _preAddCollateralProcess(
 		bytes32 _collateralMarket,
 		uint256 _collateralAmount,
