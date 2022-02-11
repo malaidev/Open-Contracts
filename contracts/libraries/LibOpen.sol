@@ -1030,8 +1030,6 @@ library LibOpen {
 			ds.collateralToken.transfer(_sender, collateral.amount);
 			
 			emit LoanRepaid(_sender, loan.id, loan.market, block.timestamp);
-			emit CollateralReleased(_sender,collateral.amount, collateral.market, block.timestamp);
-			
 			_updateUtilisationLoan(loan.market, loan.amount, 1);
 			
 			/// COLLATERAL RECORDS
