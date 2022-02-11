@@ -331,20 +331,16 @@ async function addMarkets(diamondAddress) {
   await tbtc.transfer(upgradeAdmin.address, "420000000000000"); // 4.2 million BTC
   await twbnb.transfer(upgradeAdmin.address, "18000000000000000000000000"); // 18 million BNB
 
-  // Transferring funds to diamond
+  /// Transferring funds to diamond
   await tusdt.transfer(diamondAddress, "2000000000000000000000000000");
   await tusdc.transfer(diamondAddress, "2000000000000000000000000000");
   await tbtc.transfer(diamondAddress, "420000000000000");
   await twbnb.transfer(diamondAddress, "18000000000000000000000000");
 
-  // Deploying faucet
+  
+  /// DEPLOY FAUCET
   const Faucet = await ethers.getContractFactory("Faucet");
-  const faucet = await Faucet.deploy(
-    tUsdtAddress,
-    tUsdcAddress,
-    tBtcAddress,
-    tWBNBAddress
-  );
+  const faucet = await Faucet.deploy();
   console.log("Faucet deployed at ", faucet.address);
 
   // Transferring funds to faucet

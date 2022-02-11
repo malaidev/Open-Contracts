@@ -1,27 +1,6 @@
 [
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "tUSDT",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "tUSDC",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "tBTC",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "tBNB",
-        "type": "address"
-      }
-    ],
+    "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
