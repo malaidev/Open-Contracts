@@ -26,7 +26,7 @@ contract Faucet {
     event TokensIssued(BEP20 indexed token, address indexed account, uint indexed amount, uint  time);
     event TokenSupportAdded(BEP20 indexed token, uint indexed amount, uint indexed value, uint  time);
 
-    constructor(address tUSDT, address tUSDC, address tBTC, address tBNB) {
+    constructor() {
         admin = msg.sender;
     }
 
