@@ -13,8 +13,11 @@ interface IComptroller {
     function getAprTimeLength(bytes32 commitment_) external view returns (uint);
     function getCommitment(uint index_) external view returns (bytes32);
     function setCommitment(bytes32 _commitment) external;
+    function liquidationTrigger(uint loanID) external;
     function updateAPY(bytes32 _commitment, uint _apy) external returns (bool);
     function updateAPR(bytes32 _commitment, uint _apr) external returns (bool);
+    function calcAPR(bytes32 _commitment, uint oldLengthAccruedInterest, uint oldTime, uint aggregateInterest) external view returns (uint, uint);
+    function calcAPY(bytes32 _commitment, uint oldLengthAccruedYield, uint oldTime, uint aggregateYield) external view returns (uint, uint);
     function updateLoanIssuanceFees(uint fees) external returns(bool success);
     function updateLoanClosureFees(uint fees) external returns (bool success);
     function updateLoanPreClosureFees(uint fees) external returns (bool success);
