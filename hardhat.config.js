@@ -1,7 +1,7 @@
 const { task } = require("hardhat/config");
 const { getSelectors, FacetCutAction } = require('./scripts/libraries/diamond.js')
 const utils = require('ethers').utils
-
+require('hardhat-abi-exporter');
 require("@nomiclabs/hardhat-waffle");
 
 
