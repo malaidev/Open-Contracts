@@ -6,6 +6,7 @@ typechain
 
 #Hardhat files
 cache
+artifacts
 yarn-error.log
 # *.md
 node_modules/
