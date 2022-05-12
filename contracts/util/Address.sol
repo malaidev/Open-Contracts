@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.6 <0.9.0;
+pragma solidity 0.8.1;
 
-/**
- * @dev Collection of functions related to the address type
- */
+
 library Address {
     /**
      * @dev Returns true if `account` is a contract.
@@ -19,12 +17,12 @@ library Address {
      *  - an externally-owned account
      *  - a contract in construction
      *  - an address where a contract will be created
-     *  - an address where a contract lived, but was destroyed
+     *  - an address where a contract lived, but was destroyed                                                  
      * ====
      */
     function isContract(address account) internal view returns (bool) {
         // This method relies in extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
+        // construction, since the code is only stored at the en                                                                                                                                                                                                                                                                                    d of the
         // constructor execution.
 
         uint256 size;

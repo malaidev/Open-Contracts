@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.8.6 <0.9.0;
+pragma solidity 0.8.1;
 
 import "./Context.sol";
 
@@ -10,29 +10,17 @@ abstract contract Pausable is Context {
     bool private isPaused;
     event PauseState(address indexed _pauser, bool isPaused);
 
-
     constructor() {
         isPaused = false;
     }
 
-    function paused() public view virtual returns (bool) {
-        return isPaused;
-    }
-    
-    function pauseState() public view returns (string memory) {
-       if (isPaused == true) {
-           return "Contract is paused. Token transfers are temporarily disabled.";
-       }
-       return "Contract is not paused";
-   }
-
     modifier whenNotPaused() {
-        require(!paused(), "Paused status");
+        require(!_paused(), "Paused status");
         _;
     }
-
-    modifier whenPaused() {
-        require(paused(), "Not paused status");
+                                                                                                                                                                                                                                              
+    modifier whenPaused() {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
+        require(_paused(), "Not paused status");
         _;
     }
 
@@ -46,12 +34,16 @@ abstract contract Pausable is Context {
         emit PauseState(_msgSender(), false);
     }
 
+    function _paused() internal virtual view returns(bool) {
+        return isPaused;
+    }
+
     function _checkPauseState() internal view {
         require(isPaused == false,"The contract is paused. Transfer functions are temporarily disabled");
     }
 
     modifier nonReentrant() {
-		require(isReentrant == false, "Re-entrant alert!");
+		require(isReentrant == false, "ERROR: Re-entrant");
 		isReentrant = true;
 		_;
 		isReentrant = false;
