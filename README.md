@@ -1,25 +1,85 @@
-# Open protocol
+[![Slither tests](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml/badge.svg?branch=staging)](https://github.com/0xHashstack/Open-protocol/actions/workflows/slither.yml)     [![Unit tests](https://github.com/0xHashstack/Open-contracts/actions/workflows/main.yml/badge.svg)](https://github.com/0xHashstack/Open-contracts/actions/workflows/main.yml)
 
-> An autonomous lending framework enabling under-collateralized loans for upto 1:3 collateral-to-debt ratio.
+<!-- [![Test](https://github.com/0xHashstack/Open-contracts/actions/workflows/test.yml/badge.svg)](https://github.com/0xHashstack/Open-contracts/actions/workflows/test.yml) -->
+
+In this repository, you will find the latest smart contracts enabling Open protocol.
+
+------
 
 
-### About Open
+### Deployment Guide
 
-DeFi lending today requires a borrower to provide collateral that exceeds the actual borrow. This diminishes the utility of decentralised lending. Open protocol's proposed solution enables borrowers borrow upto 3 times their collateral. Open is the only product in the market today capable of implementing a defi lending solution that is comparable to traditional finance
+This is a complete deployment guide on how you can deploy contracts by yourself. Initially we are deploying on Binance smart chain testnet, 
+you can deploy on any chain with minor changes in hardhatconfig.js file. Initially you will require some test bnb so grab some tokens from
+the [faucet](https://testnet.binance.org/faucet-smart).
 
-1. [Whitepaper](https://hashstack.finance/papers/Open-protocol-v0.2.pdf)
-2. [Whitepaper summary](https://hashstack.medium.com/released-open-protocol-whitepaper-v0-2-44c5b37f5bd)
+Open your terminal and follow the steps
 
----
-## Concept 
-[Hashstack](https://hashstack.finance)'s Open protocol encourages productive lending. Productive lending is when the money is borrowed to boost personal finances. When [Hashstack](https://hashstack.finance) lends, it assumes that the borrowers use the funds productively to earn a profit so that they can pay the lender back while keeping some extra earnings to themselves. When the loan is outstanding it is an asset for the [Hashstack](https://hashstack.finance) and its depositors, while a liability (debt) to the borrower. When a loan is repaid, the assets and liabilities disappear, and the exchange is good for both the borrower and creditor.
+```
+$ git clone -b review https://github.com/0xHashstack/Open-protocol
+```
+After the repository is cloned
 
-Open permits a collateral-to-debt ratio of upto 1:3, i.e. a borrower can seek a loan upto $300 usd against $100 usd collateral. CDR is a simple formula to calculate.
-## 𝐶𝐷𝑅 = 𝐶𝑢𝑠𝑑 ÷𝐿𝑢𝑠𝑑
+```
+$ npm install
+```
+Now all node dependencies are installed, you're ready to go!
 
-- 𝐶𝐷𝑅 = 𝐶𝑜𝑙𝑙𝑎𝑡𝑒𝑟𝑎𝑙 𝑡𝑜 𝑑𝑒𝑏𝑡 𝑟𝑎𝑡𝑖𝑜
-- 𝐶 𝑢𝑠𝑑 = 𝐶𝑜𝑙𝑙𝑎𝑡𝑒𝑟𝑎𝑙 𝑣𝑎𝑙𝑢𝑒 𝑖𝑛 𝑈𝑆 𝑑𝑜𝑙𝑙𝑎𝑟𝑠.
-- 𝐿 𝑢𝑠𝑑 = 𝐿𝑜𝑎𝑛 𝑣𝑎𝑙𝑢𝑒 𝑖𝑛 𝑈𝑆 𝑑𝑜𝑙𝑙𝑎𝑟𝑠.
+```
+$ npx hardhat run --network bsctestnet scripts/deploy_all.js
+```
+Congrats! you have successfully deployed all the contracts on bsc testnet.
+Dont forget to check it out on [bscscan testnet](https://testnet.bscscan.com/)
 
-### Supported tokens
-During its early operational period, Open protocol will support BNB, USDC, [STACK](https://bscscan.com/token/0xeac61d9e3224b20104e7f0bad6a6db7caf76659b) as acceptable denominations for deposit, borrow & withdrawal. This means, an account can deposit tokens, or borrow in these denominations only. ****
+# Contract Records
+This section would have all the records regarding latest contracts deployed , markets being used and faucet liquidity
+
+## Contracts Deployed :
+AccessRegistry: `0x844B4a66EcDdFd54Ec6cCe12536B653cbefFc6Cd`
+
+Diamond: `0xe11b598A5345fC67E8a41108d690fFd0E7278105`
+
+## Markets Used :
+
+tBTC deployed:  `0x4b129FE33Ed077aBD649da2e56Daf02aE9A67766`
+
+tUSDC deployed:  `0xacE2E33264Dd184ef563Ceb3db636044BFE8d0E2`
+
+tUSDT deployed:  `0xdb594B15797c47e04c85E209b04B8C27F27D9A0D`
+
+tSxp deployed:  `0x0343b91e5dD17D749a5D44E3Ecb90196b056967b`
+
+tCake deployed:  `0x72987967c5ae63e263B16822689970d66F33fCc2`
+
+t.wBNB address : `0x14EbA6ea192aC6C937D80EA3Fa623fcBE11170f6`
+
+## Faucet Liquidity :
+
+Faucet addr :
+`0x372a7C4482A9E4E1FBe017BB4C5f2d0f3CC200fc`
+
+tBTC : `false`
+
+tUSDC : `false`
+
+tUSDT : `false`
+
+t.wBNB : `false`
+
+
+# Basic Sample Hardhat Project
+
+This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+
+Try running some of the following tasks:
+
+```shell
+npx hardhat accounts
+npx hardhat compile
+npx hardhat clean
+npx hardhat test
+npx hardhat node
+node scripts/sample-script.js
+npx hardhat help
+```
+
